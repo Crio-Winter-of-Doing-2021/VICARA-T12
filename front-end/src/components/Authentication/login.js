@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 import React, { useState } from 'react';
+import axiosInstance from '../../axios';
 //MaterialUI
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -46,32 +47,26 @@ export default function Login(props) {
 
 	// Declaring state using freeze to prevent change 
 	const initialFormData = Object.freeze({
-		name: '',
-		caption: '',
-		url: '',
-		snackState: '',
+		email: '',
+		password: '',
 	});
 	const [formData, updateFormData] = useState(initialFormData);
 	const [open, setOpen] = useState(false);
 	// Saving data typed into the state 
 	const handleChange = (e) => {
-		const name = e.target.name;
-		const value = e.target.value;
         updateFormData({
             ...formData,
             [e.target.name]: e.target.value.trim(),
         });
-		//validateField(name, value)
 	};
 
 	// Handling the submit using axious ( Post )  Base URL is hard-coded.
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		axiosInstance
-			.post('',{
-				name: formData.name,
-				caption: formData.caption,
-				url: formData.url,
+			.post('api/auth/',{
+				email: formData.email,
+				password: formData.password,
 			})
 			.then(response => { 
 				window.location.reload();
@@ -80,10 +75,8 @@ export default function Login(props) {
 				// If invalid data is given, reset the state so data is cleared. 
 				updateFormData({
 					...formData,
-					['name']: '',
-					['caption']: '',
-					['url']: '',
-					['snackState']:error.response.data,
+					['email']: '',
+					['password']: '',
 				});		
 			});
 	};
@@ -112,7 +105,7 @@ export default function Login(props) {
 								label="email"
 								name="email"
 								autoComplete="email"
-								value={formData.name}
+								value={formData.email}
 								onChange={handleChange}
 							/>
 						</Grid>
@@ -122,10 +115,11 @@ export default function Login(props) {
 								required
 								fullWidth
 								id="password"
+								type="password"
 								label="password"
 								name="password"
 								autoComplete="password"
-								value={formData.caption}
+								value={formData.password}
 								onChange={handleChange}
 							/>
 						</Grid>

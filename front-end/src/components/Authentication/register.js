@@ -50,7 +50,7 @@ export default function Register(props) {
 		name: '',
 		email: '',
 		password: '',
-		confirmpassword: '',
+		confirmPassword: '',
 		snackState: '',
 	});
 	const [formData, updateFormData] = useState(initialFormData);
@@ -70,22 +70,24 @@ export default function Register(props) {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		axiosInstance
-			.post('api/courses',{
+			.post('api/users/',{
+				name: formData.name,
 				email: formData.email,
 				password: formData.password,
-				confirmpassword: formData.confirmpassword,
+				confirmPassword: formData.confirmPassword,
 			})
 			.then(response => { 
 				window.location.reload();
 			})
 			.catch(error => {
 				// If invalid data is given, reset the state so data is cleared. 
+				console.log(error)
 				updateFormData({
 					...formData,
 					['name']: '',
 					['email']: '',
 					['password']: '',
-					['confirmpassword']: '',
+					['confirmPassword']: '',
 				});		
 			});
 	};
@@ -151,11 +153,11 @@ export default function Register(props) {
 								variant="outlined"
 								required
 								fullWidth
-								id="confirmpassword"
-								label="confirm password"
-								name="confirmpassword"
-								autoComplete="confirm password"
-								value={formData.confirmpassword}
+								id="confirmPassword"
+								label="confirm Password"
+								name="confirmPassword"
+								autoComplete="confirm Password"
+								value={formData.confirmPassword}
 								onChange={handleChange}
 							/>
 						</Grid>
