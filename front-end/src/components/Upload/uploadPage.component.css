@@ -1,0 +1,82 @@
+.file-display-container {
+    position: fixed;
+    width: 805px;
+}
+
+.file-status-bar{
+    width: 100%;
+    vertical-align:top;
+    margin-top: 10px;
+    margin-bottom: 20px;
+    position: relative;
+    line-height: 50px;
+    height: 50px;
+}
+
+.file-status-bar > div {
+    overflow: hidden;
+}
+
+.file-type {
+    display: inline-block!important;
+    position: absolute;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 13px;
+    margin-top: 25px;
+    padding: 0 4px;
+    border-radius: 2px;
+    box-shadow: 1px 1px 2px #abc;
+    color: maroon;
+    background:'linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(236,46,4,1) 100%, rgba(6,223,240,1) 100%)';
+    text-transform: uppercase;
+}
+
+.file-name {
+    display: inline-flex;
+    vertical-align:top;
+    position:relative;
+    left:0px;
+    color:'linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(236,46,4,1) 100%, rgba(6,223,240,1) 100%)';
+}
+
+.file-error {
+    display: inline-block;
+    vertical-align: top;
+    margin-left: 50px;
+    color: #9aa9bb;
+}
+
+.file-error-message {
+    color: red;
+}
+
+.file-type-logo {
+    width: 50px;
+    height: 50px;
+    background: url(../images/generic.png) no-repeat center center; 
+    background-size: 100%;
+    position: absolute;
+}
+
+.file-size {
+    display:inline-block;
+    vertical-align:top;
+    color:#30693D;
+    margin-left:10px;
+    margin-right:5px;
+    margin-left: 10px;
+    color: #444242;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.file-remove  {
+    position: absolute;
+    top: 20px;
+    right: 10px;
+    line-height: 15px;
+    cursor: pointer;
+    color: red;
+    margin-right: -10px;
+}

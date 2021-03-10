@@ -11,7 +11,7 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
-
+import UploadPage from '../Upload/uploadPage.component';
 const useStyles = makeStyles((theme) => ({
 	paper: {
 		marginTop: theme.spacing(8),
@@ -62,6 +62,7 @@ export default function Login(props) {
 
 	// Handling the submit using axious ( Post )  Base URL is hard-coded.
 	const handleSubmit = (e) => {
+		
 		e.preventDefault();
 		axiosInstance
 			.post('api/auth/',{
@@ -70,6 +71,7 @@ export default function Login(props) {
 			})
 			.then(response => { 
 				window.location.reload();
+				
 			})
 			.catch(error => {
 				// If invalid data is given, reset the state so data is cleared. 
