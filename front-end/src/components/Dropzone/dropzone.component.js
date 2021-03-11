@@ -49,7 +49,7 @@ export default function Dropzone(){
     visibleFilesUpload: true,
     invisibleFilesUpload: true
   });
-  const options = [
+  const option = [
     'Choose File',
     'Choose Folder'
   ];
@@ -154,13 +154,13 @@ const fileSize = (size) => {
         open={Boolean(anchorEl)}
         onClose={handleClose}
       >
-        {options.map((option) => (
-          <MenuItem key={option} selected={option === 'Upload File'} onClick={handleClose}>
+        
+          <MenuItem key={option} selected={option === 'Choose File'} onClick={handleClose}>
            <Button
           variant="contained"
              component="label"
            >
-{option}
+Choose File
   <input
     type="file"
     className="file-input"
@@ -169,8 +169,24 @@ const fileSize = (size) => {
     onChange={(e) => handleFiles(e.target.files)}
   />
 </Button>
+<Button
+          variant="contained"
+             component="label"
+           >
+Choose Folder
+  <input
+    type="file"
+    className="file-input"
+    multiple
+    hidden
+    webkitdirectory mozdirectory msdirectory odirectory directory
+    onChange={(e) => handleFiles(e.target.files)}
+  />
+</Button>
+
           </MenuItem>
-        ))}
+        
+
         
       </Menu>
 
