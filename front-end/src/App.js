@@ -7,7 +7,7 @@ import Register from './components/Authentication/register';
 import { CSSTransition } from 'react-transition-group';
 import Header from './components/Main/header';
 import Footer from './components/Main/footer';
-import UploadPage from './components/Upload/uploadPage.component';
+import WelcomePage from './components/Welcome/welcomePage';
 
 function App() {
   const [activeMenu, setActiveMenu] = useState('login');
@@ -29,45 +29,38 @@ function App() {
 
   return (
     <div className="App">
-      
       <BrowserRouter>
-      <Switch>
-          <Route path="/welcome">
-            <UploadPage/>
+        <Switch>
+          <Route exact path="/">
+            <Header/>
+            <div style={{ height: menuHeight }} ref={dropdownRef}>
+              <CSSTransition
+                in={activeMenu === 'login'}
+                timeout={500}
+                classNames="page-primary"
+                onEnter = {calcHeight}
+                unmountOnExit      
+                
+              >
+                <Login activeMenu = {activeMenu} onChange={handleChangeInForm} />
+              </CSSTransition>
+              <CSSTransition
+                in={activeMenu === 'register'}
+                timeout={500}
+                classNames="page-secondary"
+                unmountOnExit    
+                onEnter = {calcHeight}  
+              >
+                <Register activeMenu = {activeMenu} onChange={handleChangeInForm} />
+              </CSSTransition>
+            </div>
           </Route>
+        </Switch>  
+        <Switch>
+            <Route path="/welcome">
+              <WelcomePage/>
+            </Route>
         </Switch>
-
-      <Switch>
-          <Route path="/login">
-            
-         <Header/>
-      <div style={{ height: menuHeight }} ref={dropdownRef}>
-        <CSSTransition
-          in={activeMenu === 'login'}
-          timeout={500}
-          classNames="page-primary"
-          onEnter = {calcHeight}
-          unmountOnExit      
-          
-        >
-          <Login activeMenu = {activeMenu} onChange={handleChangeInForm} />
-        </CSSTransition>
-        <CSSTransition
-          in={activeMenu === 'register'}
-          timeout={500}
-          classNames="page-secondary"
-          unmountOnExit    
-          onEnter = {calcHeight}  
-        >
-          <Register activeMenu = {activeMenu} onChange={handleChangeInForm} />
-        </CSSTransition>
-        
-        
-      </div>
-      </Route>
-        </Switch>
-        
-                  
       </BrowserRouter>
     </div>
   );

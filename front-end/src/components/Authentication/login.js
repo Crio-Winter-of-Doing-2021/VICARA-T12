@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import axiosInstance from '../../axios';
 //MaterialUI
 import Button from '@material-ui/core/Button';
@@ -11,7 +12,9 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
-import UploadPage from '../Upload/uploadPage.component';
+import WelcomePage from '../Welcome/welcomePage';
+
+
 const useStyles = makeStyles((theme) => ({
 	paper: {
 		marginTop: theme.spacing(8),
@@ -40,7 +43,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Login(props) {
-
+	const history = useHistory();
 	function handleChangeInForm(event) {
 		props.onChange("register");
 	}
@@ -70,8 +73,7 @@ export default function Login(props) {
 				password: formData.password,
 			})
 			.then(response => { 
-				window.location.reload();
-				
+				history.push("/welcome")
 			})
 			.catch(error => {
 				// If invalid data is given, reset the state so data is cleared. 
