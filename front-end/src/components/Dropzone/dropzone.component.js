@@ -48,7 +48,7 @@ export default function Dropzone(){
     visibleFilesUpload: true,
     invisibleFilesUpload: true
   });
-  const options = [
+  const option = [
     'Choose File',
     'Choose Folder'
   ];
@@ -103,6 +103,7 @@ export default function Dropzone(){
   return (
     <React.Fragment>
     <CssBaseline />
+<<<<<<< HEAD
       <Container   
       maxWidth="lg" className="dropContainer">
         <Typography onDragOver={dragOver}
@@ -170,4 +171,121 @@ export default function Dropzone(){
       </Container>
     </React.Fragment>
   ); 
+=======
+    <Container 
+    
+    maxWidth="lg" className="dropContainer">
+      <Typography onDragOver={dragOver}
+    onDragEnter={dragEnter}
+    onDragLeave={dragLeave}
+    onDrop={fileDrop}
+    component="div" style={{ top:'10vh', height: '100vh' }}>
+    
+      
+    
+    <List component="nav">
+        <ListItem
+          button
+          aria-haspopup="true"
+             
+          onClick={handleClickListItem}
+        >
+          
+          <label htmlFor="icon-button-file" onClick="">
+        <IconButton size="small" color="" aria-label="upload" component="span" height="100%">
+          <AddCircleIcon/>
+          <span >Select</span>
+        </IconButton>
+        
+      </label> 
+      
+      </ListItem>
+      </List>
+      <Typography><span hidden={!state.visibleFilesUpload}>Don't </span>See Imported Files</Typography>
+      <Switch
+        checked={state.visibleFilesUpload}
+        onChange={handleChange}
+        name="visibleFilesUpload"
+        inputProps={{ 'aria-label': 'secondary checkbox' }}
+      />
+
+      <Menu
+        id="lock-menu"
+        anchorEl={anchorEl}
+        keepMounted
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        
+          <MenuItem key={option} selected={option === 'Choose File'} onClick={handleClose}>
+           <Button
+          variant="contained"
+             component="label"
+           >
+Choose File
+  <input
+    type="file"
+    className="file-input"
+    
+    hidden
+    onChange={(e) => handleFiles(e.target.files)}
+  />
+</Button>
+<Button
+          variant="contained"
+             component="label"
+           >
+Choose Folder
+  <input
+    type="file"
+    className="file-input"
+    multiple
+    hidden
+    webkitdirectory mozdirectory msdirectory odirectory directory
+    onChange={(e) => handleFiles(e.target.files)}
+  />
+</Button>
+
+          </MenuItem>
+        
+
+        
+      </Menu>
+
+      
+      <div className="file-display-container" hidden={!state.visibleFilesUpload}>
+    {
+        selectedFiles.map((data, i) => 
+            <div className="file-status-bar" key={i}>
+                <div>
+                    <div className="file-type-logo"><div className="file-type">{fileType(data.name)}</div></div>
+                    
+                    <span className={`file-name ${data.invalid ? 'file-error' : ''}`}>{data.name}</span>
+                    <span className="file-size">({fileSize(data.size)})</span> {data.invalid && <span className='file-error-message'>({errorMessage})</span>}
+                </div>
+                <div className="file-remove" onClick={()=>removeFile(data.name)}>X</div>
+            </div>
+        )
+    }
+</div>
+
+<div className="upload-modal" ref={uploadModalRef}>
+    <div className="overlay"></div>
+    <div className="close" onClick={(() => closeUploadModal())}></div>
+    <div className="progress-container">
+        <span ref={uploadRef}></span>
+        <div className="progress">
+            <div className="progress-bar" ref={progressRef}></div>
+        </div>
+    </div>
+</div>
+
+
+</Typography>
+</Container>
+  </React.Fragment>
+  
+);
+   
+>>>>>>> bd33da52cd68f94c48df8c1cdc45b6496b998223
 }
