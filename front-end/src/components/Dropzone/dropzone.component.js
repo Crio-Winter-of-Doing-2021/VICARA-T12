@@ -49,7 +49,7 @@ export default function Dropzone(props){
   const [errorMessage, setErrorMessage] = useState('');
   const [validFiles, setValidFiles] = useState([]); 
   const [userDetails, setUserDetails] = useState({});
-
+  const [files, setFiles]= useState({});
   const [state, setState] = useState({
     visibleFilesUpload: true,
     invisibleFilesUpload: true
@@ -78,11 +78,7 @@ export default function Dropzone(props){
         uploadFiles(files[i]);
     }
 
-    const getFiles = ()=>{
-      
-
-    }
-    
+  
     
   }
 
@@ -116,7 +112,7 @@ export default function Dropzone(props){
   useEffect(()=>{
     UploadService.getFiles({userDetails}).then((response)=>{
       console.log(response);
-      /*setSelectedFiles([response])*/;
+      setFiles(response);
   }
   ,[])});
 
