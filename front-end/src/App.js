@@ -1,6 +1,6 @@
 import './App.css';
 import './index.css';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { HashRouter, BrowserRouter, Route, Switch } from 'react-router-dom';
 import React, { useState, useEffect, useRef } from 'react';
 import Login from './components/Authentication/login';
 import Register from './components/Authentication/register';

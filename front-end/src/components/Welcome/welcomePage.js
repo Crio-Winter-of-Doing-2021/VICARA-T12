@@ -1,6 +1,7 @@
 //eslint-disable-next-line
+
 import React, { useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import clsx from 'clsx';
 import { fade, makeStyles, useTheme } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -143,22 +144,32 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function MiniDrawer() {
+export default function MiniDrawer(props) {
+  const loc = useLocation();
   const history = useHistory();
   const classes = useStyles();
   const theme = useTheme();
+  const [name, setNames] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [open, setOpen] = useState(false);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
   const isMenuOpen = Boolean(anchorEl);
-
+  const [userDetails, setUserDetails] = useState(null);
+  const [id, setId]= useState(null);
   const LayoutLoading = LayoutLoadingComponent(Layout);
 	const [appState, setAppState] = useState({
 		loading: false,
 		layout: null,
 	});
-
   useEffect(() => {
+
+    //alert(loc.state.detail.accessToken); 
+    setNames(loc.state.detail.name);
+    setUserDetails(loc.state.detail);
+    setId(loc.state.detail.id);
+ }, [loc]);
+  useEffect(() => {
+    setNames(loc.state.detail.name);
 		setAppState({ loading: true });
 		const apiUrl = `https://rahulsenguttuvan-xmeme-app.herokuapp.com/memes/`;
 		fetch(apiUrl)
@@ -169,6 +180,7 @@ export default function MiniDrawer() {
 			});
 	}, [setAppState]);
  
+
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -195,8 +207,10 @@ export default function MiniDrawer() {
     history.push("/")
   };
 
+  
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
+    
     <Menu
       anchorEl={anchorEl}
       anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
@@ -211,7 +225,11 @@ export default function MiniDrawer() {
     </Menu>
   );
 
+  
+
   return (
+
+
     <div className={classes.root}>
       <CssBaseline />
       <AppBar
@@ -235,7 +253,7 @@ export default function MiniDrawer() {
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap>
-                Vicara Storage drive
+                Vicara Storage drive 
           </Typography>
           <div className={classes.search}>
             <div className={classes.searchIcon}>
@@ -255,12 +273,15 @@ export default function MiniDrawer() {
               onClick={handleProfileMenuOpen}
               color="inherit"
             >
+              <Typography>{name}</Typography>
               <AccountCircle />
             </IconButton>
             {renderMenu}
           </div>        
         </Toolbar>
       </AppBar>
+       
+      <Dropzone id={id}/>
       <Drawer
         variant="permanent"
         className={clsx(classes.drawer, {
@@ -293,6 +314,7 @@ export default function MiniDrawer() {
       {/* <div>
         <LayoutLoading isLoading={appState.loading} layout={appState.layout} />
       </div> */}
+      
     </div>
   );
 }

@@ -1,5 +1,6 @@
-import React,{ useState, useRef}from 'react';
+import React,{ useState, useRef, useEffect}from 'react';
 import UploadService from "../../services/upload.service";
+
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -16,8 +17,11 @@ import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import Switch from '@material-ui/core/Switch'
- 
-export default function Dropzone(){
+import uploadService from '../../services/upload.service';
+
+
+
+export default function Dropzone(props){
   const dragOver=(e)=>{
     e.preventDefault();
   }
@@ -40,11 +44,13 @@ export default function Dropzone(){
   }
 
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [selectedIndex, setSelectedIndex] = React.useState(1);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(1);
   const [errorMessage, setErrorMessage] = useState('');
   const [validFiles, setValidFiles] = useState([]); 
-  const [state, setState] = React.useState({
+  const [userDetails, setUserDetails] = useState({});
+  const [files, setFiles]= useState({});
+  const [state, setState] = useState({
     visibleFilesUpload: true,
     invisibleFilesUpload: true
   });
@@ -69,7 +75,11 @@ export default function Dropzone(){
   const handleFiles = (files) => {  
     for(let i = 0; i < files.length; i++){       
         setSelectedFiles(prevArray => [...prevArray, files[i]]);
+        uploadFiles(files[i]);
     }
+
+  
+    
   }
 
   const handleMenuItemClick = (event, index) => {
@@ -81,16 +91,30 @@ export default function Dropzone(){
     setAnchorEl(null);
   };
 
-  const uploadFiles = () => {
-    //uploadModalRef.current.style.display = 'block';
-    //uploadRef.current.innerHTML = 'File(s) Uploading...';
+  const uploadFiles = (file) => {
     
-    //setSelectedFiles([...selectedFiles]); 
+    UploadService.upload(file, [userDetails]);
   }
+ 
 
   const fileType = (fileName) => {
     return fileName.substring(fileName.lastIndexOf('.') + 1, fileName.length) || fileName;
   }
+
+  useEffect(()=>{
+    
+    setUserDetails(props.id);
+   
+     
+    
+  },[props]);
+
+  useEffect(()=>{
+    UploadService.getFiles({userDetails}).then((response)=>{
+      console.log(response);
+      setFiles(response);
+  }
+  ,[])});
 
   const fileSize = (size) => {
       if (size === 0) return '0 Bytes';
@@ -103,75 +127,6 @@ export default function Dropzone(){
   return (
     <React.Fragment>
     <CssBaseline />
-<<<<<<< HEAD
-      <Container   
-      maxWidth="lg" className="dropContainer">
-        <Typography onDragOver={dragOver}
-          onDragEnter={dragEnter}
-          onDragLeave={dragLeave}
-          onDrop={fileDrop}
-          component="div" style={{ top:'10vh', height: '100vh' }}
-        >  
-          <List component="nav">
-            <ListItem
-              button
-              aria-haspopup="true"      
-              onClick={handleClickListItem}
-            >    
-              <label htmlFor="icon-button-file" onClick="">
-                <IconButton size="small" color="" aria-label="upload" component="span" height="100%">
-                  <AddCircleIcon/>
-                  <span >Select</span>
-                </IconButton>
-              </label> 
-            </ListItem>
-          </List>
-          <Typography><span hidden={!state.visibleFilesUpload}>Don't </span>See Imported Files</Typography>
-          <Switch
-            checked={state.visibleFilesUpload}
-            onChange={handleChange}
-            name="visibleFilesUpload"
-            inputProps={{ 'aria-label': 'secondary checkbox' }}
-          />
-          <Menu
-            id="lock-menu"
-            anchorEl={anchorEl}
-            keepMounted
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-          >
-            {options.map((option) => (
-              <MenuItem key={option} selected={option === 'Upload File'} onClick={handleClose}>
-                <Button
-                  variant="contained"
-                  component="label"
-                >
-                {option}
-                <input
-                  type="file"
-                  className="file-input"
-                  hidden
-                  onChange={(e) => handleFiles(e.target.files)}
-                />
-                </Button>
-              </MenuItem>
-            ))}
-          </Menu>
-          <div className="upload-modal" ref={uploadModalRef}>
-              <div className="overlay"></div>
-              <div className="close" onClick={(() => closeUploadModal())}></div>
-              <div className="progress-container">
-                  <span ref={uploadRef}></span>
-                  <div className="progress">
-                      <div className="progress-bar" ref={progressRef}></div>
-                  </div>
-              </div>
-          </div>
-        </Typography>
-      </Container>
-    </React.Fragment>
-  ); 
-=======
     <Container 
     
     maxWidth="lg" className="dropContainer">
@@ -263,6 +218,7 @@ Choose Folder
                     <span className={`file-name ${data.invalid ? 'file-error' : ''}`}>{data.name}</span>
                     <span className="file-size">({fileSize(data.size)})</span> {data.invalid && <span className='file-error-message'>({errorMessage})</span>}
                 </div>
+                <span><Typography>{userDetails}</Typography></span>
                 <div className="file-remove" onClick={()=>removeFile(data.name)}>X</div>
             </div>
         )
@@ -287,5 +243,4 @@ Choose Folder
   
 );
    
->>>>>>> bd33da52cd68f94c48df8c1cdc45b6496b998223
 }
