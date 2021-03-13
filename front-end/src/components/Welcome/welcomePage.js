@@ -131,7 +131,11 @@ const useStyles = makeStyles((theme) => ({
     ...theme.mixins.toolbar,
   },
   logout: {
-    marginLeft: 'auto',
+    position: 'absolute',
+    right: '2%',
+    top: '10%',
+    margin: '2px',
+    flexGrow: 1
   },
   content: {
     flexGrow: 1,
@@ -147,13 +151,14 @@ export default function MiniDrawer() {
   const [open, setOpen] = useState(false);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
   const isMenuOpen = Boolean(anchorEl);
+
   const LayoutLoading = LayoutLoadingComponent(Layout);
 	const [appState, setAppState] = useState({
 		loading: false,
 		layout: null,
 	});
-	// Checking for data from the backend on load. 
-	useEffect(() => {
+
+  useEffect(() => {
 		setAppState({ loading: true });
 		const apiUrl = `https://rahulsenguttuvan-xmeme-app.herokuapp.com/memes/`;
 		fetch(apiUrl)
@@ -163,7 +168,7 @@ export default function MiniDrawer() {
 				setAppState({ loading: false, layout: layout });
 			});
 	}, [setAppState]);
-
+ 
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -249,7 +254,6 @@ export default function MiniDrawer() {
               edge="end"
               onClick={handleProfileMenuOpen}
               color="inherit"
-              size="medium"
             >
               <AccountCircle />
             </IconButton>
@@ -277,26 +281,18 @@ export default function MiniDrawer() {
         </div>
         <Divider />
         <List>
-          <ListItem button>
-            <ListItemIcon> <InboxIcon/> </ListItemIcon>
-            <ListItemText> All Upload </ListItemText>
-          </ListItem>
-          <ListItem button>
-            <ListItemIcon> <RecentActorsIcon/> </ListItemIcon>
-            <ListItemText> Recent Upload </ListItemText>
-          </ListItem>
-          <ListItem button>
-            <ListItemIcon> <StarIcon /> </ListItemIcon>
-            <ListItemText> Starred </ListItemText>
-          </ListItem>
+          {['All Upload', 'Recent Upload', 'Starred'].map((text, index) => (
+            <ListItem button key={text}>
+              <ListItemIcon>{index % 2 === 0 ? <InboxIcon /> : <StarIcon />}</ListItemIcon>
+              <ListItemText primary={text} />
+            </ListItem>
+          ))}
         </List>
       </Drawer>
-      <main className={classes.content}>
-        <div className={classes.toolbar} />
-        {/* <LayoutLoading isLoading={appState.loading} layout={appState.layout} /> */}
-        <Dropzone />
-      </main>
       {/* <Dropzone /> */}
+      {/* <div>
+        <LayoutLoading isLoading={appState.loading} layout={appState.layout} />
+      </div> */}
     </div>
   );
 }

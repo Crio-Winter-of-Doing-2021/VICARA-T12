@@ -9,6 +9,9 @@ import Container from '@material-ui/core/Container';
 
 // Override style 
 const useStyles = makeStyles((theme) => ({
+	card: {
+		maxWidth: 340,
+	},
 	cardMedia: {
 		paddingTop: '56.25%', // 16:9,
 	},
@@ -41,19 +44,13 @@ const Layout = (props) => {
 	if (!layout || layout.length === 0) return <p>Can not find any layout, sorry</p>;
 	return (
 		<React.Fragment>
-			<Container maxWidth="md" component="main" className={classes.container}>
+			<Container maxWidth="xl" component="main">
 				<Grid container spacing={5} alignItems="center">
 				{/* Reversing map elements to display the most recent image first  */}
 					{layout.slice(0).reverse().map((data) => {
 						return (
-							<Grid item key={data.id} xs={12} md={3}>
+							<Grid item key={data.id} xs={12} md={4}>
 								<Card className={classes.card}>
-									<CardMedia
-										className={classes.cardMedia} 
-										// Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
-										image = {data.url}
-										title="Image title"
-									/>
 									<CardContent className={classes.cardContent}>
 										<Typography
 											gutterBottom
@@ -71,7 +68,7 @@ const Layout = (props) => {
 											></Typography>
 											<Typography variant="h6" color="textSecondary">
 											{/* Limitting the length of char input  */}
-												{data.caption.substr(0, 60)}
+												{/* {data.caption.substr(0, 60)} */}
 											</Typography>
 										</div>
 									</CardContent>
