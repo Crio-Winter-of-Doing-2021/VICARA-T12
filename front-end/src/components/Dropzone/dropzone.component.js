@@ -1,6 +1,5 @@
 import React,{ useState, useRef, useEffect}from 'react';
 import UploadService from "../../services/upload.service";
-
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -18,10 +17,40 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import Switch from '@material-ui/core/Switch'
 import uploadService from '../../services/upload.service';
+import Card from '@material-ui/core/Card';
+import CardContent from '@material-ui/core/CardContent';
+import CardMedia from '@material-ui/core/CardMedia';
+import Grid from '@material-ui/core/Grid';
 
-
+const useStyles = makeStyles((theme) => ({
+	cardMedia: {
+		paddingTop: '56.25%', // 16:9,
+	},
+	link: {
+		margin: theme.spacing(1, 1.5),
+	},
+	cardHeader: {
+		backgroundColor:
+			theme.palette.type === 'light'
+				? theme.palette.grey[200]
+				: theme.palette.grey[700],
+	},
+	formTitle: {
+		fontSize: '16px',
+		textAlign: 'left',
+	},
+	formText: {
+		display: 'flex',
+		justifyContent: 'left',
+		alignItems: 'baseline',
+		fontSize: '12px',
+		textAlign: 'left',
+		marginBottom: theme.spacing(2),
+	},
+}));
 
 export default function Dropzone(props){
+  const classes = useStyles();
   const dragOver=(e)=>{
     e.preventDefault();
   }
@@ -42,7 +71,7 @@ export default function Dropzone(props){
       selectedFiles.splice(selectedFileIndex,1);
       setSelectedFiles([...selectedFiles]);
   }
-
+  const [filesinDB, setfilesinDB]=useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(1);
@@ -50,9 +79,9 @@ export default function Dropzone(props){
   const [validFiles, setValidFiles] = useState([]); 
   const [userDetails, setUserDetails] = useState({});
   const [files, setFiles]= useState({});
-  const [state, setState] = useState({
+  const [visiblity, setVisiblity] = useState({
     visibleFilesUpload: true,
-    invisibleFilesUpload: true
+    //invisibleFilesUpload: false
   });
   const option = [
     'Choose File',
@@ -69,17 +98,14 @@ export default function Dropzone(props){
       //uploadModalRef.current.style.display = 'none';
   }
   const handleChange = (event) => {
-    setState({ ...state, [event.target.name]: event.target.checked })
+    setVisiblity({ [event.target.name]: event.target.checked })
   };
 
   const handleFiles = (files) => {  
     for(let i = 0; i < files.length; i++){       
         setSelectedFiles(prevArray => [...prevArray, files[i]]);
         uploadFiles(files[i]);
-    }
-
-  
-    
+    }    
   }
 
   const handleMenuItemClick = (event, index) => {
@@ -92,29 +118,31 @@ export default function Dropzone(props){
   };
 
   const uploadFiles = (file) => {
-    
-    UploadService.upload(file, [userDetails]);
+   UploadService.upload(file, [userDetails]);
   }
  
-
   const fileType = (fileName) => {
     return fileName.substring(fileName.lastIndexOf('.') + 1, fileName.length) || fileName;
   }
 
-  useEffect(()=>{
-    
-    setUserDetails(props.id);
-   
-     
-    
+  useEffect(()=>{ 
+      setUserDetails(props.id);
   },[props]);
 
   useEffect(()=>{
-    UploadService.getFiles({userDetails}).then((response)=>{
-      console.log(response);
-      setFiles(response);
+     getFiles()
   }
-  ,[])});
+  ,[]);
+
+  const getFiles=()=>{
+    UploadService.getFiles({userDetails}).then((response)=>{
+      setfilesinDB(response.data);  
+      alert(filesinDB);
+      console.log(filesinDB);
+      
+   });
+
+  }
 
   const fileSize = (size) => {
       if (size === 0) return '0 Bytes';
@@ -126,121 +154,117 @@ export default function Dropzone(props){
 
   return (
     <React.Fragment>
-    <CssBaseline />
-    <Container 
-    
-    maxWidth="lg" className="dropContainer">
-      <Typography onDragOver={dragOver}
-    onDragEnter={dragEnter}
-    onDragLeave={dragLeave}
-    onDrop={fileDrop}
-    component="div" style={{ top:'10vh', height: '100vh' }}>
-    
-      
-    
-    <List component="nav">
-        <ListItem
-          button
-          aria-haspopup="true"
-             
-          onClick={handleClickListItem}
-        >
-          
-          <label htmlFor="icon-button-file" onClick="">
-        <IconButton size="small" color="" aria-label="upload" component="span" height="100%">
-          <AddCircleIcon/>
-          <span >Select</span>
-        </IconButton>
-        
-      </label> 
-      
-      </ListItem>
-      </List>
-      <Typography><span hidden={!state.visibleFilesUpload}>Don't </span>See Imported Files</Typography>
-      <Switch
-        checked={state.visibleFilesUpload}
-        onChange={handleChange}
-        name="visibleFilesUpload"
-        inputProps={{ 'aria-label': 'secondary checkbox' }}
-      />
-
-      <Menu
-        id="lock-menu"
-        anchorEl={anchorEl}
-        keepMounted
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
+      <CssBaseline />
+      <Container 
+        maxWidth="lg" className="dropContainer"
       >
-        
+        <Typography 
+          onDragOver={dragOver}
+          onDragEnter={dragEnter}
+          onDragLeave={dragLeave}
+          onDrop={fileDrop}
+          component="div" style={{ top:'10vh', height: '100vh' }}
+        > 
+          <IconButton size="medium" onClick={handleClickListItem}>
+            <AddCircleIcon/>
+            Upload
+          </IconButton>
+          <Typography><span hidden={!visiblity.visibleFilesUpload}>Don't </span>See Imported Files</Typography>
+          <Switch
+            checked={visiblity.visibleFilesUpload}
+            onChange={handleChange}
+            name="visibleFilesUpload"
+            inputProps={{ 'aria-label': 'secondary checkbox' }}
+          />
+          <Menu
+            id="lock-menu"
+            anchorEl={anchorEl}
+            keepMounted
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
           <MenuItem key={option} selected={option === 'Choose File'} onClick={handleClose}>
-           <Button
-          variant="contained"
-             component="label"
-           >
-Choose File
-  <input
-    type="file"
-    className="file-input"
-    
-    hidden
-    onChange={(e) => handleFiles(e.target.files)}
-  />
-</Button>
-<Button
-          variant="contained"
-             component="label"
-           >
-Choose Folder
-  <input
-    type="file"
-    className="file-input"
-    multiple
-    hidden
-    webkitdirectory mozdirectory msdirectory odirectory directory
-    onChange={(e) => handleFiles(e.target.files)}
-  />
-</Button>
+            <Button
+              variant="contained"
+              component="label"
+            >
+              Choose File
+              <input
+                type="file"
+                className="file-input"
+                hidden
+                multiple
+                onChange={(e) => handleFiles(e.target.files)}
+              />
+            </Button>
+            <Button
+              variant="contained"
+              component="label"
+              
+            >
+              Choose Folder
+              <input
+                type="file"
+                className="file-input"
+                multiple
+                hidden
+                webkitdirectory mozdirectory msdirectory odirectory directory
+                onChange={(e) => handleFiles(e.target.files)}
+              />
+            </Button>
+          </MenuItem>        
+          </Menu>   
+          <div className="file-display-container" hidden={!visiblity.visibleFilesUpload}>
+            {
 
-          </MenuItem>
-        
+              <div container spacing={5} alignItems="center">   
+                <Grid container spacing={5} alignItems="center">
+                  {filesinDB.map((filedata, i) => {
+                    return (
+                    <Grid item key={filedata["_id"]} xs={12} md={4}>
+                    <Card className={classes.card}>
+                      <CardContent className={classes.cardContent}>
+                        <Typography
+                          gutterBottom
+                          variant="h5"
+                          component="h2"
+                          className={classes.formTitle}
+                        >
+                          {filedata["_id"]}
+                        </Typography>
+                        {filedata["_id"]}
+                        <div className={classes.formText}>
+                          <Typography
+                            component="h6"
+                            color="textPrimary"
+                          ></Typography>
+                          <Typography variant="h6" color="textSecondary">
+                            {filedata["s3_key"]}
+                          </Typography>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                    );
+                  })}
+                </Grid>
+              </div>
 
-        
-      </Menu>
+            }
 
-      
-      <div className="file-display-container" hidden={!state.visibleFilesUpload}>
-    {
-        selectedFiles.map((data, i) => 
-            <div className="file-status-bar" key={i}>
-                <div>
-                    <div className="file-type-logo"><div className="file-type">{fileType(data.name)}</div></div>
-                    
-                    <span className={`file-name ${data.invalid ? 'file-error' : ''}`}>{data.name}</span>
-                    <span className="file-size">({fileSize(data.size)})</span> {data.invalid && <span className='file-error-message'>({errorMessage})</span>}
-                </div>
-                <span><Typography>{userDetails}</Typography></span>
-                <div className="file-remove" onClick={()=>removeFile(data.name)}>X</div>
-            </div>
-        )
-    }
-</div>
-
-<div className="upload-modal" ref={uploadModalRef}>
-    <div className="overlay"></div>
-    <div className="close" onClick={(() => closeUploadModal())}></div>
-    <div className="progress-container">
-        <span ref={uploadRef}></span>
-        <div className="progress">
-            <div className="progress-bar" ref={progressRef}></div>
-        </div>
-    </div>
-</div>
-
-
-</Typography>
-</Container>
-  </React.Fragment>
-  
-);
-   
+          </div>
+          <div className="upload-modal" ref={uploadModalRef}>
+              <div className="overlay"></div>
+              <div className="close" onClick={(() => closeUploadModal())}></div>
+              <div className="progress-container">
+                  <span ref={uploadRef}></span>
+                  <div className="progress">
+                      <div className="progress-bar" ref={progressRef}></div>
+                  </div>
+              </div>
+          </div>
+        </Typography>
+      </Container>
+    </React.Fragment>  
+  ); 
 }
