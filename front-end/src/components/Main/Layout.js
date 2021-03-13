@@ -9,9 +9,6 @@ import Container from '@material-ui/core/Container';
 
 // Override style 
 const useStyles = makeStyles((theme) => ({
-	card: {
-		maxWidth: 340,
-	},
 	cardMedia: {
 		paddingTop: '56.25%', // 16:9,
 	},
