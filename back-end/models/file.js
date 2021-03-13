@@ -10,6 +10,12 @@ let FilesSchema = new Schema(
     description: { type: String },
     fileLink: { type: String },
     s3_key: { type: String },
+    users: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
+    ]
 
   },
   {

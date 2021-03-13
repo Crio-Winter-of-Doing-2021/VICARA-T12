@@ -9,3 +9,4 @@ mongoose.connect('mongodb://localhost/Vicara', { useNewUrlParser: true, useUnifi
     .catch(err => console.error('Could not connect to Mongodb!', err));
 
 module.exports = mongoose;
+

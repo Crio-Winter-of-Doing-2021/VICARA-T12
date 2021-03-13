@@ -68,15 +68,19 @@ export default function Login(props) {
 		
 		e.preventDefault();
 		axiosInstance
-			.post('api/auth/',{
+			.post('/api/auth/',{
 				email: formData.email,
 				password: formData.password,
 			})
 			.then(response => { 
-				history.push("/welcome")
+				console.log(response);
+				//alert(response);
+				history.push({ pathname: '/welcome',
+			    				state: { detail: response.data }})
 			})
 			.catch(error => {
 				// If invalid data is given, reset the state so data is cleared. 
+				console.log(error);
 				updateFormData({
 					...formData,
 					['email']: '',

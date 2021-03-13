@@ -7,7 +7,14 @@ function auth( req, res, next ){
         return res.status(401).send('Access denied. No token')
 
     try{
-        req.user = jwt.verify(token, config.get('jwtPrivateKey'));
+        req.user = jwt.verify(token, config.get('jwtPrivateKey'),(err,decoded)=>{
+            if(err){
+                return res.status(401).send({message:"Unauthorised. Denied entry!"})
+
+            }
+            req.userId= decoded.id;
+            //next();
+        });
         next();
     }
     catch(exception){
@@ -16,4 +23,4 @@ function auth( req, res, next ){
 
 }
 
-module.exports = auth;
+module.exports = {auth};

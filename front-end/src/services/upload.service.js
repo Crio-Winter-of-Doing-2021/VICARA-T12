@@ -1,28 +1,29 @@
-/*import http from "../http-common";
+
+import axiosInstance from '../axios'
 
 class UploadService{
-    upload(file, onUploadProgress){
+    upload(file, users){
         let formData = new FormData();
         formData.append("file", file);
+        formData.append("users", users)
 
-
-        return http.post("/upload", formData, {
+        return axiosInstance.post("/api/upload/", formData, {
             headers: {
                 "Content-Type": "multipart/form-data",
               },
-              onUploadProgress,
+             // onUploadProgress,
           
         });
 
         
     }
 
-    getFiles() {
-        return http.get("/files");
+    getFiles(id) {
+        return axiosInstance.get("/api/upload/", id);
       }
 
 
 
 }
 
-export default new UploadService();*/
+export default new UploadService();
