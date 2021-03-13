@@ -157,12 +157,14 @@ export default function MiniDrawer(props) {
 		loading: false,
 		layout: null,
 	});
+  
    useEffect(() => {
     alert(loc.state.detail.accessToken); 
     setNames(loc.state.detail.name);
     setUserDetails(loc.state.detail);
     setId(loc.state.detail.id);
    }, [loc]);
+
    useEffect(() => {
     setNames(loc.state.detail.name);
 		setAppState({ loading: true });

@@ -71,7 +71,7 @@ export default function Dropzone(props){
       selectedFiles.splice(selectedFileIndex,1);
       setSelectedFiles([...selectedFiles]);
   }
-
+  const [filesinDB, setfilesinDB]=useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(1);
@@ -79,9 +79,9 @@ export default function Dropzone(props){
   const [validFiles, setValidFiles] = useState([]); 
   const [userDetails, setUserDetails] = useState({});
   const [files, setFiles]= useState({});
-  const [state, setState] = useState({
+  const [visiblity, setVisiblity] = useState({
     visibleFilesUpload: true,
-    invisibleFilesUpload: true
+    //invisibleFilesUpload: false
   });
   const option = [
     'Choose File',
@@ -98,7 +98,7 @@ export default function Dropzone(props){
       //uploadModalRef.current.style.display = 'none';
   }
   const handleChange = (event) => {
-    setState({ ...state, [event.target.name]: event.target.checked })
+    setVisiblity({ [event.target.name]: event.target.checked })
   };
 
   const handleFiles = (files) => {  
@@ -118,7 +118,7 @@ export default function Dropzone(props){
   };
 
   const uploadFiles = (file) => {
-    UploadService.upload(file, [userDetails]);
+   UploadService.upload(file, [userDetails]);
   }
  
   const fileType = (fileName) => {
@@ -126,15 +126,23 @@ export default function Dropzone(props){
   }
 
   useEffect(()=>{ 
-    setUserDetails(props.id);
+      setUserDetails(props.id);
   },[props]);
 
   useEffect(()=>{
-    UploadService.getFiles({userDetails}).then((response)=>{
-      console.log(response);
-      setFiles(response);
+     getFiles()
   }
-  ,[])});
+  ,[]);
+
+  const getFiles=()=>{
+    UploadService.getFiles({userDetails}).then((response)=>{
+      setfilesinDB(response.data);  
+      alert(filesinDB);
+      console.log(filesinDB);
+      
+   });
+
+  }
 
   const fileSize = (size) => {
       if (size === 0) return '0 Bytes';
@@ -161,9 +169,9 @@ export default function Dropzone(props){
             <AddCircleIcon/>
             Upload
           </IconButton>
-          <Typography><span hidden={!state.visibleFilesUpload}>Don't </span>See Imported Files</Typography>
+          <Typography><span hidden={!visiblity.visibleFilesUpload}>Don't </span>See Imported Files</Typography>
           <Switch
-            checked={state.visibleFilesUpload}
+            checked={visiblity.visibleFilesUpload}
             onChange={handleChange}
             name="visibleFilesUpload"
             inputProps={{ 'aria-label': 'secondary checkbox' }}
@@ -178,19 +186,21 @@ export default function Dropzone(props){
           <MenuItem key={option} selected={option === 'Choose File'} onClick={handleClose}>
             <Button
               variant="contained"
-              omponent="label"
+              component="label"
             >
               Choose File
               <input
                 type="file"
                 className="file-input"
                 hidden
+                multiple
                 onChange={(e) => handleFiles(e.target.files)}
               />
             </Button>
             <Button
               variant="contained"
               component="label"
+              
             >
               Choose Folder
               <input
@@ -204,39 +214,44 @@ export default function Dropzone(props){
             </Button>
           </MenuItem>        
           </Menu>   
-          <div className="file-display-container" hidden={!state.visibleFilesUpload}>
+          <div className="file-display-container" hidden={!visiblity.visibleFilesUpload}>
             {
-              <Grid container spacing={5} alignItems="center">
-                {setSelectedFiles.map((data, i) => {
-                  <Grid item key={data.id} xs={12} md={4}>
+
+              <div container spacing={5} alignItems="center">   
+                <Grid container spacing={5} alignItems="center">
+                  {filesinDB.map((filedata, i) => {
+                    return (
+                    <Grid item key={filedata["_id"]} xs={12} md={4}>
                     <Card className={classes.card}>
                       <CardContent className={classes.cardContent}>
                         <Typography
                           gutterBottom
                           variant="h5"
                           component="h2"
-                          //className={classes.formTitle}
+                          className={classes.formTitle}
                         >
-                        {/* Limitting the length of char input  */}
-                          {fileType(data.name).substr(0, 50)}
+                          {filedata["_id"]}
                         </Typography>
+                        {filedata["_id"]}
                         <div className={classes.formText}>
                           <Typography
                             component="h6"
                             color="textPrimary"
                           ></Typography>
                           <Typography variant="h6" color="textSecondary">
-                          {/* Limitting the length of char input  */}
-                            {data.name.substr(0, 60)}
+                            {filedata["s3_key"]}
                           </Typography>
                         </div>
                       </CardContent>
                     </Card>
                   </Grid>
-                })}
-              </Grid>
+                    );
+                  })}
+                </Grid>
+              </div>
 
             }
+
           </div>
           <div className="upload-modal" ref={uploadModalRef}>
               <div className="overlay"></div>
