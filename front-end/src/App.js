@@ -6,8 +6,8 @@ import Login from './components/Authentication/login';
 import Register from './components/Authentication/register';
 import { CSSTransition } from 'react-transition-group';
 import Header from './components/Main/header';
-import Footer from './components/Main/footer';
-import WelcomePage from './components/Welcome/welcomePage';
+import Load from './components/Main/Load';
+import Welcome from './components/Welcome/welcomePage';
 
 function App() {
   const [activeMenu, setActiveMenu] = useState('login');
@@ -58,7 +58,7 @@ function App() {
         </Switch>  
         <Switch>
             <Route path="/welcome">
-              <WelcomePage/>
+            <Welcome/>
             </Route>
         </Switch>
       </BrowserRouter>
