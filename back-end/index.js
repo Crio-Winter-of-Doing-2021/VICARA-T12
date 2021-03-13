@@ -1,40 +1,45 @@
 const bodyParser = require('body-parser');
 const express = require('express');
-const {mongoose} = require('./db');
+require('./db');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const auth = require('./routes/authentication');
+const authentication = require('./middleware/authentication');
 const cors = require('cors')
 const config = require('config');
- const uploadController = require('./routes/uploadController');
+const uploadController = require('./routes/uploadController');
 const debug = require('debug')('app:startup');
 const welcomePage = require('./routes/welcomePage');
 const users = require('./routes/users');
-
-
+const loginPage = require('./routes/loginPage');
+const path = require('path');
 const app = express();
-
+app.use(express.static(path.join(__dirname, 'build')))
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static('public'));
 app.use(cors())
 
 app.use(helmet());
-app.use('/', welcomePage);
+
 app.use('/api/users', users);
 app.use('/api/auth',auth);
 app.use('/api/upload',uploadController);
+app.use('/welcome',[authentication.auth],welcomePage);
 
+
+app.use('/*', loginPage);
 // Setting the html using pug 
 app.set('view engine', 'pug');
 app.set('views','./views');
 
 //Config check for pvt key 
-/*if(!config.get('jwtPrivateKey')){
+if(!config.get('jwtPrivateKey')){
     console.error(' jwtPrivateKey is not defined.')
     process.exit(1);
-}*/
+}
+
+
 
 // To logg our requests on console. Change during production. Not needed
 if( app.get('env') === 'development'){

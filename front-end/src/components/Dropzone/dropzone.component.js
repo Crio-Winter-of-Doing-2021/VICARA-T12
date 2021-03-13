@@ -1,5 +1,6 @@
-import React,{ useState, useRef}from 'react';
+import React,{ useState, useRef, useEffect}from 'react';
 import UploadService from "../../services/upload.service";
+
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -16,8 +17,11 @@ import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import Switch from '@material-ui/core/Switch'
- 
-export default function Dropzone(){
+import uploadService from '../../services/upload.service';
+
+
+
+export default function Dropzone(props){
   const dragOver=(e)=>{
     e.preventDefault();
   }
@@ -40,11 +44,13 @@ export default function Dropzone(){
   }
 
   const [selectedFiles, setSelectedFiles] = useState([]);
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [selectedIndex, setSelectedIndex] = React.useState(1);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [selectedIndex, setSelectedIndex] = useState(1);
   const [errorMessage, setErrorMessage] = useState('');
   const [validFiles, setValidFiles] = useState([]); 
-  const [state, setState] = React.useState({
+  const [userDetails, setUserDetails] = useState({});
+  const [files, setFiles]= useState({});
+  const [state, setState] = useState({
     visibleFilesUpload: true,
     invisibleFilesUpload: true
   });
@@ -69,7 +75,11 @@ export default function Dropzone(){
   const handleFiles = (files) => {  
     for(let i = 0; i < files.length; i++){       
         setSelectedFiles(prevArray => [...prevArray, files[i]]);
+        uploadFiles(files[i]);
     }
+
+  
+    
   }
 
   const handleMenuItemClick = (event, index) => {
@@ -81,16 +91,30 @@ export default function Dropzone(){
     setAnchorEl(null);
   };
 
-  const uploadFiles = () => {
-    //uploadModalRef.current.style.display = 'block';
-    //uploadRef.current.innerHTML = 'File(s) Uploading...';
+  const uploadFiles = (file) => {
     
-    //setSelectedFiles([...selectedFiles]); 
+    UploadService.upload(file, [userDetails]);
   }
+ 
 
   const fileType = (fileName) => {
     return fileName.substring(fileName.lastIndexOf('.') + 1, fileName.length) || fileName;
   }
+
+  useEffect(()=>{
+    
+    setUserDetails(props.id);
+   
+     
+    
+  },[props]);
+
+  useEffect(()=>{
+    UploadService.getFiles({userDetails}).then((response)=>{
+      console.log(response);
+      setFiles(response);
+  }
+  ,[])});
 
   const fileSize = (size) => {
       if (size === 0) return '0 Bytes';
@@ -194,6 +218,7 @@ Choose Folder
                     <span className={`file-name ${data.invalid ? 'file-error' : ''}`}>{data.name}</span>
                     <span className="file-size">({fileSize(data.size)})</span> {data.invalid && <span className='file-error-message'>({errorMessage})</span>}
                 </div>
+                <span><Typography>{userDetails}</Typography></span>
                 <div className="file-remove" onClick={()=>removeFile(data.name)}>X</div>
             </div>
         )

@@ -7,6 +7,9 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const config = require('config');
 
+
+
+
 router.post('/', async (req,res) => {
     const {error} = validate(req.body);
     if ( error )
@@ -22,7 +25,12 @@ router.post('/', async (req,res) => {
     
     //Authentication key
     const token = jwt.sign({ _id: user._id }, config.get('jwtPrivateKey') );
-    res.send(token);
+    res.status(200).send({
+        id:user._id,
+       name: user.name,
+       email: user.email,
+       accessToken: token
+    });
 });
 
 function validate(req){

@@ -11,7 +11,7 @@ var storage = multer.memoryStorage();
 var upload = multer({storage:storage});
 router.get('/', async(req,res,next)=>{
     FILE.find(
-        {},
+        {'users[0]':req.id},
         null,
         {
           sort: { createdAt: 1 }
@@ -51,7 +51,8 @@ router.post('/', upload.single("file"), async(req,res,next)=>{
           var newFileUploaded = {
             description: req.body.description,
             fileLink: s3FileURL + file.originalname,
-            s3_key: params.Key
+            s3_key: params.Key,
+            users: [req.body.users]
           };
           var document = new FILE(newFileUploaded);
           document.save(function(error, newFile) {
