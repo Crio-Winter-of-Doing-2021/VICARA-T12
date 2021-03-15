@@ -1,7 +1,7 @@
 
 import axiosInstance from '../axios'
 
-class UploadService{
+class FileService{
     upload(file, users){
         let formData = new FormData();
         formData.append("file", file);
@@ -16,5 +16,10 @@ class UploadService{
     getFiles(id) {
         return axiosInstance.get("api/upload/", id);
       }
+
+      removeFile(id){
+         alert(id);
+          return axiosInstance.delete(`api/upload/${id}`);
+      }
 }
-export default new UploadService();
+export default new FileService();

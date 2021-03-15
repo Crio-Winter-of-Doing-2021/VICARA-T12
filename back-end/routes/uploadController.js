@@ -6,7 +6,7 @@ const FILE = require("../models/file");
 const multer = require("multer");
 var AWS = require("aws-sdk");
 const fileUpload = require('express-fileupload');
-
+const ObjectId = require('mongoose').Types.ObjectId;
 var storage = multer.memoryStorage();
 var upload = multer({storage:storage});
 router.get('/', async(req,res,next)=>{
@@ -20,10 +20,21 @@ router.get('/', async(req,res,next)=>{
           if (err) {
             return next(err);
           }
+          
           res.status(200).send(docs);
         }
       );
+});
+
+router.delete('/:id', async(req,res,next)=>{
+console.log(req.params.id);
+FILE.deleteOne({ _id: ObjectId(req.params["id"]) }, (err,docs)=>{
+  if(err){
+    return next(err);
+  }
+  res.status(200).send(docs);
 })
+});
 router.post('/', upload.single("file"), async(req,res,next)=>{
     const file = req.file;
     const s3FileURL = process.env.AWS_Uploaded_File_URL_Link;
