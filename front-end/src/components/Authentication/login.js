@@ -12,7 +12,6 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
-import WelcomePage from '../Welcome/welcomePage';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -83,8 +82,8 @@ export default function Login(props) {
 				console.log(error);
 				updateFormData({
 					...formData,
-					['email']: '',
-					['password']: '',
+					'email': '',
+					'password': '',
 				});		
 			});
 	};

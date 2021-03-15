@@ -151,9 +151,9 @@ export default function MiniDrawer(props) {
   const isMenuOpen = Boolean(anchorEl);
   const [userDetails, setUserDetails] = useState(null);
   const [id, setId]= useState(null);
+  const [searchFiled, setSearchField] = useState(" ");
 
    useEffect(() => {
-    alert(loc.state.detail.accessToken); 
     setNames(loc.state.detail.name);
     setUserDetails(loc.state.detail);
     setId(loc.state.detail.id);
@@ -185,6 +185,9 @@ export default function MiniDrawer(props) {
     history.push("/")
   };
 
+  const searchFunction = (event) =>{
+    setSearchField(event.target.value);
+  };
   
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
@@ -243,6 +246,7 @@ export default function MiniDrawer(props) {
                 root: classes.inputRoot,
                 input: classes.inputInput,
               }}
+              onChange={searchFunction}
             />
           </div>
           <div className={classes.logout}>
@@ -294,7 +298,7 @@ export default function MiniDrawer(props) {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-          <Dropzone id={id} name={name}/> 
+          <Dropzone id={id} name={name} searchFiled = {searchFiled}/> 
       </main>
     </div>
   );

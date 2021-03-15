@@ -24,17 +24,15 @@ router.get('/', async(req,res,next)=>{
         }
       );
 })
-router.post('/', upload.single("file"), async(req,res,next)=>{
+router.post('/', upload.single("file"), async(req,res)=>{
     const file = req.file;
-    const s3FileURL = process.env.AWS_Uploaded_File_URL_Link;
+    const s3FileURL = process.env.AWS_UPLOAD_FILE_URL_LINK;
     let s3bucket = new AWS.S3({
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
         region: process.env.AWS_REGION
       });
-    
-   
-    
+ 
       var params = {
         Bucket: process.env.AWS_BUCKET_NAME,
         Key: file.originalname,
@@ -56,9 +54,9 @@ router.post('/', upload.single("file"), async(req,res,next)=>{
           };
           var document = new FILE(newFileUploaded);
           document.save(function(error, newFile) {
-              if(!error){
-                  res.send(newFile);
-              }
+            if(!error){
+                res.send(newFile);
+            }
             if (error) {
               throw error;
             }

@@ -1,23 +1,15 @@
 import React,{ useState, useRef, useEffect}from 'react';
 import UploadService from "../../services/upload.service";
 import { makeStyles } from '@material-ui/core/styles';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton'
 import Container from '@material-ui/core/Container'
 import CssBaseline from '@material-ui/core/CssBaseline';
-import MenuIcon from '@material-ui/icons/Menu';
 import Avatar from '@material-ui/core/Avatar';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
-import Switch from '@material-ui/core/Switch'
-import uploadService from '../../services/upload.service';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
@@ -82,20 +74,12 @@ export default function Dropzone(props){
     handleFiles(files);
   }
 
-  const removeFile=(fileName)=>{
-      const selectedFileIndex=selectedFiles.findIndex(e=>e.name==fileName);
-      selectedFiles.splice(selectedFileIndex,1);
-      setSelectedFiles([...selectedFiles]);
-  }
   const [filesinDB, setfilesinDB]=useState([]);
-  const [selectedFiles, setSelectedFiles] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [selectedIndex, setSelectedIndex] = useState(1);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [validFiles, setValidFiles] = useState([]); 
   const [userDetails, setUserDetails] = useState({});
   const [userName, setUserName] = useState({});
   const [files, setFiles]= useState({});
+  const [uploaded, setUploaded] = useState(false);
   const option = [
     'Choose File',
     'Choose Folder'
@@ -112,27 +96,16 @@ export default function Dropzone(props){
   }
 
   const handleFiles = (files) => {  
-    for(let i = 0; i < files.length; i++){       
-        setSelectedFiles(prevArray => [...prevArray, files[i]]);
+    for(let i = 0; i < files.length; i++){      
         uploadFiles(files[i]);
     }    
   }
-
-  const handleMenuItemClick = (event, index) => {
-    setSelectedIndex(index);
-    setAnchorEl(null);
-  };
-
   const handleClose = () => {
     setAnchorEl(null);
   };
 
   const uploadFiles = (file) => {
    UploadService.upload(file, [userDetails]);
-  }
- 
-  const fileType = (fileName) => {
-    return fileName.substring(fileName.lastIndexOf('.') + 1, fileName.length) || fileName;
   }
 
   useEffect(()=>{ 
@@ -148,11 +121,8 @@ export default function Dropzone(props){
   const getFiles=()=>{
     UploadService.getFiles({userDetails}).then((response)=>{
       setfilesinDB(response.data);  
-      alert(filesinDB);
       console.log(filesinDB);
-      
    });
-
   }
 
   const fileSize = (size) => {
@@ -212,7 +182,7 @@ export default function Dropzone(props){
                 className="file-input"
                 multiple
                 hidden
-                webkitdirectory mozdirectory msdirectory odirectory directory
+                // webkitdirectory mozdirectory msdirectory odirectory directory
                 onChange={(e) => handleFiles(e.target.files)}
               />
             </Button>
@@ -223,7 +193,8 @@ export default function Dropzone(props){
 
               <div container spacing={5} alignItems="center">   
                 <Grid container spacing={5} alignItems="center">
-                  {filesinDB.map((filedata, i) => {
+                  {console.log(props.searchFiled)}
+                  {filesinDB.filter( (filedata) => filedata.s3_key.includes(props.searchFiled)).map((filedata, i) => {
                     return (
                     <Grid item key={filedata["_id"]} xs={12} md={3}>
                       <Card className={classes.card}>
