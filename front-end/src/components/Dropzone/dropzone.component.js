@@ -128,20 +128,25 @@ export default function Dropzone(props){
   };
 
   const uploadFiles = (file) => {
-   UploadService.upload(file, [userDetails]);
+   UploadService.upload(file, [userDetails]).then(
+    ()=>{getFiles()}
+   )
+
   }
  
   const fileType = (fileName) => {
     return fileName.substring(fileName.lastIndexOf('.') + 1, fileName.length) || fileName;
   }
 
+  
+
   useEffect(()=>{ 
       setUserDetails(props.id);
-      setUserName(props.name);
+      setUserName(props.name);getFiles()
   },[props]);
 
   useEffect(()=>{
-     getFiles()
+     
   }
   ,[]);
 
