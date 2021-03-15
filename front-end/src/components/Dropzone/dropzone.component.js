@@ -17,7 +17,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import Switch from '@material-ui/core/Switch'
-import uploadService from '../../services/file.service';
+
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
@@ -110,7 +110,8 @@ export default function Dropzone(props){
 
   const handleFiles = (files) => {  
     for(let i = 0; i < files.length; i++){       
-        setSelectedFiles(prevArray => [...prevArray, files[i]]);
+        //setSelectedFiles(prevArray => [...prevArray, files[i]]);
+        setfilesinDB(prevArray=>[...prevArray, files[i]])
         uploadFiles(files[i]);
     }    
   }
