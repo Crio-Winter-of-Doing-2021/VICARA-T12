@@ -27,8 +27,7 @@ import RecentActorsIcon from '@material-ui/icons/RecentActors';
 import InputBase from '@material-ui/core/InputBase';
 import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
-import Layout from '../Main/Layout';
-import LayoutLoadingComponent from '../Main/LayoutLoading';
+
 
 const drawerWidth = 240;
 
@@ -152,29 +151,13 @@ export default function MiniDrawer(props) {
   const isMenuOpen = Boolean(anchorEl);
   const [userDetails, setUserDetails] = useState(null);
   const [id, setId]= useState(null);
-  const LayoutLoading = LayoutLoadingComponent(Layout);
-	const [appState, setAppState] = useState({
-		loading: false,
-		layout: null,
-	});
+
    useEffect(() => {
     alert(loc.state.detail.accessToken); 
     setNames(loc.state.detail.name);
     setUserDetails(loc.state.detail);
     setId(loc.state.detail.id);
    }, [loc]);
-   useEffect(() => {
-    setNames(loc.state.detail.name);
-		setAppState({ loading: true });
-		const apiUrl = `https://rahulsenguttuvan-xmeme-app.herokuapp.com/memes/`;
-		fetch(apiUrl)
-			.then((data) => data.json()) 
-			.then((layout) => {
-				// Setting state of loading to true if no data available in the backend, or if it's taking time
-				setAppState({ loading: false, layout: layout });
-			});
-	}, [setAppState]);
- 
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -311,7 +294,7 @@ export default function MiniDrawer(props) {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-          <Dropzone id={id}/> 
+          <Dropzone id={id} name={name}/> 
       </main>
     </div>
   );
