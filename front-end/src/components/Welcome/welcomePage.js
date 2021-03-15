@@ -151,7 +151,7 @@ export default function MiniDrawer(props) {
   const isMenuOpen = Boolean(anchorEl);
   const [userDetails, setUserDetails] = useState(null);
   const [id, setId]= useState(null);
-  const [searchFiled, setSearchField] = useState(" ");
+  const [searchFiled, setSearchField] = useState("");
 
    useEffect(() => {
     setNames(loc.state.detail.name);
