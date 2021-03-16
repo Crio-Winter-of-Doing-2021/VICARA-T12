@@ -1,5 +1,5 @@
 import React,{ useState, useRef, useEffect}from 'react';
-import UploadService from "../../services/upload.service";
+import FileService from "../../services/file.service";
 import { makeStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
@@ -17,7 +17,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import Switch from '@material-ui/core/Switch'
-import uploadService from '../../services/upload.service';
+
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
@@ -27,6 +27,7 @@ import Grid from '@material-ui/core/Grid';
 import StarBorderIcon from '@material-ui/icons/StarBorder';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import DeleteIcon from '@material-ui/icons/Delete';
+import fileService from '../../services/file.service';
 
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
@@ -82,11 +83,7 @@ export default function Dropzone(props){
     handleFiles(files);
   }
 
-  const removeFile=(fileName)=>{
-      const selectedFileIndex=selectedFiles.findIndex(e=>e.name==fileName);
-      selectedFiles.splice(selectedFileIndex,1);
-      setSelectedFiles([...selectedFiles]);
-  }
+ 
   const [filesinDB, setfilesinDB]=useState([]);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -113,7 +110,8 @@ export default function Dropzone(props){
 
   const handleFiles = (files) => {  
     for(let i = 0; i < files.length; i++){       
-        setSelectedFiles(prevArray => [...prevArray, files[i]]);
+        //setSelectedFiles(prevArray => [...prevArray, files[i]]);
+        setfilesinDB(prevArray=>[...prevArray, files[i]])
         uploadFiles(files[i]);
     }    
   }
@@ -128,10 +126,17 @@ export default function Dropzone(props){
   };
 
   const uploadFiles = (file) => {
-   UploadService.upload(file, [userDetails]).then(
+   FileService.upload(file, [userDetails]).then(
     ()=>{getFiles()}
    )
 
+  };
+
+  const removeFile = (fileID)=>{
+    FileService.removeFile(fileID).then(()=>{
+      setfilesinDB(filesinDB.filter((file)=>file["_id"]!=fileID));
+    })
+    
   }
  
   const fileType = (fileName) => {
@@ -142,16 +147,16 @@ export default function Dropzone(props){
 
   useEffect(()=>{ 
       setUserDetails(props.id);
-      setUserName(props.name);getFiles()
+      setUserName(props.name);
   },[props]);
 
   useEffect(()=>{
-     
+    getFiles();
   }
   ,[]);
 
   const getFiles=()=>{
-    UploadService.getFiles({userDetails}).then((response)=>{
+    FileService.getFiles({userDetails}).then((response)=>{
       setfilesinDB(response.data);  
       alert(filesinDB);
       console.log(filesinDB);
@@ -240,7 +245,7 @@ export default function Dropzone(props){
                           }
                           action={
                             <IconButton aria-label="add to favorites" >
-                              <DeleteIcon />
+                              <DeleteIcon onClick={()=>removeFile(filedata["_id"])}/>
                             </IconButton>
                           }
                           title={filedata["s3_key"]}
