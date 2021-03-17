@@ -11,13 +11,13 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import MenuIcon from '@material-ui/icons/Menu';
 import Avatar from '@material-ui/core/Avatar';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
-import List from '@material-ui/core/List';
+
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
-import Switch from '@material-ui/core/Switch'
 
+import StarIcon from '@material-ui/icons/Star';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
@@ -93,6 +93,7 @@ export default function Dropzone(props){
   const [userDetails, setUserDetails] = useState({});
   const [userName, setUserName] = useState({});
   const [files, setFiles]= useState({});
+  const [favourite, setfavourite]= useState(false);
   const option = [
     'Choose File',
     'Choose Folder'
@@ -100,6 +101,14 @@ export default function Dropzone(props){
   const handleClickListItem = (event) => {
     setAnchorEl(event.currentTarget);
   };
+
+  const makefavourite= (fileID, value)=>{
+   FileService.updateFavourite(fileID).then(()=>{
+    setfavourite(value);
+   })
+   
+  };
+ 
 
   const uploadModalRef = useRef();
   const uploadRef = useRef();
@@ -239,12 +248,12 @@ export default function Dropzone(props){
                       <Card className={classes.card}>
                       <CardHeader
                           avatar={
-                            <Avatar aria-label="recipe" className={classes.avatar}>
+                            <Avatar aria-label="name" className={classes.avatar}>
                               {userName.charAt(0)}
                             </Avatar>
                           }
                           action={
-                            <IconButton aria-label="add to favorites" >
+                            <IconButton aria-label="add to favorites"  >
                               <DeleteIcon onClick={()=>removeFile(filedata["_id"])}/>
                             </IconButton>
                           }
@@ -265,8 +274,12 @@ export default function Dropzone(props){
                           </div>
                         </CardContent>
                         <CardActions disableSpacing>
-                          <IconButton aria-label="add to favorites">
-                            <StarBorderIcon />
+                          <IconButton aria-label="add to favorites" style={{visibility:favourite?"hidden":"visible"}} onClick={()=>{makefavourite(filedata["_id"],true)}}>
+                            <StarBorderIcon  />
+                           </IconButton>
+                          
+                          <IconButton style={{visibility:favourite?"visible":"hidden", position:"relative", left:"-45px", color:"orange"}} onClick={()=>{makefavourite(filedata["_id"],false);}}>
+                          <StarIcon />
                           </IconButton>
                           <IconButton aria-label="share" className={classes.download}>
                             <CloudDownloadIcon />

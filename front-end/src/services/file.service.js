@@ -17,6 +17,11 @@ class FileService{
         return axiosInstance.get("api/upload/", id);
       }
 
+      updateFavourite(id){
+          
+          return axiosInstance.patch(`api/upload/${id}`)
+      }
+
       removeFile(id){
          alert(id);
           return axiosInstance.delete(`api/upload/${id}`);
