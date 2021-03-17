@@ -22,6 +22,7 @@ import StarBorderIcon from '@material-ui/icons/StarBorder';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import DeleteIcon from '@material-ui/icons/Delete';
 import fileService from '../../services/file.service';
+import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
@@ -52,6 +53,20 @@ const useStyles = makeStyles((theme) => ({
     display: 'flex',
     marginLeft : "auto",
   },
+  encapculate:{
+    display: 'flex',
+  },
+  button: {
+    marginLeft : "auto",
+    color: "#F8F8FF",
+    background: 'linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(236,46,4,1) 100%, rgba(6,223,240,1) 100%)',
+    margin: theme.spacing(3, 0, 2),
+  },
+  heading: {
+    alignContent: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+  }
 }));
 
 export default function Dropzone(props){
@@ -164,10 +179,19 @@ export default function Dropzone(props){
           onDrop={fileDrop}
           component="div" style={{ top:'10vh', height: '100vh' }}
         > 
-          <IconButton size="medium" onClick={handleClickListItem}>
-            <AddCircleIcon/>
+          <div className={classes.encapculate}>
+            <Typography variant="h2" component="h5" className={classes.heading}>
+                All Upload
+            </Typography>
+            <Button
+              variant="contained"
+              className={classes.button}
+              onClick={handleClickListItem} 
+              startIcon={<CloudUploadIcon />}
+            >
             Upload
-          </IconButton>
+            </Button>
+          </div>
           <Menu
             id="lock-menu"
             anchorEl={anchorEl}
@@ -211,7 +235,7 @@ export default function Dropzone(props){
               props.allUpload &&
                <div container spacing={5} alignItems="center">   
                   <Grid container spacing={5} alignItems="center">
-                    {filesinDB.filter( (filedata) => filedata.s3_key.includes(props.searchFiled)).map((filedata, i) => {
+                    {filesinDB.map((filedata, i) => {
                       return (
                       <Grid item key={filedata["_id"]} xs={12} md={3}>
                         <Card className={classes.card}>
@@ -256,11 +280,11 @@ export default function Dropzone(props){
                   </Grid>
                 </div>
             }
-            {
+            { 
               props.recentUpload && 
                 <div container spacing={5} alignItems="center">   
                   <Grid container spacing={5} alignItems="center">
-                    {filesinDB.filter( (filedata) => filedata.s3_key.includes(props.searchFiled)).slice(0,10).reverse().map((filedata, i) => {
+                    {filesinDB.filter( (filedata) => filedata["s3_key"].includes(props.searchFiled)).slice(0,10).reverse().map((filedata, i) => {
                       return (
                       <Grid item key={filedata["_id"]} xs={12} md={3}>
                         <Card className={classes.card}>
