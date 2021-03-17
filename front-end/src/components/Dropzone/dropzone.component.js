@@ -8,10 +8,13 @@ import Container from '@material-ui/core/Container'
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Avatar from '@material-ui/core/Avatar';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
+
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
-import Switch from '@material-ui/core/Switch'
 
+import StarIcon from '@material-ui/icons/Star';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
@@ -21,7 +24,7 @@ import Grid from '@material-ui/core/Grid';
 import StarBorderIcon from '@material-ui/icons/StarBorder';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import DeleteIcon from '@material-ui/icons/Delete';
-import fileService from '../../services/file.service';
+
 
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
@@ -82,8 +85,8 @@ export default function Dropzone(props){
   const [anchorEl, setAnchorEl] = useState(null);
   const [userDetails, setUserDetails] = useState({});
   const [userName, setUserName] = useState({});
-  const [files, setFiles]= useState({});
-  const [uploaded, setUploaded] = useState(false);
+ 
+    const [uploaded, setUploaded] = useState(false);
   const option = [
     'Choose File',
     'Choose Folder'
@@ -91,6 +94,18 @@ export default function Dropzone(props){
   const handleClickListItem = (event) => {
     setAnchorEl(event.currentTarget);
   };
+
+  const makefavourite= (fileID, value)=>{
+   FileService.updateFavourite(fileID).then(()=>{
+     getFiles();
+   
+  
+   
+    
+   })
+   
+  };
+ 
 
   const uploadModalRef = useRef();
   const uploadRef = useRef();
@@ -129,12 +144,13 @@ export default function Dropzone(props){
   useEffect(()=>{ 
       setUserDetails(props.id);
       setUserName(props.name);
+      getFiles();
   },[props]);
 
-  useEffect(()=>{
-    getFiles();
+  /*useEffect(()=>{
+    
   }
-  ,[]);
+  ,[]);*/
 
   const getFiles=()=>{
     FileService.getFiles({userDetails}).then((response)=>{
@@ -242,9 +258,13 @@ export default function Dropzone(props){
                             </div>
                           </CardContent>
                           <CardActions disableSpacing>
-                            <IconButton aria-label="add to favorites">
-                              <StarBorderIcon />
-                            </IconButton>
+                          <IconButton aria-label="add to favorites" style={{visibility:filedata["favourite"]?"hidden":"visible"}} onClick={()=>{makefavourite(filedata["_id"],true)}}>
+                            <StarBorderIcon  />
+                           </IconButton>
+                          
+                          <IconButton style={{visibility:filedata["favourite"]?"visible":"hidden", position:"relative", left:"-45px", color:"orange"}} onClick={()=>{makefavourite(filedata["_id"],false);}}>
+                          <StarIcon />
+                          </IconButton>
                             <IconButton aria-label="share" className={classes.download}>
                               <CloudDownloadIcon />
                             </IconButton>
@@ -291,9 +311,13 @@ export default function Dropzone(props){
                             </div>
                           </CardContent>
                           <CardActions disableSpacing>
-                            <IconButton aria-label="add to favorites">
-                              <StarBorderIcon />
-                            </IconButton>
+                          <IconButton aria-label="add to favorites" style={{visibility:filedata["favourite"]?"hidden":"visible"}} onClick={()=>{makefavourite(filedata["_id"],true)}}>
+                            <StarBorderIcon  />
+                           </IconButton>
+                          
+                          <IconButton style={{visibility:filedata["favourite"]?"visible":"hidden", position:"relative", left:"-45px", color:"orange"}} onClick={()=>{makefavourite(filedata["_id"],false);}}>
+                          <StarIcon />
+                          </IconButton>
                             <IconButton aria-label="share" className={classes.download}>
                               <CloudDownloadIcon />
                             </IconButton>

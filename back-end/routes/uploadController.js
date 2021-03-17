@@ -9,6 +9,15 @@ const fileUpload = require('express-fileupload');
 const ObjectId = require('mongoose').Types.ObjectId;
 var storage = multer.memoryStorage();
 var upload = multer({storage:storage});
+const s3bucket = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION
+});
+const s3FileURL = process.env.AWS_Uploaded_File_URL_Link;
+
+
+
 router.get('/', async(req,res,next)=>{
     FILE.find(
         {'users[0]':req.id},
@@ -28,22 +37,51 @@ router.get('/', async(req,res,next)=>{
 
 router.delete('/:id', async(req,res,next)=>{
 console.log(req.params.id);
-FILE.deleteOne({ _id: ObjectId(req.params["id"]) }, (err,docs)=>{
+
+FILE.findOneAndDelete({ _id: ObjectId(req.params["id"]) }, (err,docs)=>{
   if(err){
     return next(err);
   }
-  res.status(200).send(docs);
-})
+  else if(docs!=null){
+
+    var params = {  Bucket: process.env.AWS_BUCKET_NAME, Key: docs["s3_key"] };
+
+s3bucket.deleteObject(params, function(err, data) {
+  if (err) {
+
+    console.log(err, err.stack);  
+    res.status(500).send(err);
+  }// error
+  else    {
+    res.status(200).send(docs);
+  }                 // deleted
 });
+  }
+  
+});
+
+
+});
+
+router.patch('/:id', async(req,res,next)=>{
+  console.log(req.params.id);
+  FILE.findOne({ _id: req.params.id }, function(err, docs) {
+    docs.favourite = !docs.favourite;
+    docs.save(function(err, updatedDoc) {
+      console.log(docs);
+        if(!err)res.status(200).send(updatedDoc)
+        else res.status(500).send(err);
+    });
+});
+})
+
 router.post('/', upload.single("file"), async(req,res,next)=>{
     const file = req.file;
-    const s3FileURL = process.env.AWS_UPLOAD_FILE_URL_LINK;
-    let s3bucket = new AWS.S3({
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-        region: process.env.AWS_REGION
-      });
- 
+   
+   
+    
+    console.log(file);
+    
       var params = {
         Bucket: process.env.AWS_BUCKET_NAME,
         Key: file.originalname,
