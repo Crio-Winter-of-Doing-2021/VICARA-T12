@@ -1,12 +1,11 @@
 import './App.css';
 import './index.css';
-import { HashRouter, BrowserRouter, Route, Switch } from 'react-router-dom';
+import { BrowserRouter, Route, Switch } from 'react-router-dom';
 import React, { useState, useEffect, useRef } from 'react';
 import Login from './components/Authentication/login';
 import Register from './components/Authentication/register';
 import { CSSTransition } from 'react-transition-group';
 import Header from './components/Main/header';
-import Footer from './components/Main/footer';
 import WelcomePage from './components/Welcome/welcomePage';
 
 function App() {

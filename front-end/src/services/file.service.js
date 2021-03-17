@@ -13,8 +13,8 @@ class FileService{
              // onUploadProgress,
         });    
     }
-    getFiles(id) {
-        return axiosInstance.get("api/upload/", id);
+    async getFiles(id) {
+        return await axiosInstance.get("api/upload/", id);
       }
 
       updateFavourite(id){

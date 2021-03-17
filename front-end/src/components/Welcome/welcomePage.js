@@ -151,9 +151,12 @@ export default function MiniDrawer(props) {
   const isMenuOpen = Boolean(anchorEl);
   const [userDetails, setUserDetails] = useState(null);
   const [id, setId]= useState(null);
+  const [searchFiled, setSearchField] = useState("");
+  const [allUpload, setAllUpload] = useState(true);
+  const [recentUpload, setRecentUpload] = useState(false);
+  const [starred, setStarred] = useState(false);
 
    useEffect(() => {
-    alert(loc.state.detail.accessToken); 
     setNames(loc.state.detail.name);
     setUserDetails(loc.state.detail);
     setId(loc.state.detail.id);
@@ -185,7 +188,28 @@ export default function MiniDrawer(props) {
     history.push("/")
   };
 
+  const searchFunction = (event) =>{
+    setSearchField(event.target.value);
+  };
   
+  const handleAllUpload = () =>{
+    setAllUpload(true);
+    setRecentUpload(false);
+    setStarred(false);
+  };
+
+  const handleRecentUpload = () =>{
+    setAllUpload(false);
+    setRecentUpload(true);
+    setStarred(false);
+  };
+
+  const handleStarred = () =>{
+    setAllUpload(false);
+    setRecentUpload(false);
+    setStarred(true);
+  };
+
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
     
@@ -243,6 +267,7 @@ export default function MiniDrawer(props) {
                 root: classes.inputRoot,
                 input: classes.inputInput,
               }}
+              onChange={searchFunction}
             />
           </div>
           <div className={classes.logout}>
@@ -278,15 +303,15 @@ export default function MiniDrawer(props) {
         </div>
         <Divider />
         <List>
-        <ListItem button >
+        <ListItem button onClick={handleAllUpload}>
           <ListItemIcon> <InboxIcon/> </ListItemIcon>
           <ListItemText> All Upload </ ListItemText>
         </ListItem>
-        <ListItem button >
+        <ListItem button onClick={handleRecentUpload}>
           <ListItemIcon> <RecentActorsIcon/> </ListItemIcon>
           <ListItemText> Recent Upload </ListItemText>
         </ListItem>
-        <ListItem button>
+        <ListItem button onClick={handleStarred}>
           <ListItemIcon> <StarIcon/> </ListItemIcon>
           <ListItemText> Starred </ListItemText>
         </ListItem>
@@ -294,7 +319,7 @@ export default function MiniDrawer(props) {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-          <Dropzone id={id} name={name}/> 
+          <Dropzone id={id} name={name} searchFiled = {searchFiled} allUpload = {allUpload} recentUpload = {recentUpload} starred = {starred} /> 
       </main>
     </div>
   );
