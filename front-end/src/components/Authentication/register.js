@@ -57,8 +57,6 @@ export default function Register(props) {
 	const [open, setOpen] = useState(false);
 	// Saving data typed into the state 
 	const handleChange = (e) => {
-		const name = e.target.name;
-		const value = e.target.value;
         updateFormData({
             ...formData,
             [e.target.name]: e.target.value.trim(),
@@ -84,10 +82,10 @@ export default function Register(props) {
 				console.log(error)
 				updateFormData({
 					...formData,
-					['name']: '',
-					['email']: '',
-					['password']: '',
-					['confirmPassword']: '',
+					'name': '',
+					'email': '',
+					'password': '',
+					'confirmPassword': '',
 				});		
 			});
 	};
