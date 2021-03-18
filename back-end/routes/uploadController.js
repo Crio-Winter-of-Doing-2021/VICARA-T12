@@ -103,14 +103,16 @@ router.post('/', upload.single("file"), async(req,res,next)=>{
           };
           var document = new FILE(newFileUploaded);
           document.save(function(error, newFile) {
+            
             if(!error){
-                res.send(newFile);
+                console.log(newFile);
+                res.status(200).send(newFile);
             }
             if (error) {
               throw error;
             }
           });
-          //res.send({ data });
+         
         }
       });
 
