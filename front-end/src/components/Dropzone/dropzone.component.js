@@ -26,6 +26,7 @@ import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import DeleteIcon from '@material-ui/icons/Delete';
 
 
+
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
 		paddingTop: '56.25%', // 16:9,
@@ -97,7 +98,10 @@ export default function Dropzone(props){
 
   const makefavourite= (fileID, value)=>{
    FileService.updateFavourite(fileID).then(()=>{
-     getFiles();
+     let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"]==fileID);
+      let newfilesinDB =[...filesinDB];
+     newfilesinDB[foundIndex]={...newfilesinDB[foundIndex], favourite:!(newfilesinDB[foundIndex]["favourite"])}
+     setfilesinDB(newfilesinDB);
    
   
    
