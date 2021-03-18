@@ -8,10 +8,13 @@ import Container from '@material-ui/core/Container'
 import CssBaseline from '@material-ui/core/CssBaseline';
 import Avatar from '@material-ui/core/Avatar';
 import AddCircleIcon from '@material-ui/icons/AddCircle';
+
+import ListItem from '@material-ui/core/ListItem';
+import ListItemText from '@material-ui/core/ListItemText';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
-import Switch from '@material-ui/core/Switch'
 
+import StarIcon from '@material-ui/icons/Star';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
@@ -23,6 +26,7 @@ import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import DeleteIcon from '@material-ui/icons/Delete';
 import fileService from '../../services/file.service';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+
 
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
@@ -97,8 +101,8 @@ export default function Dropzone(props){
   const [anchorEl, setAnchorEl] = useState(null);
   const [userDetails, setUserDetails] = useState({});
   const [userName, setUserName] = useState({});
-  const [files, setFiles]= useState({});
-  const [uploaded, setUploaded] = useState(false);
+ 
+    const [uploaded, setUploaded] = useState(false);
   const option = [
     'Choose File',
     'Choose Folder'
@@ -106,6 +110,18 @@ export default function Dropzone(props){
   const handleClickListItem = (event) => {
     setAnchorEl(event.currentTarget);
   };
+
+  const makefavourite= (fileID, value)=>{
+   FileService.updateFavourite(fileID).then(()=>{
+     getFiles();
+   
+  
+   
+    
+   })
+   
+  };
+ 
 
   const uploadModalRef = useRef();
   const uploadRef = useRef();
@@ -139,17 +155,16 @@ export default function Dropzone(props){
     
   }
 
-  
-
   useEffect(()=>{ 
       setUserDetails(props.id);
       setUserName(props.name);
+      getFiles();
   },[props]);
 
-  useEffect(()=>{
-    getFiles();
+  /*useEffect(()=>{
+    
   }
-  ,[]);
+  ,[]);*/
 
   const getFiles=()=>{
     FileService.getFiles({userDetails}).then((response)=>{
@@ -235,7 +250,7 @@ export default function Dropzone(props){
               props.allUpload &&
                <div container spacing={5} alignItems="center">   
                   <Grid container spacing={5} alignItems="center">
-                    {filesinDB.map((filedata, i) => {
+                    {filesinDB.filter( (filedata) => filedata["s3_key"].includes(props.searchFiled)).map((filedata, i) => {
                       return (
                       <Grid item key={filedata["_id"]} xs={12} md={3}>
                         <Card className={classes.card}>
@@ -266,9 +281,13 @@ export default function Dropzone(props){
                             </div>
                           </CardContent>
                           <CardActions disableSpacing>
-                            <IconButton aria-label="add to favorites">
-                              <StarBorderIcon />
-                            </IconButton>
+                          <IconButton aria-label="add to favorites" style={{visibility:filedata["favourite"]?"hidden":"visible"}} onClick={()=>{makefavourite(filedata["_id"],true)}}>
+                            <StarBorderIcon  />
+                           </IconButton>
+                          
+                          <IconButton style={{visibility:filedata["favourite"]?"visible":"hidden", position:"relative", left:"-45px", color:"orange"}} onClick={()=>{makefavourite(filedata["_id"],false);}}>
+                          <StarIcon />
+                          </IconButton>
                             <IconButton aria-label="share" className={classes.download}>
                               <CloudDownloadIcon />
                             </IconButton>
@@ -284,7 +303,7 @@ export default function Dropzone(props){
               props.recentUpload && 
                 <div container spacing={5} alignItems="center">   
                   <Grid container spacing={5} alignItems="center">
-                    {filesinDB.filter( (filedata) => filedata["s3_key"].includes(props.searchFiled)).slice(0,10).reverse().map((filedata, i) => {
+                    {filesinDB.filter( (e) => e["s3_key"].includes(props.searchFiled)).slice(0,10).reverse().map((filedata, i) => {
                       return (
                       <Grid item key={filedata["_id"]} xs={12} md={3}>
                         <Card className={classes.card}>
@@ -315,9 +334,13 @@ export default function Dropzone(props){
                             </div>
                           </CardContent>
                           <CardActions disableSpacing>
-                            <IconButton aria-label="add to favorites">
-                              <StarBorderIcon />
-                            </IconButton>
+                          <IconButton aria-label="add to favorites" style={{visibility:filedata["favourite"]?"hidden":"visible"}} onClick={()=>{makefavourite(filedata["_id"],true)}}>
+                            <StarBorderIcon  />
+                           </IconButton>
+                          
+                          <IconButton style={{visibility:filedata["favourite"]?"visible":"hidden", position:"relative", left:"-45px", color:"orange"}} onClick={()=>{makefavourite(filedata["_id"],false);}}>
+                          <StarIcon />
+                          </IconButton>
                             <IconButton aria-label="share" className={classes.download}>
                               <CloudDownloadIcon />
                             </IconButton>
