@@ -117,7 +117,7 @@ export default function Dropzone(props){
   const handleFiles = (files) => {  
     for(let i = 0; i < files.length; i++){       
         //setSelectedFiles(prevArray => [...prevArray, files[i]]);
-        setfilesinDB(prevArray=>[...prevArray, files[i]])
+        
         uploadFiles(files[i]);
     }    
   }
@@ -127,7 +127,9 @@ export default function Dropzone(props){
 
   const uploadFiles = (file) => {
    FileService.upload(file, [userDetails]).then(
-    ()=>{getFiles()}
+    (docs)=>{
+      
+      setfilesinDB(prevArray=>[...prevArray, docs["data"]]);}
    )
 
   };
@@ -227,6 +229,7 @@ export default function Dropzone(props){
               props.allUpload &&
                <div container spacing={5} alignItems="center">   
                   <Grid container spacing={5} alignItems="center">
+                 
                     {filesinDB.filter( (filedata) => filedata.s3_key.includes(props.searchFiled)).map((filedata, i) => {
                       return (
                       <Grid item key={filedata["_id"]} xs={12} md={3}>
