@@ -185,7 +185,9 @@ export default function MiniDrawer(props) {
 
   const logoutFunction = () => {
     // eslint-disable-next-line no-restricted-globals
-    history.push("/")
+    history.push({ pathname: '/',
+                  state: { detail: "" }}
+                )
   };
 
   const searchFunction = (event) =>{
