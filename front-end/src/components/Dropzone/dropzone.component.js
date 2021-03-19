@@ -96,6 +96,7 @@ export default function Dropzone(props){
   const [anchorEl, setAnchorEl] = useState(null);
   const [userDetails, setUserDetails] = useState({});
   const [userName, setUserName] = useState({});
+  const [uploaded, setUploaded] = useState(false);
   const option = [
     'Choose File',
     'Choose Folder'
@@ -104,15 +105,15 @@ export default function Dropzone(props){
     setAnchorEl(event.currentTarget);
   };
 
-  const makefavourite= (fileID, value)=>{
-   console.log(`value : ${value}`)
-   FileService.updateFavourite(fileID, value).then(()=>{
-     getFiles();    
-   })
-   
+  const makefavourite= (fileID)=>{
+    FileService.updateFavourite(fileID).then(()=>{
+      let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"]==fileID);
+      let newfilesinDB =[...filesinDB];
+      newfilesinDB[foundIndex]={...newfilesinDB[foundIndex], favourite:!(newfilesinDB[foundIndex]["favourite"])}
+      setfilesinDB(newfilesinDB);   
+    })
   };
  
-
   const uploadModalRef = useRef();
   const uploadRef = useRef();
   const progressRef = useRef();
@@ -268,7 +269,7 @@ export default function Dropzone(props){
                             </div>
                           </CardContent>
                           <CardActions disableSpacing>
-                          <IconButton aria-label="add to favorites" onClick={()=>{makefavourite(filedata["_id"],!(filedata["favourite"]) )}}>
+                          <IconButton aria-label="add to favorites" onClick={()=>{makefavourite( filedata["_id"] )}}>
                             { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                           </IconButton>
                             <IconButton aria-label="share" className={classes.download}>
@@ -317,7 +318,7 @@ export default function Dropzone(props){
                             </div>
                           </CardContent>
                           <CardActions disableSpacing>
-                          <IconButton aria-label="add to favorites" onClick={()=>{makefavourite(filedata["_id"],!(filedata["favourite"]) )}}>
+                          <IconButton aria-label="add to favorites" onClick={()=>{makefavourite( filedata["_id"] )}}>
                             { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                           </IconButton>
                           <IconButton aria-label="share" className={classes.download}>
@@ -366,7 +367,7 @@ export default function Dropzone(props){
                         </div>
                       </CardContent>
                       <CardActions disableSpacing>
-                      <IconButton aria-label="add to favorites" onClick={()=>{makefavourite(filedata["_id"],!(filedata["favourite"]) )}}>
+                      <IconButton aria-label="add to favorites" onClick={()=>{makefavourite( filedata["_id"] )}}>
                         { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                       </IconButton>
                       <IconButton aria-label="share" className={classes.download}>
