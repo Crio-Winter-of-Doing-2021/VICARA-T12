@@ -66,11 +66,10 @@ s3bucket.deleteObject(params, function(err, data) {
 router.patch('/:id', async(req,res,next)=>{
   console.log(req.params.id);
   FILE.findOne({ _id: req.params.id }, function(err, docs) {
-    docs.favourite = !docs.favourite;
+    docs.favourite = !(docs.favourite);
     docs.save(function(err, updatedDoc) {
-      console.log(docs);
-        if(!err)res.status(200).send(updatedDoc)
-        else res.status(500).send(err);
+      if(!err)res.status(200).send(updatedDoc)
+      else res.status(500).send(err);
     });
 });
 })
