@@ -79,7 +79,7 @@ router.post('/', upload.single("file"), async(req,res,next)=>{
    
    
     
-    console.log(file);
+   
     
       var params = {
         Bucket: process.env.AWS_BUCKET_NAME,
@@ -91,6 +91,7 @@ router.post('/', upload.single("file"), async(req,res,next)=>{
     
       s3bucket.upload(params, function(err, data) {
         if (err) {
+          console.log(err);
           res.status(500).json({ error: true, Message: err });
         } else {
           
