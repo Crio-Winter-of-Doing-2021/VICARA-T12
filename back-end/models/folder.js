@@ -4,12 +4,11 @@ const Schema = mongoose.Schema;
 
 const AutoIncrement = require("mongoose-sequence")(mongoose);
 
-let FilesSchema = new Schema(
+let FolderSchema = new Schema(
   {
-    document_id: { type: Number, default: 0 },
-    description: { type: String },
-    fileLink: { type: String },
-    s3_key: { type: String },
+
+    folder_id: { type: Number, default: 0 },
+    Name: { type: String },
     favourite: {type: Boolean, default:false},
     users: [
       {
@@ -17,7 +16,21 @@ let FilesSchema = new Schema(
         ref: "User"
       }
 
+
     ],
+    files:[
+       
+    ],
+
+    folders:[
+        
+          {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Folder"
+          }
+        
+    ],
+
     parentFolder: {type:String, default:null},
     isIndependant: {type:Boolean, default:true}
   },
@@ -26,6 +39,6 @@ let FilesSchema = new Schema(
   }
 );
 
-FilesSchema.plugin(AutoIncrement, { inc_field: "document_id" });
+FolderSchema.plugin(AutoIncrement, { inc_field: "folder_id" });
 
-module.exports = mongoose.model("Files", FilesSchema);
+module.exports = mongoose.model("Folder", FolderSchema);
