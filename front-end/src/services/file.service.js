@@ -74,5 +74,11 @@ getFolders(id){
   removeFile(id){
     return axiosInstance.delete(`api/upload/${id}`);
   }
+
+  removeFolder(folderID){
+    console.log(folderID)
+    alert(folderID);
+    return axiosInstance.delete(`api/upload/folder/${folderID}`)
+  }
 }
 export default new FileService();

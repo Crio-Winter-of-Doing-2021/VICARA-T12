@@ -17,6 +17,7 @@ const s3bucket = new AWS.S3({
 });
 const s3FileURL = process.env.AWS_Uploaded_File_URL_Link;
 
+
 router.get('/folder/:id', async(req,res,next)=>{
   console.log(req.params.id);
     FOLDER.find(
@@ -56,6 +57,27 @@ router.get('/:id', async(req,res,next)=>{
           res.status(200).send(docs);
         }
       );
+});
+
+router.delete('/folder/:id', async(req,res,next)=>{
+  FILE.deleteMany({ parentFolder: req.params["id"]}, (err, docs)=>{
+    if(!err)
+    {
+      console.log(docs);
+      FOLDER.findByIdAndDelete(req.params["id"], (error, deleteddoc)=>{
+         if(!err)
+         {
+           res.status(200).send(deleteddoc);
+
+         }
+         else
+         res.status(500).send(error);
+      })
+    }
+    else
+    res.status(500).send(err);
+  });
+  
 });
 
 router.delete('/:id', async(req,res,next)=>{

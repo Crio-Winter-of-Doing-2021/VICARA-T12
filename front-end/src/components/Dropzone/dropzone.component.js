@@ -158,7 +158,7 @@ export default function Dropzone(props){
   }
 
 
-
+  
   const handleFolder=(e)=>{
     var theFiles = e.target.files;
     var relativePath = theFiles[0].webkitRelativePath;
@@ -194,6 +194,14 @@ export default function Dropzone(props){
   const removeFile = (fileID)=>{
     FileService.removeFile(fileID).then(()=>{
       setfilesinDB(filesinDB.filter((file)=>file["_id"]!=fileID));
+    })
+    
+  }
+
+  const removeFolder = (folderID)=>{
+    alert(folderID);
+    FileService.removeFolder(folderID).then(()=>{
+      setfoldersinDB(foldersinDB.filter((folder)=>folder["_id"]!=folderID));
     })
     
   }
@@ -364,7 +372,7 @@ export default function Dropzone(props){
                             }
                             action={
                               <IconButton aria-label="add to favorites" >
-                                <DeleteIcon onClick={()=>removeFile(folderData["_id"])}/>
+                                <DeleteIcon onClick={()=>removeFolder(folderData["_id"])}/>
                               </IconButton>
                             }
                             title={folderData["Name"].slice(0,10)}
