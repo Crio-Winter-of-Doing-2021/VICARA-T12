@@ -167,15 +167,20 @@ export default function Dropzone(props){
     alert(folder);
     fileService.uploadFolder(folder, [userDetails]).then((res)=>{
       console.log(res);
+
     
       for(let i = 0; i < theFiles.length; i++){       
         uploadFilesInFolder(res["data"]["_id"], theFiles[i]).then((docs)=>{
 
           console.log(docs);
           
-                  
+        if(i===(theFiles.length-1))
+        {
+          setfoldersinDB((prevArray)=>[...prevArray, docs["data"]]);
+        } 
 
         })
+
         
     }
 
