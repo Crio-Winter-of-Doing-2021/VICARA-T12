@@ -21,6 +21,7 @@ import StarBorderIcon from '@material-ui/icons/StarBorder';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+import fileService from '../../services/file.service';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -88,7 +89,10 @@ export default function Dropzone(props){
   const fileDrop=(e)=>{
     e.preventDefault();
     const files= e.dataTransfer.files;
+    if(files.length===1)
     handleFiles(files);
+    else
+    console.log(files);
   }
 
  
@@ -122,6 +126,7 @@ export default function Dropzone(props){
   }
 
   const handleFiles = (files) => {  
+
     for(let i = 0; i < files.length; i++){       
         //setSelectedFiles(prevArray => [...prevArray, files[i]]);
         
@@ -141,6 +146,46 @@ export default function Dropzone(props){
 
   };
 
+
+  
+
+  const uploadFilesInFolder = (folderID, file)=>{
+
+   
+    return FileService.uploadFilesInFolder( folderID, file, [userDetails]);
+      
+    
+  }
+
+
+
+  const handleFolder=(e)=>{
+    var theFiles = e.target.files;
+    var relativePath = theFiles[0].webkitRelativePath;
+    var folder = relativePath.split("/");
+    folder = folder[0];
+    alert(folder);
+    fileService.uploadFolder(folder, [userDetails]).then((res)=>{
+      console.log(res);
+    
+      for(let i = 0; i < theFiles.length; i++){       
+        uploadFilesInFolder(res["data"]["_id"], theFiles[i]).then((docs)=>{
+
+          console.log(docs);
+          
+                  
+
+        })
+        
+    }
+
+   
+
+    });
+   
+
+  }
+
   const removeFile = (fileID)=>{
     FileService.removeFile(fileID).then(()=>{
       setfilesinDB(filesinDB.filter((file)=>file["_id"]!=fileID));
@@ -151,14 +196,23 @@ export default function Dropzone(props){
   useEffect(()=>{ 
       setUserDetails(props.id);
       setUserName(props.name);
-      getFiles();
+      getFiles(props.id);
+      
   },[props]);
 
-  const getFiles=()=>{
-    FileService.getFiles({userDetails}).then((response)=>{
+  useEffect(()=>{
+    
+  },[])
+
+  const getFiles=(id)=>{
+    
+    if(id)
+    {FileService.getFiles({id}).then((response)=>{
       setfilesinDB(response.data);  
       console.log(filesinDB);
    });
+  }
+
   }
 
   const fileSize = (size) => {
@@ -223,13 +277,9 @@ export default function Dropzone(props){
               
             >
               Choose Folder
-              <input
-                type="file"
-                className="file-input"
-                multiple
-                hidden
-                // webkitdirectory mozdirectory msdirectory odirectory directory
-                onChange={(e) => handleFiles(e.target.files)}
+              < input  directory="" webkitdirectory="" type="file"
+              hidden
+                onChange={(e) => handleFolder(e)}
               />
             </Button>
           </MenuItem>        
@@ -265,7 +315,7 @@ export default function Dropzone(props){
                           
                           <CardContent className={classes.cardContent}>
                             <div className={classes.formText}></div>
-                              <Typography variant="h10" color="textSecondary" >
+                              <Typography variant="subtitle1" color="textSecondary" >
                               {filedata["createdAt"].slice(0,10)}
                               </Typography>
                             
