@@ -76,11 +76,6 @@ router.patch('/:id', async(req,res,next)=>{
 
 router.post('/', upload.single("file"), async(req,res,next)=>{
     const file = req.file;
-   
-   
-    
-   
-    
       var params = {
         Bucket: process.env.AWS_BUCKET_NAME,
         Key: file.originalname,

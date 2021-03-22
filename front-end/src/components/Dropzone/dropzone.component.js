@@ -21,6 +21,7 @@ import StarBorderIcon from '@material-ui/icons/StarBorder';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+import LoadCircularProgress from '../Main/circularProgress';
 
 
 const useStyles = makeStyles((theme) => ({
@@ -97,6 +98,7 @@ export default function Dropzone(props){
   const [userDetails, setUserDetails] = useState({});
   const [userName, setUserName] = useState({});
   const [uploaded, setUploaded] = useState(false);
+  const [isloading, setLoading] = useState(false);
   const option = [
     'Choose File',
     'Choose Folder'
@@ -133,12 +135,12 @@ export default function Dropzone(props){
   };
 
   const uploadFiles = (file) => {
-   FileService.upload(file, [userDetails]).then(
+   FileService.upload(file, [userDetails])
+   .then(
     (docs)=>{
-      
-      setfilesinDB(prevArray=>[...prevArray, docs["data"]]);}
-   )
-
+      setLoading(false)
+      setfilesinDB(prevArray=>[...prevArray, docs["data"]]);
+    })
   };
 
   const removeFile = (fileID)=>{
@@ -159,6 +161,10 @@ export default function Dropzone(props){
       setfilesinDB(response.data);  
       console.log(filesinDB);
    });
+  }
+
+  const fetchData = () =>{
+    setLoading(true);
   }
 
   const fileSize = (size) => {
@@ -193,7 +199,8 @@ export default function Dropzone(props){
               onClick={handleClickListItem} 
               startIcon={<CloudUploadIcon />}
             >
-            Upload
+              Upload
+              { isloading && <LoadCircularProgress /> }
             </Button>
           </div>
           <Menu
@@ -207,6 +214,7 @@ export default function Dropzone(props){
             <Button
               variant="contained"
               component="label"
+              onClick = {fetchData}
             >
               Choose File
               <input
@@ -237,9 +245,9 @@ export default function Dropzone(props){
           <div className="file-display-container">
             {
               props.allUpload &&
-               <div container spacing={5} alignItems="center">   
-                  <Grid container spacing={5} alignItems="center">
-                    {filesinDB.filter( (filedata) => filedata.s3_key.includes(props.searchFiled)).map((filedata, i) => {
+               <div container spacing={5} alignitems="center">   
+                  <Grid container spacing={5} alignitems="center">
+                    {filesinDB.filter( (filedata) => filedata.s3_key.includes(props.searchFiled)).slice(0).reverse().map((filedata, i) => {
                       return (
                       <Grid item key={filedata["_id"]} xs={12} md={3}>
                         <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={filedata["s3_key"]}> 
@@ -250,9 +258,11 @@ export default function Dropzone(props){
                               </Avatar>
                             }
                             action={
-                              <IconButton aria-label="add to favorites" >
-                                <DeleteIcon onClick={()=>removeFile(filedata["_id"])}/>
-                              </IconButton>
+                              <div onClick={()=>removeFile(filedata["_id"])}>
+                                <IconButton aria-label="add to favorites" >
+                                  <DeleteIcon/>
+                                </IconButton>
+                              </div>
                             }
                             title={filedata["s3_key"].slice(0,10)}
                           />
@@ -265,15 +275,17 @@ export default function Dropzone(props){
                           
                           <CardContent className={classes.cardContent}>
                             <div className={classes.formText}></div>
-                              <Typography variant="h10" color="textSecondary" >
+                              <Typography variant="h6" color="textSecondary" >
                               {filedata["createdAt"].slice(0,10)}
                               </Typography>
                             
                           
                           <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                          <IconButton aria-label="add to favorites" onClick={()=>{makefavourite( filedata["_id"] )}}>
-                            { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                          </IconButton>
+                            <div onClick={()=>{makefavourite( filedata["_id"] )}}>
+                              <IconButton aria-label="add to favorites" >
+                                { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+                              </IconButton>
+                            </div>
                             <IconButton aria-label="share" className={classes.download}>
                               <CloudDownloadIcon />
                             </IconButton>
@@ -316,15 +328,17 @@ export default function Dropzone(props){
                           
                           <CardContent className={classes.cardContent}>
                             <div className={classes.formText}></div>
-                              <Typography variant="h10" color="textSecondary" >
+                              <Typography variant="h6" color="textSecondary" >
                               {filedata["createdAt"].slice(0,10)}
                               </Typography>
                             
                           
                           <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                          <IconButton aria-label="add to favorites" onClick={()=>{makefavourite( filedata["_id"] )}}>
-                            { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                          </IconButton>
+                            <div onClick={()=>{makefavourite( filedata["_id"] )}}>
+                              <IconButton aria-label="add to favorites" >
+                                { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+                              </IconButton>
+                            </div>
                             <IconButton aria-label="share" className={classes.download}>
                               <CloudDownloadIcon />
                             </IconButton>
@@ -367,15 +381,17 @@ export default function Dropzone(props){
                       
                       <CardContent className={classes.cardContent}>
                         <div className={classes.formText}></div>
-                          <Typography variant="h10" color="textSecondary" >
+                          <Typography variant="h6" color="textSecondary" >
                           {filedata["createdAt"].slice(0,10)}
                           </Typography>
                         
                       
                       <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                      <IconButton aria-label="add to favorites" onClick={()=>{makefavourite( filedata["_id"] )}}>
-                        { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                      </IconButton>
+                      <div onClick={()=>{makefavourite( filedata["_id"] )}}>
+                        <IconButton aria-label="add to favorites">
+                          { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+                        </IconButton>
+                      </div>
                         <IconButton aria-label="share" className={classes.download}>
                           <CloudDownloadIcon />
                         </IconButton>

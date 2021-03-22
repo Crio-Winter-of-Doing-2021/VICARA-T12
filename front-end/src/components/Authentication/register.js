@@ -171,7 +171,7 @@ export default function Register(props) {
 						Sign Up
 					</Button>
 				</form>
-                <Typography component="h7" variant="h7">
+                <Typography component="h6" variant="h6">
 					Already have an account? 
 					<Divider orientation="vertical" flexItem />
 					<Button 

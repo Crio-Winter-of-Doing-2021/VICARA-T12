@@ -142,7 +142,7 @@ export default function Login(props) {
 						Sign In
 					</Button>
 				</form>
-				<Typography component="h7" variant="h7">
+				<Typography component="h6" variant="h6">
 					Don't have an account? 
 					<Divider orientation="vertical" flexItem />
 					<Button 
