@@ -152,9 +152,18 @@ export default function MiniDrawer(props) {
   const [userDetails, setUserDetails] = useState(null);
   const [id, setId]= useState(null);
   const [searchFiled, setSearchField] = useState("");
-  const [allUpload, setAllUpload] = useState(true);
-  const [recentUpload, setRecentUpload] = useState(false);
-  const [starred, setStarred] = useState(false);
+  const initalfileUpdate = Object.freeze({
+    allFileUpload: true,
+		recentFileUpload: false,
+		starredFiles: false,
+	});
+  const initialfolderUpdate = Object.freeze({
+    allFolderUpload: false,
+		recentFolderUpload: false,
+		starredFolder: false,
+	});
+  const [fileUpdate, setFileUpdate] = useState(initalfileUpdate);
+  const [folderUpdate, setFolderUpdate] = useState(initialfolderUpdate);
 
    useEffect(() => {
     setNames(loc.state.detail.name);
@@ -194,22 +203,32 @@ export default function MiniDrawer(props) {
     setSearchField(event.target.value);
   };
   
-  const handleAllUpload = () =>{
-    setAllUpload(true);
-    setRecentUpload(false);
-    setStarred(false);
+  const showFile = (allFiles, recentFiles, starredFiles) =>{
+    
+    setFileUpdate({
+      allFileUpload: allFiles,
+      recentFileUpload: recentFiles,
+      starredFiles: starredFiles,
+    })
+    setFolderUpdate({
+      allFolderUpload: false,
+      recentFolderUpload: false,
+      starredFolder: false,
+    })
   };
 
-  const handleRecentUpload = () =>{
-    setAllUpload(false);
-    setRecentUpload(true);
-    setStarred(false);
-  };
-
-  const handleStarred = () =>{
-    setAllUpload(false);
-    setRecentUpload(false);
-    setStarred(true);
+  const showFolder = (allFolders, recnetFolders, starredFolders) =>{
+    
+    setFileUpdate({
+      allFileUpload: false,
+      recentFileUpload: false,
+      starredFiles: false,
+    })
+    setFolderUpdate({
+      allFolderUpload: allFolders,
+      recentFolderUpload: recnetFolders,
+      starredFolder: starredFolders,
+    })
   };
 
   const menuId = 'primary-search-account-menu';
@@ -305,23 +324,38 @@ export default function MiniDrawer(props) {
         </div>
         <Divider />
         <List>
-        <ListItem button onClick={handleAllUpload}>
-          <ListItemIcon> <InboxIcon/> </ListItemIcon>
-          <ListItemText> All Upload </ ListItemText>
-        </ListItem>
-        <ListItem button onClick={handleRecentUpload}>
-          <ListItemIcon> <RecentActorsIcon/> </ListItemIcon>
-          <ListItemText> Recent Upload </ListItemText>
-        </ListItem>
-        <ListItem button onClick={handleStarred}>
-          <ListItemIcon> <StarIcon/> </ListItemIcon>
-          <ListItemText> Starred </ListItemText>
-        </ListItem>
+          <ListItem button onClick={ () => showFile(true, false, false)}>
+            <ListItemIcon> <InboxIcon/> </ListItemIcon>
+            <ListItemText> All Files </ ListItemText>
+          </ListItem>
+          <ListItem button onClick={ () => showFile(false, true, false)}>
+            <ListItemIcon> <RecentActorsIcon/> </ListItemIcon>
+            <ListItemText> Recent Files </ListItemText>
+          </ListItem>
+          <ListItem button onClick={ () => showFile(false, false, true)}>
+            <ListItemIcon> <StarIcon/> </ListItemIcon>
+            <ListItemText> Starred Files </ListItemText>
+          </ListItem>
+        </List>
+        <Divider />
+        <List>
+          <ListItem button onClick={ () => showFolder(true, false, false)}>
+            <ListItemIcon> <i className = "fas fa-folder"></i> </ListItemIcon>
+            <ListItemText> All Folders </ ListItemText>
+          </ListItem>
+          <ListItem button onClick={ () => showFolder(false, true, false)}>
+            <ListItemIcon> <RecentActorsIcon/> </ListItemIcon>
+            <ListItemText> Recent Folders </ListItemText>
+          </ListItem>
+          <ListItem button onClick={ () => showFolder(false, false, true)}>
+            <ListItemIcon> <StarIcon/> </ListItemIcon>
+            <ListItemText> Starred Folders</ListItemText>
+          </ListItem>
         </List>
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-          <Dropzone id={id} name={name} searchFiled = {searchFiled} allUpload = {allUpload} recentUpload = {recentUpload} starred = {starred} /> 
+          <Dropzone id={id} name={name} searchFiled = {searchFiled} allFileUpload = {fileUpdate.allFileUpload} recentFileUpload = {fileUpdate.recentFileUpload} starredFiles = {fileUpdate.starredFiles}  allFolderUpload = {folderUpdate.allFolderUpload} recentFolderUpload = {folderUpdate.recentFolderUpload} starredFolder={folderUpdate.starredFolder} /> 
       </main>
     </div>
   );
