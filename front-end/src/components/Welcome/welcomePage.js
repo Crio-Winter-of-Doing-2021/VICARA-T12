@@ -19,15 +19,14 @@ import ChevronLeftIcon from '@material-ui/icons/ChevronLeft';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
-import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/MoveToInbox';   
+import ListItemText from '@material-ui/core/ListItemText';  
 import Dropzone from '../Dropzone/dropzone.component'
-import StarIcon from '@material-ui/icons/Star';
-import RecentActorsIcon from '@material-ui/icons/RecentActors';
 import InputBase from '@material-ui/core/InputBase';
 import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
-
+//import { faFolder, faFolderOpen,  faStar, faFile, faCopy } from "@fortawesome/free-solid-svg-icons";
+import { faFolder, faFolderOpen,  faStar, faFile, faCopy } from '@fortawesome/free-regular-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const drawerWidth = 240;
 
@@ -156,14 +155,12 @@ export default function MiniDrawer(props) {
     allFileUpload: true,
 		recentFileUpload: false,
 		starredFiles: false,
-	});
-  const initialfolderUpdate = Object.freeze({
     allFolderUpload: false,
 		recentFolderUpload: false,
 		starredFolder: false,
 	});
+
   const [fileUpdate, setFileUpdate] = useState(initalfileUpdate);
-  const [folderUpdate, setFolderUpdate] = useState(initialfolderUpdate);
 
    useEffect(() => {
     setNames(loc.state.detail.name);
@@ -203,30 +200,13 @@ export default function MiniDrawer(props) {
     setSearchField(event.target.value);
   };
   
-  const showFile = (allFiles, recentFiles, starredFiles) =>{
-    
+  const showFilesFolders = (allFiles, recentFiles, starredFiles, allFolders, recentFolders, starredFolders) =>{ 
     setFileUpdate({
       allFileUpload: allFiles,
       recentFileUpload: recentFiles,
       starredFiles: starredFiles,
-    })
-    setFolderUpdate({
-      allFolderUpload: false,
-      recentFolderUpload: false,
-      starredFolder: false,
-    })
-  };
-
-  const showFolder = (allFolders, recnetFolders, starredFolders) =>{
-    
-    setFileUpdate({
-      allFileUpload: false,
-      recentFileUpload: false,
-      starredFiles: false,
-    })
-    setFolderUpdate({
       allFolderUpload: allFolders,
-      recentFolderUpload: recnetFolders,
+      recentFolderUpload: recentFolders,
       starredFolder: starredFolders,
     })
   };
@@ -324,39 +304,94 @@ export default function MiniDrawer(props) {
         </div>
         <Divider />
         <List>
-          <ListItem button onClick={ () => showFile(true, false, false)}>
-            <ListItemIcon> <InboxIcon/> </ListItemIcon>
+          <ListItem button onClick={ () => showFilesFolders(true, false, false, false, false, false)}>
+              <ListItemIcon>
+                { 
+                  fileUpdate.allFileUpload &&
+                    <FontAwesomeIcon icon={faFile} size="2x" style={ {color:"orange" } }  />
+                } 
+                {
+                  !fileUpdate.allFileUpload &&
+                    <FontAwesomeIcon icon={faFile} size="2x"/> 
+                }
+              </ListItemIcon>
             <ListItemText> All Files </ ListItemText>
           </ListItem>
-          <ListItem button onClick={ () => showFile(false, true, false)}>
-            <ListItemIcon> <RecentActorsIcon/> </ListItemIcon>
+          <ListItem button onClick={ () => showFilesFolders(false, true, false, false, false, false)}>
+            <ListItemIcon>
+              {
+                fileUpdate.recentFileUpload &&
+                  <FontAwesomeIcon icon={faCopy} size="2x" style={ {color:"orange" } } />
+              } 
+              {
+                !fileUpdate.recentFileUpload &&
+                  <FontAwesomeIcon icon={faCopy} size="2x" /> 
+              }
+            </ListItemIcon>
             <ListItemText> Recent Files </ListItemText>
           </ListItem>
-          <ListItem button onClick={ () => showFile(false, false, true)}>
-            <ListItemIcon> <StarIcon/> </ListItemIcon>
+          <ListItem button onClick={ () => showFilesFolders(false, false, true, false, false, false)}>
+            <ListItemIcon>
+              {
+                fileUpdate.starredFiles &&
+                <FontAwesomeIcon icon={faStar} size="2x" style={ {color:"orange" } } />
+              } 
+              {
+                !fileUpdate.starredFiles &&
+                  <FontAwesomeIcon icon={faStar} size="2x" />
+              } 
+            </ListItemIcon>
             <ListItemText> Starred Files </ListItemText>
           </ListItem>
         </List>
         <Divider />
         <List>
-          <ListItem button onClick={ () => showFolder(true, false, false)}>
-            <ListItemIcon> <i className = "fas fa-folder"></i> </ListItemIcon>
+          <ListItem button onClick={ () => showFilesFolders(false, false, false, true, false, false)} >
+            <ListItemIcon>
+            {
+              fileUpdate.allFolderUpload &&
+                <FontAwesomeIcon icon={faFolder} size="2x" style={ {color:"orange" } } />
+            } 
+            {
+              !fileUpdate.allFolderUpload &&
+                <FontAwesomeIcon icon={faFolder} size="2x" />
+            } 
+            </ListItemIcon>
             <ListItemText> All Folders </ ListItemText>
           </ListItem>
-          <ListItem button onClick={ () => showFolder(false, true, false)}>
-            <ListItemIcon> <RecentActorsIcon/> </ListItemIcon>
+          <ListItem button onClick={ () => showFilesFolders(false, false, false, false, true, false)} >
+            <ListItemIcon> 	
+            {
+              fileUpdate.recentFolderUpload &&
+                <FontAwesomeIcon icon={faFolderOpen} size="2x" style={ {color:"orange" } } />
+            } 
+            {
+              !fileUpdate.recentFolderUpload &&
+                <FontAwesomeIcon icon={faFolderOpen} size="2x" />
+            } 
+            </ListItemIcon>
             <ListItemText> Recent Folders </ListItemText>
           </ListItem>
-          <ListItem button onClick={ () => showFolder(false, false, true)}>
-            <ListItemIcon> <StarIcon/> </ListItemIcon>
+          <ListItem button onClick={ () => showFilesFolders(false, false, false, false, false, true)} >
+            <ListItemIcon> 
+            {
+              fileUpdate.starredFolder &&
+                < FontAwesomeIcon icon={faStar} size="2x" style={ {color:"orange" } } />
+            } 
+            {
+              !fileUpdate.starredFolder &&
+                < FontAwesomeIcon icon={faStar} size="2x" />
+            } 
+            </ListItemIcon>
             <ListItemText> Starred Folders</ListItemText>
           </ListItem>
         </List>
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-          <Dropzone id={id} name={name} searchFiled = {searchFiled} allFileUpload = {fileUpdate.allFileUpload} recentFileUpload = {fileUpdate.recentFileUpload} starredFiles = {fileUpdate.starredFiles}  allFolderUpload = {folderUpdate.allFolderUpload} recentFolderUpload = {folderUpdate.recentFolderUpload} starredFolder={folderUpdate.starredFolder} /> 
+          <Dropzone id={id} name={name} searchFiled = {searchFiled} allFileUpload = {fileUpdate.allFileUpload} recentFileUpload = {fileUpdate.recentFileUpload} starredFiles = {fileUpdate.starredFiles}  allFolderUpload = {fileUpdate.allFolderUpload} recentFolderUpload = {fileUpdate.recentFolderUpload} starredFolder={fileUpdate.starredFolder} /> 
       </main>
     </div>
   );
 }
+
