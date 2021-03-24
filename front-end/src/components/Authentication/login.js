@@ -12,7 +12,8 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const useStyles = makeStyles((theme) => ({
 	paper: {
@@ -54,6 +55,7 @@ export default function Login(props) {
 	});
 	const [formData, updateFormData] = useState(initialFormData);
 	const [open, setOpen] = useState(false);
+	const [error, setError] = useState(true);
 	// Saving data typed into the state 
 	const handleChange = (e) => {
         updateFormData({
@@ -62,9 +64,33 @@ export default function Login(props) {
         });
 	};
 
+	toast.configure();
+	function toastContainerFunction(errorMessage) {
+		toast.error(errorMessage, {
+		position: "top-center",
+		autoClose: 5000,
+		hideProgressBar: false,
+		closeOnClick: true,
+		pauseOnHover: true,
+		draggable: true,
+		progress: undefined,
+		});
+    	return (
+          <ToastContainer
+            position="top-center"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            />
+      	);
+  	}
 	// Handling the submit using axious ( Post )  Base URL is hard-coded.
 	const handleSubmit = (e) => {
-		
 		e.preventDefault();
 		axiosInstance
 			.post('/api/auth/',{
@@ -79,7 +105,7 @@ export default function Login(props) {
 			})
 			.catch(error => {
 				// If invalid data is given, reset the state so data is cleared. 
-				console.log(error);
+				toastContainerFunction(error.response.data)
 				updateFormData({
 					...formData,
 					'email': '',
@@ -104,17 +130,34 @@ export default function Login(props) {
 				<form className={classes.form} noValidate>
 					<Grid container spacing={2}>
 						<Grid item xs={12}>
-							<TextField
-								variant="outlined"
-								required
-								fullWidth
-								id="email"
-								label="email"
-								name="email"
-								autoComplete="email"
-								value={formData.email}
-								onChange={handleChange}
-							/>
+							{
+								!error &&
+								<TextField
+									variant="outlined"
+									required
+									fullWidth
+									id="email"
+									label="email"
+									name="email"
+									autoComplete="email"
+									value={formData.email}
+									onChange={handleChange}
+								/>
+							}
+							{
+								error &&
+								<TextField
+									variant="outlined"
+									required
+									fullWidth
+									id="email"
+									label="email"
+									name="email"
+									autoComplete="email"
+									value={formData.email}
+									onChange={handleChange}
+								/>
+							}
 						</Grid>
 						<Grid item xs={12}>
 							<TextField

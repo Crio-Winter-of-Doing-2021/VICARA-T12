@@ -23,7 +23,9 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import LoadCircularProgress from '../Main/circularProgress';
 import fileService from '../../services/file.service';
-
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './dropzone.component.css'
 
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
@@ -67,7 +69,7 @@ const useStyles = makeStyles((theme) => ({
     alignContent: 'center',
     alignItems: 'center',
     justifyContent: 'center',
-  }
+  },
 }));
 
 export default function Dropzone(props){
@@ -101,7 +103,6 @@ export default function Dropzone(props){
   const [anchorEl, setAnchorEl] = useState(null);
   const [userDetails, setUserDetails] = useState({});
   const [userName, setUserName] = useState({});
-  const [uploaded, setUploaded] = useState(false);
   const [isloading, setLoading] = useState(false);
   const option = [
     'Choose File',
@@ -113,16 +114,16 @@ export default function Dropzone(props){
 
   const makefavouriteFile= (fileID)=>{
     FileService.updateFavouriteFiles(fileID).then(()=>{
-      let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"]==fileID);
-      let newfilesinDB =[...filesinDB];
-      newfilesinDB[foundIndex]={...newfilesinDB[foundIndex], favourite:!(newfilesinDB[foundIndex]["favourite"])}
+      let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
+      let newfilesinDB = [...filesinDB];
+      newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], favourite:!(newfilesinDB[foundIndex]["favourite"])}
       setfilesinDB(newfilesinDB);   
     })
   };
  
   const makefavouriteFolder= (fileID)=>{
     FileService.updateFavouriteFolders(fileID).then(()=>{
-      let foundIndex = foldersinDB.findIndex((fileinDB)=>fileinDB["_id"]==fileID);
+      let foundIndex = foldersinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
       let newfoldersinDB =[...foldersinDB];
       newfoldersinDB[foundIndex]={...newfoldersinDB[foundIndex], favourite:!(newfoldersinDB[foundIndex]["favourite"])}
       setfoldersinDB(newfoldersinDB);   
@@ -137,10 +138,7 @@ export default function Dropzone(props){
   }
 
   const handleFiles = (files) => {  
-
     for(let i = 0; i < files.length; i++){       
-        //setSelectedFiles(prevArray => [...prevArray, files[i]]);
-        
         uploadFiles(files[i]);
     }    
   }
@@ -148,10 +146,37 @@ export default function Dropzone(props){
     setAnchorEl(null);
   };
 
+  toast.configure();
+  function toastContainerFunction() {
+    toast.success(' Upload Successful!', {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+      return (
+          <ToastContainer
+            position="bottom-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            />
+      );
+  }
+
   const uploadFiles = (file) => {
    FileService.upload(file, [userDetails])
    .then(
     (docs)=>{
+      toastContainerFunction()
       setLoading(false)
       setfilesinDB(prevArray=>[...prevArray, docs["data"]]);
     })
@@ -181,13 +206,13 @@ export default function Dropzone(props){
 
   const removeFile = (fileID)=>{
     FileService.removeFile(fileID).then(()=>{
-      setfilesinDB(filesinDB.filter((file)=>file["_id"]!=fileID));
+      setfilesinDB(filesinDB.filter((file)=>file["_id"] !== fileID));
     })
   }
 
   const removeFolder = (folderID)=>{
     FileService.removeFolder(folderID).then(()=>{
-      setfoldersinDB(foldersinDB.filter((folder)=>folder["_id"]!=folderID));
+      setfoldersinDB(foldersinDB.filter((folder)=>folder["_id"] !== folderID));
     })
   }
 
@@ -230,17 +255,13 @@ export default function Dropzone(props){
       return parseFloat((size / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   } 
 
-  const getCards = (filedata) =>{
-
-      
-  }
-
   return (
     <React.Fragment>
       <CssBaseline />
       <Container 
         maxWidth="lg" className="dropContainer"
       >
+
         <Typography 
           onDragOver={dragOver}
           onDragEnter={dragEnter}
@@ -249,9 +270,42 @@ export default function Dropzone(props){
           component="div" style={{ top:'10vh', height: '100vh' }}
         > 
           <div className={classes.encapculate}>
-            <Typography variant="h2" component="h5" className={classes.heading}>
-                All Upload
-            </Typography>
+            {
+              props.allFileUpload &&
+                <Typography variant="h2" component="h5" className={classes.heading}>
+                  All Files
+                </Typography>
+            }
+            {
+              props.recentFileUpload &&
+                <Typography variant="h2" component="h5" className={classes.heading}>
+                  Recent Files
+                </Typography>
+            }
+            {
+              props.starredFiles &&
+                <Typography variant="h2" component="h5" className={classes.heading}>
+                  Starred Files
+                </Typography>
+            }
+            {
+              props.allFolderUpload &&
+                <Typography variant="h2" component="h5" className={classes.heading}>
+                  All Folders
+                </Typography>
+            }
+            {
+              props.recentFolderUpload &&
+                <Typography variant="h2" component="h5" className={classes.heading}>
+                  Recent Folders
+                </Typography>
+            }
+            {
+              props.starredFolder &&
+                <Typography variant="h2" component="h5" className={classes.heading}>
+                  Starred Folders
+                </Typography>
+            }
             <Button
               variant="contained"
               className={classes.button}
@@ -269,33 +323,32 @@ export default function Dropzone(props){
             open={Boolean(anchorEl)}
             onClose={handleClose}
           >
-          <MenuItem key={option} selected={option === 'Choose File'} onClick={handleClose}>
-            <Button
-              variant="contained"
-              component="label"
-              onClick = {fetchData}
-            >
-              Choose File
-              <input
-                type="file"
-                className="file-input"
-                hidden
-                multiple
-                onChange={(e) => handleFiles(e.target.files)}
-              />
-            </Button>
-            <Button
-              variant="contained"
-              component="label"
-              
-            >
-              Choose Folder
-              < input  directory="" webkitdirectory="" type="file"
-              hidden
-                onChange={(e) => handleFolder(e)}
-              />
-            </Button>
-          </MenuItem>        
+            <MenuItem key={option} selected={option === 'Choose File'} onClick={handleClose}>
+              <Button
+                variant="contained"
+                component="label"
+                onClick = {fetchData}
+              >
+                Choose File
+                <input
+                  type="file"
+                  className="file-input"
+                  hidden
+                  multiple
+                  onChange={(e) => handleFiles(e.target.files)}
+                />
+              </Button>
+              <Button
+                variant="contained"
+                component="label"
+              >
+                Choose Folder
+                < input  directory="" webkitdirectory="" type="file"
+                  hidden
+                  onChange={(e) => handleFolder(e)}
+                />
+              </Button>
+            </MenuItem>        
           </Menu>   
           <div className="file-display-container">
             {
