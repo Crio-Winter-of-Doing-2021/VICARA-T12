@@ -1,4 +1,3 @@
-
 require("dotenv").config();
 const express = require("express");
 const router = express.Router();
@@ -21,42 +20,42 @@ const s3FileURL = process.env.AWS_Uploaded_File_URL_Link;
 router.get('/folder/:id', async(req,res,next)=>{
   console.log(req.params.id);
     FOLDER.find(
-       
-        {'users':ObjectId(req.params.id),
-          'isIndependant':true},
-        null,
-        {
-          sort: { createdAt: 1 }
-        },
-        (err, docs) => {
-          if (err) {
-            return next(err);
-          }
-          
-          res.status(200).send(docs);
+      {
+        'users':ObjectId(req.params.id),
+        'isIndependant':true 
+      },
+      null,
+      {
+        sort: { createdAt: 1 }
+      },
+      (err, docs) => {
+        if (err) {
+          return next(err);
         }
-      );
+        res.status(200).send(docs);
+      }
+    );
 });
 
 
 router.get('/:id', async(req,res,next)=>{
   console.log(req.params.id);
-    FILE.find(
-       
-        {'users':ObjectId(req.params.id),
-          'isIndependant':true},
-        null,
-        {
-          sort: { createdAt: 1 }
-        },
-        (err, docs) => {
-          if (err) {
-            return next(err);
-          }
-          
-          res.status(200).send(docs);
-        }
-      );
+    FILE.find(       
+      {
+        'users':ObjectId(req.params.id),
+        'isIndependant':true
+      },
+      null,
+      {
+        sort: { createdAt: 1 }
+      },
+      (err, docs) => {
+        if (err) {
+          return next(err);
+        }  
+        res.status(200).send(docs);
+      }
+    );
 });
 
 router.delete('/folder/:id', async(req,res,next)=>{
@@ -65,60 +64,61 @@ router.delete('/folder/:id', async(req,res,next)=>{
     {
       console.log(docs);
       FOLDER.findByIdAndDelete(req.params["id"], (error, deleteddoc)=>{
-         if(!err)
-         {
-           res.status(200).send(deleteddoc);
-
-         }
-         else
-         res.status(500).send(error);
+        if(!err)
+        {
+          res.status(200).send(deleteddoc);
+        }
+        else
+          res.status(500).send(error);
       })
     }
     else
-    res.status(500).send(err);
-  });
-  
+      res.status(500).send(err);
+  }); 
 });
 
 router.delete('/:id', async(req,res,next)=>{
-console.log(req.params.id);
-
-FILE.findOneAndDelete({ _id: ObjectId(req.params["id"]) }, (err,docs)=>{
-  if(err){
-    return next(err);
-  }
-  else if(docs!=null){
-
-    var params = {  Bucket: process.env.AWS_BUCKET_NAME, Key: docs["s3_key"] };
-
-s3bucket.deleteObject(params, function(err, data) {
-  if (err) {
-
-    console.log(err, err.stack);  
-    res.status(500).send(err);
-  }// error
-  else    {
-    res.status(200).send(docs);
-  }                 // deleted
-});
-  }
-  
+  console.log(req.params.id);
+  FILE.findOneAndDelete({ _id: ObjectId(req.params["id"]) }, (err,docs)=>{
+    if(err){
+      return next(err);
+    }
+    else if(docs!=null){
+      var params = {  Bucket: process.env.AWS_BUCKET_NAME, Key: docs["s3_key"] };
+      s3bucket.deleteObject(params, function(err, data) {
+        if (err) {
+          console.log(err, err.stack);  
+          res.status(500).send(err);
+        }// error
+        else{
+          res.status(200).send(docs);
+        }                 // deleted
+      });
+    }
+  });
 });
 
-
-});
-
-router.patch('/:id', async(req,res,next)=>{
+router.patch('/files/:id', async(req,res,next)=>{
   console.log(req.params.id);
   FILE.findOne({ _id: req.params.id }, function(err, docs) {
     docs.favourite = !(docs.favourite);
     docs.save(function(err, updatedDoc) {
       if(!err)res.status(200).send(updatedDoc)
       else res.status(500).send(err);
-    });
-});
+    }); 
+  });
 });
 
+router.patch('/folder/:id', async(req,res,next)=>{
+  console.log(req.params.id);
+  FOLDER.findOne({ _id: req.params.id }, function(err, docs) {
+    docs.favourite = !(docs.favourite);
+    docs.save(function(err, updatedDoc) {
+      if(!err)res.status(200).send(updatedDoc)
+      else res.status(500).send(err);
+    }); 
+  });
+});
 
 router.post('/folder', upload.single('file'), async(req, res, next)=>{
 

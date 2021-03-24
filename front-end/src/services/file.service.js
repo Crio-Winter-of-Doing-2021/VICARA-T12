@@ -39,29 +39,33 @@ class FileService{
       headers: {
         "Content-Type": "multipart/form-data; charset=utf-8;"
       }
-    })
-
-
-   
+    })   
   }
 
-getFolders(id){
-  if(id)
-    return axiosInstance.get(`api/upload/folder/${id["id"]}`);
-}
+  getFolders(id){
+    if(id)
+      return axiosInstance.get(`api/upload/folder/${id["id"]}`);
+  }
   getFiles(id) {
-    
     console.log(id["id"]);
     if(id)
-    return axiosInstance.get(`api/upload/${id["id"]}`);
-
+      return axiosInstance.get(`api/upload/${id["id"]}`);
+  }
+  updateFavouriteFiles(id){
+    return axiosInstance
+    .patch(`api/upload/files/${id}`,{
+    })
+    .then(response => { 
+      console.log(response)
+   })
+    .catch(error => {
+      console.log(error);
+    });
   }
 
-
-
-  updateFavourite(id){
+  updateFavouriteFolders(id){
     return axiosInstance
-    .patch(`api/upload/${id}`,{
+    .patch(`api/upload/folder/${id}`,{
     })
     .then(response => { 
       console.log(response)
