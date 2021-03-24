@@ -12,6 +12,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import { Box } from '@material-ui/core';
 import Divider from '@material-ui/core/Divider';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const useStyles = makeStyles((theme) => ({
 	paper: {
@@ -64,6 +66,31 @@ export default function Register(props) {
 		//validateField(name, value)
 	};
 
+	toast.configure();
+	function toastContainerFunction(errorMessage) {
+		toast.error(errorMessage, {
+		position: "top-center",
+		autoClose: 5000,
+		hideProgressBar: false,
+		closeOnClick: true,
+		pauseOnHover: true,
+		draggable: true,
+		progress: undefined,
+		});
+    	return (
+          <ToastContainer
+            position="top-center"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            />
+      	);
+  	}
 	// Handling the submit using axious ( Post )  Base URL is hard-coded.
 	const handleSubmit = (e) => {
 		e.preventDefault();
@@ -74,12 +101,12 @@ export default function Register(props) {
 				password: formData.password,
 				confirmPassword: formData.confirmPassword,
 			})
-			.then(response => { 
+			.then( () => { 
 				window.location.reload();
 			})
 			.catch(error => {
 				// If invalid data is given, reset the state so data is cleared. 
-				console.log(error)
+				toastContainerFunction(error.response.data)
 				updateFormData({
 					...formData,
 					'name': '',

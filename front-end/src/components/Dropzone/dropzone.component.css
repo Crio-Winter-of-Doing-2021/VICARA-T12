@@ -1,57 +1,13 @@
-.upload-modal {
-    z-index: 999;
-    display: none;
-    overflow: hidden;
-}
-
-.upload-modal .overlay{
-    width: 100%;
-    height: 100vh;
-    background: rgba(0,0,0,.66);
-    position: absolute;
-    top: 0;
-    left: 0;
-}
-
-.progress-container {
-    background: white;
-    width: 500px;
-    height: 300px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%,-50%);
-    overflow: hidden;
-}
-
-.progress-container span {
-    display: flex;
-    justify-content: center;
-    padding-top: 20px;
-    font-size: 20px;
-}
-
-.progress {
-    width: 90%;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%,-50%);
-    background-color: #efefef;
-    height: 20px;
-    border-radius: 5px;
-}
-
-.progress-bar {
-    position: absolute;
-    background-color: #4aa1f3;
-    height: 20px;
-    border-radius: 5px;
-    text-align: center;
-    color: white;
-    font-weight: bold;
-}
-
-.error {
-    color: red;
-}
+  .Toastify__toast--info {
+    background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(236,46,4,1) 100%, rgba(6,223,240,1) 100%);
+  }
+  .Toastify__toast--success {
+    background: green;
+  }
+  .Toastify__toast--warning {
+    background: orange;
+  }
+  .Toastify__toast--error {
+    background: red;
+  }
+  
