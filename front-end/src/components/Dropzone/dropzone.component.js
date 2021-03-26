@@ -118,7 +118,8 @@ export default function Dropzone(props){
       let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
       let newfilesinDB = [...filesinDB];
       newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], favourite:!(newfilesinDB[foundIndex]["favourite"])}
-      setfilesinDB(newfilesinDB);   
+      setfilesinDB(newfilesinDB);  
+      
     })
   };
  
@@ -148,8 +149,8 @@ export default function Dropzone(props){
   };
 
   toast.configure();
-  function toastContainerFunction() {
-    toast.success(' Upload Successful!', {
+  function toastContainerFunction(message) {
+    toast.success(message, {
       position: "bottom-right",
       autoClose: 5000,
       hideProgressBar: false,
@@ -174,10 +175,11 @@ export default function Dropzone(props){
   }
 
   const uploadFiles = (file) => {
+    console.log(file);
    FileService.upload(jwtToken,file, [userDetails])
    .then(
     (docs)=>{
-      toastContainerFunction()
+      toastContainerFunction(`Uploading ${file.name} was successful`)
       setLoading(false)
       setfilesinDB(prevArray=>[...prevArray, docs["data"]]);
     })
@@ -199,21 +201,26 @@ export default function Dropzone(props){
           console.log(docs);  
           if(i===(theFiles.length-1)){
             setfoldersinDB((prevArray)=>[...prevArray, docs["data"]]);
+            toastContainerFunction(`Uploading ${folder} was successful`)
           } 
+
         })
       }
+
     });
   }
 
   const removeFile = (fileID)=>{
     FileService.removeFile(jwtToken,fileID).then(()=>{
       setfilesinDB(filesinDB.filter((file)=>file["_id"] !== fileID));
+      toastContainerFunction(`Removed!`)
     })
   }
 
   const removeFolder = (folderID)=>{
     FileService.removeFolder(jwtToken,folderID).then(()=>{
       setfoldersinDB(foldersinDB.filter((folder)=>folder["_id"] !== folderID));
+      toastContainerFunction(`removed Folder!`)
     })
   }
   useEffect(()=>{
