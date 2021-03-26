@@ -6,7 +6,6 @@ const FOLDER = require("../models/folder");
 const multer = require("multer");
 var AWS = require("aws-sdk");
 const http = require('http');
-const Axios = require('axios')
 const fs = require('fs');
 const ObjectId = require('mongoose').Types.ObjectId;
 var storage = multer.memoryStorage();

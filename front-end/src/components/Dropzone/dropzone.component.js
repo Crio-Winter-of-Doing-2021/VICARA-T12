@@ -184,7 +184,8 @@ export default function Dropzone(props){
 
   const uploadFiles = (file) => {
     console.log(file);
-   FileService.upload(jwtToken,file, [userDetails])
+    fetchData()
+    FileService.upload(jwtToken,file, [userDetails])
    .then(
     (docs)=>{
       toastContainerFunction(`Uploading ${file.name} was successful`)
@@ -202,12 +203,14 @@ export default function Dropzone(props){
     var relativePath = theFiles[0].webkitRelativePath;
     var folder = relativePath.split("/");
     folder = folder[0];
+    fetchData()
     fileService.uploadFolder(jwtToken,folder, [userDetails]).then((res)=>{
       console.log(res);
       for(let i = 0; i < theFiles.length; i++){       
         uploadFilesInFolder(res["data"]["_id"], theFiles[i]).then((docs)=>{
           console.log(docs);  
           if(i===(theFiles.length-1)){
+            setLoading(false)
             setfoldersinDB((prevArray)=>[...prevArray, docs["data"]]);
             toastContainerFunction(`Uploading ${folder} was successful`)
           } 
@@ -353,7 +356,7 @@ useEffect(()=>{
               <Button
                 variant="contained"
                 component="label"
-                onClick = {fetchData}
+                //onClick = {fetchData}
               >
                 Choose File
                 <input

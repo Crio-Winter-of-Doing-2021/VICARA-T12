@@ -31,7 +31,6 @@ class FileService{
   }
 
   uploadFolder(jwtToken,folderName, users){
-    alert(folderName);
     console.log(users);
     let formData = new FormData();
     formData.append("folderName", folderName);
