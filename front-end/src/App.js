@@ -7,6 +7,7 @@ import Register from './components/Authentication/register';
 import { CSSTransition } from 'react-transition-group';
 import Header from './components/Main/header';
 import WelcomePage from './components/Welcome/welcomePage';
+import Folderview from './components/FolderView/folderview.component';
 
 function App() {
   const [activeMenu, setActiveMenu] = useState('login');
@@ -59,6 +60,11 @@ function App() {
             <Route path="/welcome">
               <WelcomePage/>
             </Route>
+        </Switch>
+        <Switch>
+          <Route path='/folderview'>
+            <Folderview/>
+          </Route>
         </Switch>
       </BrowserRouter>
     </div>

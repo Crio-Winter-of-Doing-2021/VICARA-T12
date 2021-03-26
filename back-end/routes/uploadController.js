@@ -7,6 +7,7 @@ const multer = require("multer");
 var AWS = require("aws-sdk");
 const ObjectId = require('mongoose').Types.ObjectId;
 var storage = multer.memoryStorage();
+const util = require('util')
 var upload = multer({storage:storage});
 const Path = require('path');
 const s3bucket = new AWS.S3({
@@ -23,7 +24,32 @@ async function getFileUrl(fileName){
   
 }
 
+router.get(`/displayfileswithinfolder/:dets`, async(req,res,next)=>{
+ 
+ 
+console.log(`thou art here`);
+let folderId = req.params.dets.split(',')[0]
+let userId = req.params.dets.split(',')[1];
 
+
+FILE.find(       
+  {
+    'users':ObjectId(userId),
+    'parentFolder': folderId
+  },
+  null,
+  {
+    sort: { createdAt: 1 }
+  },
+  (err, docs) => {
+    if (err) {
+      return next(err);
+    }  
+    console.log(docs);
+    res.status(200).send(docs);
+  }
+);
+});
 
 router.get('/url/:fileName', async(req,res, next)=>{
   console.log(req.params.fileName);
