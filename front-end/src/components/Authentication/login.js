@@ -15,6 +15,7 @@ import Divider from '@material-ui/core/Divider';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
+const jwtTokenDescription ={};
 const useStyles = makeStyles((theme) => ({
 	paper: {
 		marginTop: theme.spacing(8),
@@ -100,8 +101,11 @@ export default function Login(props) {
 			.then(response => { 
 				console.log(response);
 				//alert(response);
+				
 				history.push({ pathname: '/welcome',
 			    				state: { detail: response.data }})
+								
+		      
 			})
 			.catch(error => {
 				// If invalid data is given, reset the state so data is cleared. 
