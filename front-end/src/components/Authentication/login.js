@@ -101,6 +101,7 @@ export default function Login(props) {
 			.then(response => { 
 				console.log(response);
 				//alert(response);
+				
 				history.push({ pathname: '/welcome',
 			    				state: { detail: response.data }})
 								

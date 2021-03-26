@@ -138,6 +138,10 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const initialState = {
+  
+};
+
 export default function MiniDrawer(props) {
   const loc = useLocation();
   const history = useHistory();
@@ -197,10 +201,11 @@ export default function MiniDrawer(props) {
   const logoutFunction = () => {
     // eslint-disable-next-line no-restricted-globals
    
-    history.push({ pathname: '/',
+    history.replace({ pathname: '/',
                   state: { detail: "" }}
-                 
+                  
                 )
+
   };
 
   const searchFunction = (event) =>{
