@@ -18,7 +18,7 @@ import CardActions from '@material-ui/core/CardActions';
 import CardHeader from '@material-ui/core/CardHeader';
 import Grid from '@material-ui/core/Grid';
 import StarBorderIcon from '@material-ui/icons/StarBorder';
-import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
+import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import LoadCircularProgress from '../Main/circularProgress';
@@ -128,7 +128,7 @@ export default function Dropzone(props){
    FileService.downloadFile(jwtToken, fileName).then((link)=>{
      console.log(link["data"]);
       window.open(link["data"],"_blank")
-        toastContainerFunction(`${fileName} downloaded`);
+        
    })
   }
   const makefavouriteFolder= (fileID)=>{
@@ -419,7 +419,7 @@ useEffect(()=>{
                                     </IconButton>
                                   </div>
                                   <IconButton aria-label="share" className={classes.download}>
-                                    <CloudDownloadIcon onClick={()=>{downloadFile(filedata["s3_key"])}}/>
+                                    <OpenInNewIcon onClick={()=>{downloadFile(filedata["s3_key"])}}/>
                                   </IconButton>
                                 </CardActions>
                               </CardContent>
@@ -473,7 +473,7 @@ useEffect(()=>{
                               </IconButton>
                             </div>
                             <IconButton aria-label="share" className={classes.download}>
-                              <CloudDownloadIcon onClick={()=>{downloadFile(filedata["s3_key"])}}/>
+                              <OpenInNewIcon onClick={()=>{downloadFile(filedata["s3_key"])}}/>
                             </IconButton>
                           </CardActions>
                           </CardContent>
@@ -526,7 +526,7 @@ useEffect(()=>{
                         </IconButton>
                       </div>
                         <IconButton aria-label="share" className={classes.download}>
-                          <CloudDownloadIcon onClick={()=>{downloadFile(filedata["s3_key"])}} />
+                          <OpenInNewIcon onClick={()=>{downloadFile(filedata["s3_key"])}} />
                         </IconButton>
                       </CardActions>
                       </CardContent>
@@ -578,7 +578,7 @@ useEffect(()=>{
                         { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                       </IconButton>
                         <IconButton aria-label="share" className={classes.download}>
-                          <CloudDownloadIcon/>
+                          <OpenInNewIcon/>
                         </IconButton>
                       </CardActions>
                       </CardContent>
@@ -629,7 +629,7 @@ useEffect(()=>{
                         { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                       </IconButton>
                         <IconButton aria-label="share" className={classes.download}>
-                          <CloudDownloadIcon />
+                          <OpenInNewIcon />
                         </IconButton>
                       </CardActions>
                       </CardContent>
@@ -680,7 +680,7 @@ useEffect(()=>{
                         { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                       </IconButton>
                         <IconButton aria-label="share" className={classes.download}>
-                          <CloudDownloadIcon />
+                          <OpenInNewIcon />
                         </IconButton>
                       </CardActions>
                       </CardContent>
