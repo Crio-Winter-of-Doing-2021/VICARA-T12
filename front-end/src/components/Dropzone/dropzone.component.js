@@ -122,7 +122,15 @@ export default function Dropzone(props){
       
     })
   };
- 
+  
+
+  const downloadFile=(fileName)=>{
+   FileService.downloadFile(jwtToken, fileName).then((link)=>{
+     console.log(link["data"]);
+      window.open(link["data"],"_blank")
+        toastContainerFunction(`${fileName} downloaded`);
+   })
+  }
   const makefavouriteFolder= (fileID)=>{
     FileService.updateFavouriteFolders(jwtToken,fileID).then(()=>{
       let foundIndex = foldersinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
@@ -411,7 +419,7 @@ useEffect(()=>{
                                     </IconButton>
                                   </div>
                                   <IconButton aria-label="share" className={classes.download}>
-                                    <CloudDownloadIcon />
+                                    <CloudDownloadIcon onClick={()=>{downloadFile(filedata["s3_key"])}}/>
                                   </IconButton>
                                 </CardActions>
                               </CardContent>
@@ -465,7 +473,7 @@ useEffect(()=>{
                               </IconButton>
                             </div>
                             <IconButton aria-label="share" className={classes.download}>
-                              <CloudDownloadIcon />
+                              <CloudDownloadIcon onClick={()=>{downloadFile(filedata["s3_key"])}}/>
                             </IconButton>
                           </CardActions>
                           </CardContent>
@@ -518,7 +526,7 @@ useEffect(()=>{
                         </IconButton>
                       </div>
                         <IconButton aria-label="share" className={classes.download}>
-                          <CloudDownloadIcon />
+                          <CloudDownloadIcon onClick={()=>{downloadFile(filedata["s3_key"])}} />
                         </IconButton>
                       </CardActions>
                       </CardContent>
@@ -570,7 +578,7 @@ useEffect(()=>{
                         { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                       </IconButton>
                         <IconButton aria-label="share" className={classes.download}>
-                          <CloudDownloadIcon />
+                          <CloudDownloadIcon/>
                         </IconButton>
                       </CardActions>
                       </CardContent>

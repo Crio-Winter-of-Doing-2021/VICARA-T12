@@ -45,6 +45,15 @@ class FileService{
     })   
   }
 
+  downloadFile(jwtToken, fileName){
+    
+    return axiosInstance.get(`api/upload/url/${fileName}`,{
+      headers:{
+        'Authorization': `${jwtToken}`
+      }
+    })
+  }
+
   getFolders(jwtToken, id){
     if(id)
       return axiosInstance.get(`api/upload/folder/${id["id"]}`,{

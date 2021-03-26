@@ -5,10 +5,13 @@ const FILE = require("../models/file");
 const FOLDER = require("../models/folder");
 const multer = require("multer");
 var AWS = require("aws-sdk");
-const fileUpload = require('express-fileupload');
+const http = require('http');
+const Axios = require('axios')
+const fs = require('fs');
 const ObjectId = require('mongoose').Types.ObjectId;
 var storage = multer.memoryStorage();
 var upload = multer({storage:storage});
+const Path = require('path');
 const s3bucket = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -20,33 +23,38 @@ const s3FileURL = process.env.AWS_Uploaded_File_URL_Link;
 
 
 async function getFileUrl(fileName){
-  console.log(fileName);
-   
-
-
-   const params = {
-    Bucket: 'files-vicara-drive',
-    Key: 'contact-lens-conversion.jpeg',
-    Expires: 60 * 5
-  };
-try {
-    const url = await new Promise((resolve, reject) => {
-      s3bucket.getSignedUrl('getObject', params, (err, url) => {
-        err ? reject(err) : resolve(url);
-      });
-    });
-    console.log(url)
-    res.send(url);
-  } catch (err) {
-    if (err) {
-      console.log(err)
-    }
-  }
+  
 }
 
 
 
+router.get('/url/:fileName', async(req,res, next)=>{
+  console.log(req.params.fileName);
+   
 
+
+  const params = {
+   Bucket: 'files-vicara-drive',
+   Key: req.params.fileName,
+   Expires: 60 * 5
+ };
+try {
+   const url = await new Promise((resolve, reject) => {
+     s3bucket.getSignedUrl('getObject', params, (err, url) => {
+       err ? reject(err) : resolve(url);
+     });
+   });
+   console.log(url);
+   
+  res.status(200).send(url);
+
+ } catch (err) {
+   if (err) {
+     console.log(err);
+     res.status(500).send(err);
+   }
+ }
+});
 
 router.get('/folder/:id', async(req,res,next)=>{
   console.log(req.params.id);
