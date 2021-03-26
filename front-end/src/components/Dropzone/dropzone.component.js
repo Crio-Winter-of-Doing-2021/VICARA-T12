@@ -104,6 +104,7 @@ export default function Dropzone(props){
   const [userDetails, setUserDetails] = useState({});
   const [userName, setUserName] = useState({});
   const [isloading, setLoading] = useState(false);
+  const [jwtToken, setjwtToken] = useState("");
   const option = [
     'Choose File',
     'Choose Folder'
@@ -113,7 +114,7 @@ export default function Dropzone(props){
   };
 
   const makefavouriteFile= (fileID)=>{
-    FileService.updateFavouriteFiles(fileID).then(()=>{
+    FileService.updateFavouriteFiles(jwtToken,fileID).then(()=>{
       let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
       let newfilesinDB = [...filesinDB];
       newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], favourite:!(newfilesinDB[foundIndex]["favourite"])}
@@ -122,7 +123,7 @@ export default function Dropzone(props){
   };
  
   const makefavouriteFolder= (fileID)=>{
-    FileService.updateFavouriteFolders(fileID).then(()=>{
+    FileService.updateFavouriteFolders(jwtToken,fileID).then(()=>{
       let foundIndex = foldersinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
       let newfoldersinDB =[...foldersinDB];
       newfoldersinDB[foundIndex]={...newfoldersinDB[foundIndex], favourite:!(newfoldersinDB[foundIndex]["favourite"])}
@@ -173,7 +174,7 @@ export default function Dropzone(props){
   }
 
   const uploadFiles = (file) => {
-   FileService.upload(file, [userDetails])
+   FileService.upload(jwtToken,file, [userDetails])
    .then(
     (docs)=>{
       toastContainerFunction()
@@ -183,7 +184,7 @@ export default function Dropzone(props){
   };
 
   const uploadFilesInFolder = (folderID, file)=>{
-    return FileService.uploadFilesInFolder( folderID, file, [userDetails]);
+    return FileService.uploadFilesInFolder( jwtToken,folderID, file, [userDetails]);
   }
   
   const handleFolder=(e)=>{
@@ -191,7 +192,7 @@ export default function Dropzone(props){
     var relativePath = theFiles[0].webkitRelativePath;
     var folder = relativePath.split("/");
     folder = folder[0];
-    fileService.uploadFolder(folder, [userDetails]).then((res)=>{
+    fileService.uploadFolder(jwtToken,folder, [userDetails]).then((res)=>{
       console.log(res);
       for(let i = 0; i < theFiles.length; i++){       
         uploadFilesInFolder(res["data"]["_id"], theFiles[i]).then((docs)=>{
@@ -205,28 +206,38 @@ export default function Dropzone(props){
   }
 
   const removeFile = (fileID)=>{
-    FileService.removeFile(fileID).then(()=>{
+    FileService.removeFile(jwtToken,fileID).then(()=>{
       setfilesinDB(filesinDB.filter((file)=>file["_id"] !== fileID));
     })
   }
 
   const removeFolder = (folderID)=>{
-    FileService.removeFolder(folderID).then(()=>{
+    FileService.removeFolder(jwtToken,folderID).then(()=>{
       setfoldersinDB(foldersinDB.filter((folder)=>folder["_id"] !== folderID));
     })
   }
+  useEffect(()=>{
+    //setjwtToken(props.accessKey);
+  },[]);
 
   useEffect(()=>{ 
+     
       setUserDetails(props.id);
+      
       setUserName(props.name);
-      getFiles(props.id);
-      getFolders(props.id);  
+     
+      setjwtToken(props.accessKey);
   },[props]);
-
+ 
+useEffect(()=>{
+  getFiles(props.id);
+  getFolders(props.id);  
+},[props.accessKey,props.id])
   const getFiles=(id)=>{
-    if(id)
+    
+    if(id&&jwtToken)
     {
-      FileService.getFiles({id}).then((response)=>{
+      FileService.getFiles(jwtToken,{id}).then((response)=>{
         setfilesinDB(response.data);  
         console.log(filesinDB);
       });
@@ -238,9 +249,9 @@ export default function Dropzone(props){
   }
   
   const getFolders=(id)=>{
-    if(id)
+    if(id&&jwtToken)
     {
-      FileService.getFolders({id}).then((response)=>{
+      FileService.getFolders(jwtToken,{id}).then((response)=>{
         setfoldersinDB(response.data);  
         console.log(foldersinDB);
       });

@@ -1,7 +1,7 @@
 //eslint-disable-next-line
 
 import React, { useEffect, useState } from 'react';
-import { useHistory, useLocation } from 'react-router-dom';
+import { Route, useHistory, useLocation } from 'react-router-dom';
 import clsx from 'clsx';
 import { fade, makeStyles, useTheme } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -149,6 +149,7 @@ export default function MiniDrawer(props) {
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
   const isMenuOpen = Boolean(anchorEl);
   const [userDetails, setUserDetails] = useState(null);
+  const [accessKey, setAccessKey] = useState(null);
   const [id, setId]= useState(null);
   const [searchFiled, setSearchField] = useState("");
   const initalfileUpdate = Object.freeze({
@@ -162,10 +163,14 @@ export default function MiniDrawer(props) {
 
   const [fileUpdate, setFileUpdate] = useState(initalfileUpdate);
 
+
    useEffect(() => {
-    setNames(loc.state.detail.name);
+     setAccessKey(loc.state.detail.accessToken);
+  
+        setNames(loc.state.detail.name);
     setUserDetails(loc.state.detail);
     setId(loc.state.detail.id);
+    
    }, [loc]);
 
   const handleDrawerOpen = () => {
@@ -191,8 +196,10 @@ export default function MiniDrawer(props) {
 
   const logoutFunction = () => {
     // eslint-disable-next-line no-restricted-globals
+   
     history.push({ pathname: '/',
                   state: { detail: "" }}
+                 
                 )
   };
 
@@ -389,7 +396,16 @@ export default function MiniDrawer(props) {
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
-          <Dropzone id={id} name={name} searchFiled = {searchFiled} allFileUpload = {fileUpdate.allFileUpload} recentFileUpload = {fileUpdate.recentFileUpload} starredFiles = {fileUpdate.starredFiles}  allFolderUpload = {fileUpdate.allFolderUpload} recentFolderUpload = {fileUpdate.recentFolderUpload} starredFolder={fileUpdate.starredFolder} /> 
+        <Route 
+        render={()=>{
+          if(loc.state.detail.accessToken)
+          return <Dropzone id={id} name={name} accessKey={loc.state.detail.accessToken} searchFiled = {searchFiled} allFileUpload = {fileUpdate.allFileUpload} recentFileUpload = {fileUpdate.recentFileUpload} starredFiles = {fileUpdate.starredFiles}  allFolderUpload = {fileUpdate.allFolderUpload} recentFolderUpload = {fileUpdate.recentFolderUpload} starredFolder={fileUpdate.starredFolder} />
+         
+        }}
+
+          > 
+          </Route>
+       
       </main>
     </div>
   );

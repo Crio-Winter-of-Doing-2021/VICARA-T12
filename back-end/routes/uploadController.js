@@ -12,9 +12,40 @@ var upload = multer({storage:storage});
 const s3bucket = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION
+  region: process.env.AWS_REGION,
+  signatureVersion: 'v4'
 });
 const s3FileURL = process.env.AWS_Uploaded_File_URL_Link;
+
+
+
+async function getFileUrl(fileName){
+  console.log(fileName);
+   
+
+
+   const params = {
+    Bucket: 'files-vicara-drive',
+    Key: 'contact-lens-conversion.jpeg',
+    Expires: 60 * 5
+  };
+try {
+    const url = await new Promise((resolve, reject) => {
+      s3bucket.getSignedUrl('getObject', params, (err, url) => {
+        err ? reject(err) : resolve(url);
+      });
+    });
+    console.log(url)
+    res.send(url);
+  } catch (err) {
+    if (err) {
+      console.log(err)
+    }
+  }
+}
+
+
+
 
 
 router.get('/folder/:id', async(req,res,next)=>{
@@ -153,10 +184,10 @@ console.log(file);
     Key: file.originalname,
     Body: file.buffer,
     ContentType: file.mimetype,
-    ACL: "public-read"
+    
   };
 
-  s3bucket.upload(params, function(err, data) {
+  s3bucket.putObject(params, function(err, data) {
     if (err) {
       console.log(err);
       res.status(500).json({ error: true, Message: err });
@@ -207,15 +238,17 @@ router.post('/', upload.single("file"), async(req,res,next)=>{
         Key: file.originalname,
         Body: file.buffer,
         ContentType: file.mimetype,
-        ACL: "public-read"
+        
       };
     
-      s3bucket.upload(params, function(err, data) {
+      s3bucket.putObject(params, function(err, data) {
+
+        
         if (err) {
           console.log(err);
           res.status(500).json({ error: true, Message: err });
         } else {
-          
+          console.log(data)
           var newFileUploaded = {
             description: req.body.description,
             fileLink: s3FileURL + file.originalname,
