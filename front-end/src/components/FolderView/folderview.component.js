@@ -138,7 +138,7 @@ export default function Folderview(){
        }
 
     const removeFile = (fileID)=>{
-        FileService.removeFile(loc.state.token,fileID).then(()=>{
+        FileService.removeFileInAFolder(loc.state.token,fileID, userID, folderID).then(()=>{
           setFilesInFolder(filesInFolder.filter((file)=>file["_id"] !== fileID));
           toastContainerFunction(`Removed!`)
         })

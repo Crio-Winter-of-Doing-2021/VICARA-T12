@@ -10,6 +10,7 @@ var storage = multer.memoryStorage();
 const util = require('util')
 var upload = multer({storage:storage});
 const Path = require('path');
+const { ObjectID } = require("bson");
 const s3bucket = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -20,14 +21,37 @@ const s3FileURL = process.env.AWS_Uploaded_File_URL_Link;
 
 
 
-async function getFileUrl(fileName){
-  
-}
+
+router.delete(`/fileInFolder/:dets`, async(req,res,next)=>{
+  let fileId =  req.params.dets.split(',')[0]
+  let userId = req.params.dets.split(',')[1];
+  let folderID = req.params.dets.split(',')[2];
+
+
+FOLDER.findByIdAndUpdate(folderID, { $pullAll: {files:[ObjectId(fileId)]} },(err, docs)=>{
+  if(err)
+    {
+      res.status(500).send(err);
+      console.log(err);
+    }
+    else
+    {
+      
+      console.log(docs);
+      FILE.findOneAndDelete({'_id':ObjectId(fileId), 'users':ObjectID(userId)},(error, documents)=>{
+        if(error)
+        res.status(500).send(error);
+        else
+        res.status(200).send(documents);
+      })
+    }
+})
+})
 
 router.get(`/displayfileswithinfolder/:dets`, async(req,res,next)=>{
  
  
-console.log(`thou art here`);
+
 let folderId = req.params.dets.split(',')[0]
 let userId = req.params.dets.split(',')[1];
 
