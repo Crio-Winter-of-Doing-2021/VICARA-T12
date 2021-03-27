@@ -221,6 +221,7 @@ export default function MiniDrawer(props) {
       recentFolderUpload: recentFolders,
       starredFolder: starredFolders,
     })
+    setSearchField("")
   };
 
   const menuId = 'primary-search-account-menu';
@@ -280,6 +281,7 @@ export default function MiniDrawer(props) {
                 root: classes.inputRoot,
                 input: classes.inputInput,
               }}
+              value={searchFiled}
               onChange={searchFunction}
             />
           </div>
