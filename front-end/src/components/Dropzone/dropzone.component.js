@@ -19,15 +19,16 @@ import CardActions from '@material-ui/core/CardActions';
 import CardHeader from '@material-ui/core/CardHeader';
 import Grid from '@material-ui/core/Grid';
 import StarBorderIcon from '@material-ui/icons/StarBorder';
-import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
+import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import DeleteIcon from '@material-ui/icons/Delete';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import LoadCircularProgress from '../Main/circularProgress';
 import fileService from '../../services/file.service';
 import { ToastContainer, toast } from 'react-toastify';
+import Folderview from '../FolderView/folderview.component'
 import 'react-toastify/dist/ReactToastify.css';
 import './dropzone.component.css'
-
+import { useHistory, Link} from "react-router-dom"
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
 		paddingTop: '56.25%', // 16:9,
@@ -74,6 +75,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Dropzone(props){
+  const history = useHistory();
   const classes = useStyles();
 
   // Set Map, still in progress for card.
@@ -135,7 +137,7 @@ export default function Dropzone(props){
    FileService.downloadFile(jwtToken, fileName).then((link)=>{
      console.log(link["data"]);
       window.open(link["data"],"_blank")
-        toastContainerFunction(`${fileName} downloaded`);
+        
    })
   }
   const makefavouriteFolder= (fileID)=>{
@@ -227,6 +229,7 @@ export default function Dropzone(props){
 
     });
   }
+
 
   const removeFile = (fileID)=>{
     FileService.removeFile(jwtToken,fileID).then(()=>{
@@ -431,7 +434,7 @@ useEffect(()=>{
                                     </IconButton>
                                   </div>
                                   <IconButton aria-label="share" className={classes.download}>
-                                    <CloudDownloadIcon onClick={()=>{downloadFile(filedata["s3_key"])}}/>
+                                    <OpenInNewIcon onClick={()=>{downloadFile(filedata["s3_key"])}}/>
                                   </IconButton>
                                 </CardActions>
                               </CardContent>
@@ -485,7 +488,7 @@ useEffect(()=>{
                               </IconButton>
                             </div>
                             <IconButton aria-label="share" className={classes.download}>
-                              <CloudDownloadIcon onClick={()=>{downloadFile(filedata["s3_key"])}}/>
+                              <OpenInNewIcon onClick={()=>{downloadFile(filedata["s3_key"])}}/>
                             </IconButton>
                           </CardActions>
                           </CardContent>
@@ -538,7 +541,7 @@ useEffect(()=>{
                         </IconButton>
                       </div>
                         <IconButton aria-label="share" className={classes.download}>
-                          <CloudDownloadIcon onClick={()=>{downloadFile(filedata["s3_key"])}} />
+                          <OpenInNewIcon onClick={()=>{downloadFile(filedata["s3_key"])}} />
                         </IconButton>
                       </CardActions>
                       </CardContent>
@@ -556,7 +559,8 @@ useEffect(()=>{
                 <Grid container spacing={5} alignItems="center">
                 {foldersinDB.filter( (folderData) => folderData.Name.includes(props.searchFiled)).slice(0).reverse().map((folderData, i) => {
                   return (
-                  <Grid item key={folderData["_id"]} xs={12} md={3}>
+                   
+                  <Grid item key={folderData["_id"]} xs={12} md={3} style={{cursor: 'pointer'}} >
                     <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={folderData.Name}> 
                     <CardHeader 
                         avatar={
@@ -571,12 +575,20 @@ useEffect(()=>{
                         }
                         title={folderData["Name"].slice(0,10)}
                       />
+                      <Link to={{pathname: "/folderview",
+           state: { folderID: folderData["_id"], id:userDetails, token:props.accessKey}}}  >
                       <CardMedia
                           className={classes.cardMedia} 
                           // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
                           image = {FolderIcon}
                           title="Image title"
+                          clickable 
+                         
+                            
                       />
+                      
+                      </Link>
+                      
                       
                       <CardContent className={classes.cardContent}>
                         <div className={classes.formText}></div>
@@ -590,12 +602,13 @@ useEffect(()=>{
                         { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                       </IconButton>
                         <IconButton aria-label="share" className={classes.download}>
-                          <CloudDownloadIcon/>
+                          <OpenInNewIcon/>
                         </IconButton>
                       </CardActions>
                       </CardContent>
                     </Card>
                   </Grid>
+                 
                   );
                 })}
               </Grid>
@@ -641,7 +654,7 @@ useEffect(()=>{
                         { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                       </IconButton>
                         <IconButton aria-label="share" className={classes.download}>
-                          <CloudDownloadIcon />
+                          <OpenInNewIcon />
                         </IconButton>
                       </CardActions>
                       </CardContent>
@@ -692,7 +705,7 @@ useEffect(()=>{
                         { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                       </IconButton>
                         <IconButton aria-label="share" className={classes.download}>
-                          <CloudDownloadIcon />
+                          <OpenInNewIcon />
                         </IconButton>
                       </CardActions>
                       </CardContent>

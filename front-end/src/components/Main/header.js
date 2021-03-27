@@ -38,7 +38,7 @@ function Header() {
 			>
 				<Toolbar>
 					<Typography variant="h6" color="inherit" noWrap>
-						Storage Drive
+						Vicara Storage Drive
 					</Typography>
 				</Toolbar>
 			</AppBar>
