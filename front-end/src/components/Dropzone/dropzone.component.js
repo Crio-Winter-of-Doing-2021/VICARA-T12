@@ -435,7 +435,7 @@ useEffect(()=>{
                                     </IconButton>
                                   </div>
                                   <IconButton aria-label="share" className={classes.download}>
-                                    <OpenInNewIcon onClick={()=>{downloadFile(filedata["s3_key"])}}/>
+                                    <OpenInNewIcon onClick={()=>{downloadFile(filedata["_id"])}}/>
                                   </IconButton>
                                 </CardActions>
                               </CardContent>
@@ -489,7 +489,7 @@ useEffect(()=>{
                               </IconButton>
                             </div>
                             <IconButton aria-label="share" className={classes.download}>
-                              <OpenInNewIcon onClick={()=>{downloadFile(filedata["s3_key"])}}/>
+                              <OpenInNewIcon onClick={()=>{downloadFile(filedata["_id"])}}/>
                             </IconButton>
                           </CardActions>
                           </CardContent>
@@ -542,7 +542,7 @@ useEffect(()=>{
                         </IconButton>
                       </div>
                         <IconButton aria-label="share" className={classes.download}>
-                          <OpenInNewIcon onClick={()=>{downloadFile(filedata["s3_key"])}} />
+                          <OpenInNewIcon onClick={()=>{downloadFile(filedata["_id"])}} />
                         </IconButton>
                       </CardActions>
                       </CardContent>
@@ -607,8 +607,8 @@ useEffect(()=>{
             }
             {
                props.recentFolderUpload &&  
-              <div container spacing={5} alignItems="center">   
-                <Grid container spacing={5} alignItems="center">
+              <div container spacing={5} alignitems="center">   
+                <Grid container spacing={5} alignitems="center">
                 {foldersinDB.filter( (folderData) => folderData.Name.includes(props.searchFiled)).slice(0,10).reverse().map((folderData, i) => {
                   return (
                     <Grid item key={folderData["_id"]} xs={12} md={3} style={{cursor: 'pointer'}} >
