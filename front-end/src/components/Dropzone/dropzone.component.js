@@ -88,7 +88,8 @@ export default function Dropzone(props){
   fileImageMap.set("docx","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXlVzH8dGd3fPl9dWjM9r3vX6iVZvFJekYU5PRku3wdbqAa8txFBjucY5yBprgiI84CpY&usqp=CAU  ")
   fileImageMap.set("png","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
   fileImageMap.set("jpg","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
-
+  fileImageMap.set("presso","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
+  
   const dragOver=(e)=>{
     e.preventDefault();
   }
@@ -559,56 +560,46 @@ useEffect(()=>{
                 <Grid container spacing={5} alignItems="center">
                 {foldersinDB.filter( (folderData) => folderData.Name.includes(props.searchFiled)).slice(0).reverse().map((folderData, i) => {
                   return (
-                   
-                  <Grid item key={folderData["_id"]} xs={12} md={3} style={{cursor: 'pointer'}} >
-                    <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={folderData.Name}> 
-                    <CardHeader 
-                        avatar={
-                          <Avatar aria-label="recipe" className={classes.avatar}>
-                            {userName.charAt(0)}
-                          </Avatar>
-                        }
-                        action={
-                          <IconButton aria-label="add to favorites" >
-                            <DeleteIcon onClick={()=>removeFolder(folderData["_id"])}/>
-                          </IconButton>
-                        }
-                        title={folderData["Name"].slice(0,10)}
-                      />
-                      <Link to={{pathname: "/folderview",
-           state: { folderID: folderData["_id"], id:userDetails, token:props.accessKey}}}  >
-                      <CardMedia
-                          className={classes.cardMedia} 
-                          // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
-                          image = {FolderIcon}
-                          title="Image title"
-                          clickable 
-                         
-                            
-                      />
-                      
-                      </Link>
-                      
-                      
-                      <CardContent className={classes.cardContent}>
-                        <div className={classes.formText}></div>
-                          <Typography variant="subtitle1" color="textSecondary" >
-                          {folderData["createdAt"].slice(0,10)}
-                          </Typography>
-                        
-                      
-                      <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                      <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFolder( folderData["_id"] )}}>
-                        { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                      </IconButton>
-                        <IconButton aria-label="share" className={classes.download}>
-                          <OpenInNewIcon/>
-                        </IconButton>
-                      </CardActions>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                 
+                    <Grid item key={folderData["_id"]} xs={12} md={3} style={{cursor: 'pointer'}} >
+                      <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={folderData.Name}> 
+                      <CardHeader 
+                          avatar={
+                            <Avatar aria-label="recipe" className={classes.avatar}>
+                              {userName.charAt(0)}
+                            </Avatar>
+                          }
+                          action={
+                            <IconButton aria-label="add to favorites" >
+                              <DeleteIcon onClick={()=>removeFolder(folderData["_id"])}/>
+                            </IconButton>
+                          }
+                          title={folderData["Name"].slice(0,10)}
+                        />
+                        <Link to={{pathname: "/folderview",
+                          state: { folderID: folderData["_id"], id:userDetails, token:props.accessKey}}}  >
+                          <CardMedia
+                              className={classes.cardMedia} 
+                              // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
+                              image = {FolderIcon}
+                              title="Image title"
+                              clickable 
+                          />
+                        </Link>
+                        <CardContent className={classes.cardContent}>
+                            <Typography variant="subtitle1" color="textSecondary" >
+                              {folderData["createdAt"].slice(0,10)}
+                            </Typography>
+                          <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
+                            <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFolder( folderData["_id"] )}}>
+                              { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+                            </IconButton>
+                            <IconButton aria-label="share" className={classes.download}>
+                              <OpenInNewIcon/>
+                            </IconButton>
+                          </CardActions>
+                        </CardContent>
+                      </Card>
+                    </Grid>
                   );
                 })}
               </Grid>
@@ -620,46 +611,46 @@ useEffect(()=>{
                 <Grid container spacing={5} alignItems="center">
                 {foldersinDB.filter( (folderData) => folderData.Name.includes(props.searchFiled)).slice(0,10).reverse().map((folderData, i) => {
                   return (
-                  <Grid item key={folderData["_id"]} xs={12} md={3}>
-                    <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={folderData.Name}> 
-                    <CardHeader 
-                        avatar={
-                          <Avatar aria-label="recipe" className={classes.avatar}>
-                            {userName.charAt(0)}
-                          </Avatar>
-                        }
-                        action={
-                          <IconButton aria-label="add to favorites" >
-                            <DeleteIcon onClick={()=>removeFolder(folderData["_id"])}/>
-                          </IconButton>
-                        }
-                        title={folderData["Name"].slice(0,10)}
-                      />
-                      <CardMedia
-                          className={classes.cardMedia} 
-                          // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
-                          image = {FolderIcon}
-                          title="Image title"
-                      />
-                      
-                      <CardContent className={classes.cardContent}>
-                        <div className={classes.formText}></div>
-                          <Typography variant="subtitle1" color="textSecondary" >
-                          {folderData["createdAt"].slice(0,10)}
-                          </Typography>
-                        
-                      
-                      <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                      <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFolder( folderData["_id"] )}}>
-                        { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                      </IconButton>
-                        <IconButton aria-label="share" className={classes.download}>
-                          <OpenInNewIcon />
-                        </IconButton>
-                      </CardActions>
-                      </CardContent>
-                    </Card>
-                  </Grid>
+                    <Grid item key={folderData["_id"]} xs={12} md={3} style={{cursor: 'pointer'}} >
+                      <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={folderData.Name}> 
+                      <CardHeader 
+                          avatar={
+                            <Avatar aria-label="recipe" className={classes.avatar}>
+                              {userName.charAt(0)}
+                            </Avatar>
+                          }
+                          action={
+                            <IconButton aria-label="add to favorites" >
+                              <DeleteIcon onClick={()=>removeFolder(folderData["_id"])}/>
+                            </IconButton>
+                          }
+                          title={folderData["Name"].slice(0,10)}
+                        />
+                        <Link to={{pathname: "/folderview",
+                          state: { folderID: folderData["_id"], id:userDetails, token:props.accessKey}}}  >
+                          <CardMedia
+                              className={classes.cardMedia} 
+                              // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
+                              image = {FolderIcon}
+                              title="Image title"
+                              clickable 
+                          />
+                        </Link>
+                        <CardContent className={classes.cardContent}>
+                            <Typography variant="subtitle1" color="textSecondary" >
+                              {folderData["createdAt"].slice(0,10)}
+                            </Typography>
+                          <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
+                            <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFolder( folderData["_id"] )}}>
+                              { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+                            </IconButton>
+                            <IconButton aria-label="share" className={classes.download}>
+                              <OpenInNewIcon/>
+                            </IconButton>
+                          </CardActions>
+                        </CardContent>
+                      </Card>
+                    </Grid>
                   );
                 })}
               </Grid>
@@ -671,46 +662,46 @@ useEffect(()=>{
                 <Grid container spacing={5} alignItems="center">
                 {foldersinDB.filter( (folderData) =>  folderData["favourite"] && folderData.Name.includes(props.searchFiled)).map((folderData, i) => {
                   return (
-                  <Grid item key={folderData["_id"]} xs={12} md={3}>
-                    <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={folderData.Name}> 
-                    <CardHeader 
-                        avatar={
-                          <Avatar aria-label="recipe" className={classes.avatar}>
-                            {userName.charAt(0)}
-                          </Avatar>
-                        }
-                        action={
-                          <IconButton aria-label="add to favorites" >
-                            <DeleteIcon onClick={()=>removeFolder(folderData["_id"])}/>
-                          </IconButton>
-                        }
-                        title={folderData["Name"].slice(0,10)}
-                      />
-                      <CardMedia
-                          className={classes.cardMedia} 
-                          // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
-                          image = {FolderIcon}
-                          title="Image title"
-                      />
-                      
-                      <CardContent className={classes.cardContent}>
-                        <div className={classes.formText}></div>
-                          <Typography variant="subtitle1" color="textSecondary" >
-                          {folderData["createdAt"].slice(0,10)}
-                          </Typography>
-                        
-                      
-                      <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                      <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFolder( folderData["_id"] )}}>
-                        { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                      </IconButton>
-                        <IconButton aria-label="share" className={classes.download}>
-                          <OpenInNewIcon />
-                        </IconButton>
-                      </CardActions>
-                      </CardContent>
-                    </Card>
-                  </Grid>
+                    <Grid item key={folderData["_id"]} xs={12} md={3} style={{cursor: 'pointer'}} >
+                      <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={folderData.Name}> 
+                      <CardHeader 
+                          avatar={
+                            <Avatar aria-label="recipe" className={classes.avatar}>
+                              {userName.charAt(0)}
+                            </Avatar>
+                          }
+                          action={
+                            <IconButton aria-label="add to favorites" >
+                              <DeleteIcon onClick={()=>removeFolder(folderData["_id"])}/>
+                            </IconButton>
+                          }
+                          title={folderData["Name"].slice(0,10)}
+                        />
+                        <Link to={{pathname: "/folderview",
+                          state: { folderID: folderData["_id"], id:userDetails, token:props.accessKey}}}  >
+                          <CardMedia
+                              className={classes.cardMedia} 
+                              // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
+                              image = {FolderIcon}
+                              title="Image title"
+                              clickable 
+                          />
+                        </Link>
+                        <CardContent className={classes.cardContent}>
+                            <Typography variant="subtitle1" color="textSecondary" >
+                              {folderData["createdAt"].slice(0,10)}
+                            </Typography>
+                          <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
+                            <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFolder( folderData["_id"] )}}>
+                              { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+                            </IconButton>
+                            <IconButton aria-label="share" className={classes.download}>
+                              <OpenInNewIcon/>
+                            </IconButton>
+                          </CardActions>
+                        </CardContent>
+                      </Card>
+                    </Grid>
                   );
                 })}
               </Grid>

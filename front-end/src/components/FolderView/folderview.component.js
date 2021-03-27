@@ -11,6 +11,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
 import FolderIcon from '../images/folder.png'
 import StarIcon from '@material-ui/icons/Star';
+import TextFileImage from '../images/textFileImage.png'
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
@@ -83,7 +84,6 @@ toast.configure();
       progress: undefined,
     });
       return (
-          
           <ToastContainer
             position="bottom-right"
             autoClose={5000}
@@ -126,21 +126,16 @@ export default function Folderview(){
         getFilesWithinAFolder(loc.state.token, loc.state.folderID,loc.state.id)
     },[loc.state.id])
 
-    
-
     const getFilesWithinAFolder=(token, fid, uid)=>{
         fileService.getFilesWithinAFolder(token, fid, uid).then((docs)=>{
             console.log(docs["data"]);
-            setFilesInFolder(docs.data)
-            
-            
+            setFilesInFolder(docs.data)  
         })
     }
     const downloadFile=(fileName)=>{
         FileService.downloadFile(loc.state.token, fileName).then((link)=>{
           console.log(link["data"]);
            window.open(link["data"],"_blank")
-             
         })
        }
 
@@ -156,12 +151,9 @@ export default function Folderview(){
           let newfilesinFolder = [...filesInFolder];
           newfilesinFolder[foundIndex] = {...newfilesinFolder[foundIndex], favourite:!(newfilesinFolder[foundIndex]["favourite"])}
           setFilesInFolder(newfilesinFolder);  
-          
         })
       };
 
-
-    
     return(
         <div>
         <Header/>
