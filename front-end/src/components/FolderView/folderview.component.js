@@ -195,7 +195,7 @@ export default function Folderview(){
                           </IconButton>
                         </div>
                         <IconButton aria-label="share" className={classes.download}>
-                          <OpenInNewIcon onClick={()=>{downloadFile(filedata["s3_key"])}}/>
+                          <OpenInNewIcon onClick={()=>{downloadFile(filedata["_id"])}}/>
                         </IconButton>
                       </CardActions>
                     </CardContent>

@@ -75,14 +75,14 @@ FILE.find(
 );
 });
 
-router.get('/url/:fileName', async(req,res, next)=>{
-  console.log(req.params.fileName);
+router.get('/url/:fileID', async(req,res, next)=>{
+  console.log(req.params.fileID);
    
 
 
   const params = {
    Bucket: 'files-vicara-drive',
-   Key: req.params.fileName,
+   Key: req.params.fileID,
    Expires: 60 * 5
  };
 try {
@@ -228,56 +228,62 @@ router.post('/folder', upload.single('file'), async(req, res, next)=>{
 });
 
 router.post('/fileinfolder', upload.single('file'), async(req,res,next)=>{
-  console.log("hmm");
+
 const file = req.file;
 const folderID = req.body.folderID;
 console.log(file);
 
+var newFileUploaded = {
+  description: req.body.description,
+  s3_key: file.originalname,
+  users: [req.body.users],
+  parentFolder: folderID,
+  isIndependant: false
+}
 
-  var params = {
-    Bucket: process.env.AWS_BUCKET_NAME,
-    Key: file.originalname,
-    Body: file.buffer,
-    ContentType: file.mimetype,
-    
-  };
+var params = {
+  Bucket: process.env.AWS_BUCKET_NAME,
+  
+  Body: file.buffer,
+  ContentType: file.mimetype,
+  
+};
+var document = new FILE(newFileUploaded);
+document.save(function(filesaveerror, newFile) {
+  
+  if(!filesaveerror){
+      console.log(newFile);
+     
+      FOLDER.findByIdAndUpdate(folderID,{  $push: { files: newFile._id }}, function(errorinfolder, docs){
+        if(!errorinfolder)
+        {
 
-  s3bucket.putObject(params, function(err, data) {
-    if (err) {
-      console.log(err);
-      res.status(500).json({ error: true, Message: err });
-    } else {
-      
-      var newFileUploaded = {
-        description: req.body.description,
-        fileLink: `${s3FileURL}/${file.originalname}`,
-        s3_key: params.Key,
-        users: [req.body.users],
-        parentFolder: folderID,
-        isIndependant: false
-      };
-      var document = new FILE(newFileUploaded);
-      document.save(function(error, newFile) {
-        
-        if(!error){
-            console.log(newFile);
+          params.Key = newFile["_id"].toString();
+
+
+          s3bucket.putObject(params, function(s3err, data) {
+            if (err) {
+              console.log(err);
+              next(res.status(500).json({ error: true, Message: s3err }));
+            } else {
+              next(res.status(200).send(docs));
+              
+            }});
            
-            FOLDER.findByIdAndUpdate(folderID,{  $push: { files: newFile._id }}, function(err, docs){
-              if(!err)
-              {
-                
-                res.status(200).send(docs);
+          
 
-              }
-              else
-              res.status(500).send(err);
-            });
         }
-        if (error) {
-          throw error;
-        }
+        else
+        next(res.status(500).send(errorinfolder));
       });
-    }});
+  }
+  if (filesaveerror) {
+   next(res.status(500).send(filesaveerror))
+  }
+});
+ 
+
+ 
 
 
 
@@ -288,42 +294,48 @@ console.log(file);
 router.post('/', upload.single("file"), async(req,res,next)=>{
     const file = req.file;
        
-      var params = {
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Key: file.originalname,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-        
-      };
-    
-      s3bucket.putObject(params, function(err, data) {
+    var newFileUploaded = {
+      description: req.body.description,
+      s3_key: file.originalname,
+      users: [req.body.users]
+    }
+    var params = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+      
+    }
+
+    var document = new FILE(newFileUploaded);
+    document.save(function(error, newFile) {
+      
+      if(!error){
+          console.log(newFile);
+         
+          params.Key=newFile["_id"].toString();
+          s3bucket.putObject(params, function(err, data) {
 
         
-        if (err) {
-          console.log(err);
-          res.status(500).json({ error: true, Message: err });
-        } else {
-          console.log(data)
-          var newFileUploaded = {
-            description: req.body.description,
-            fileLink: s3FileURL + file.originalname,
-            s3_key: params.Key,
-            users: [req.body.users]
-          };
-          var document = new FILE(newFileUploaded);
-          document.save(function(error, newFile) {
-            
-            if(!error){
-                console.log(newFile);
-                res.status(200).send(newFile);
-            }
-            if (error) {
-              throw error;
+            if (err) {
+              console.log(err);
+              next(res.status(500).json({ error: true, Message: err }));
+            } else {
+              
+             next(res.status(200).send(newFile)) 
+              
+               
+             
             }
           });
-         
-        }
-      });
+
+      }
+      if (error) {
+        throw error;
+      }
+    });
+      
+    
+     
 
 })
 
