@@ -38,6 +38,20 @@ FOLDER.findByIdAndUpdate(folderID, { $pullAll: {files:[ObjectId(fileId)]} },(err
     {
       
       console.log(docs);
+      FILE.findById(fileId, (errorinfindingfile, doc)=>{
+        if(!errorinfindingfile){
+          var params = {  Bucket: process.env.AWS_BUCKET_NAME, Key: fileId };
+          s3bucket.deleteObject(params, function(err, data) {
+            if (err) {
+              console.log(err, err.stack);  
+              next(res.status(500).send(err));
+            }// error
+                           // deleted
+          })
+        }
+        else
+        next(res.status(500).send(errorinfindingfile))
+      })
       FILE.findOneAndDelete({'_id':ObjectId(fileId), 'users':ObjectID(userId)},(error, documents)=>{
         if(error)
         res.status(500).send(error);
@@ -145,21 +159,40 @@ router.get('/:id', async(req,res,next)=>{
 });
 
 router.delete('/folder/:id', async(req,res,next)=>{
+
+  FILE.find({parentFolder: req.params['id']},(err,docs)=>{
+   if(!err){console.log("Going to delete them from s3 bucket");
+   docs.forEach((doc)=>{
+    var params = {  Bucket: process.env.AWS_BUCKET_NAME, Key: doc["_id"].toString() };
+    s3bucket.deleteObject(params, function(err, data) {
+      if (err) {
+        console.log(err, err.stack);  
+        next(res.status(500).send(err));
+      }// error
+                     // deleted
+    })
+   })
+  
+  }
+   else
+   throw err;
+  });
   FILE.deleteMany({ parentFolder: req.params["id"]}, (err, docs)=>{
     if(!err)
     {
+      console.log("These are the files");
       console.log(docs);
       FOLDER.findByIdAndDelete(req.params["id"], (error, deleteddoc)=>{
         if(!err)
         {
-          res.status(200).send(deleteddoc);
+          next(res.status(200).send(deleteddoc));
         }
         else
-          res.status(500).send(error);
+         next(res.status(500).send(error));
       })
     }
     else
-      res.status(500).send(err);
+      next(res.status(500).send(err));
   }); 
 });
 
@@ -170,7 +203,7 @@ router.delete('/:id', async(req,res,next)=>{
       return next(err);
     }
     else if(docs!=null){
-      var params = {  Bucket: process.env.AWS_BUCKET_NAME, Key: docs["s3_key"] };
+      var params = {  Bucket: process.env.AWS_BUCKET_NAME, Key: req.params.id };
       s3bucket.deleteObject(params, function(err, data) {
         if (err) {
           console.log(err, err.stack);  
@@ -206,7 +239,7 @@ router.patch('/folder/:id', async(req,res,next)=>{
   });
 });
 
-router.post('/folder', upload.single('file'), async(req, res, next)=>{
+router.post('/folder', upload.single('folder'),async(req, res, next)=>{
 
  
   var newFolderUploaded = {
@@ -262,7 +295,7 @@ document.save(function(filesaveerror, newFile) {
 
 
           s3bucket.putObject(params, function(s3err, data) {
-            if (err) {
+            if (s3err) {
               console.log(err);
               next(res.status(500).json({ error: true, Message: s3err }));
             } else {
