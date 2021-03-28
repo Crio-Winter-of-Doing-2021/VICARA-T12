@@ -144,7 +144,7 @@ export default function Folderview(){
        }
 
     const removeFile = (fileID)=>{
-        FileService.removeFile(loc.state.token,fileID).then(()=>{
+        FileService.removeFileInAFolder(loc.state.token,fileID, userID, folderID).then(()=>{
           setFilesInFolder(filesInFolder.filter((file)=>file["_id"] !== fileID));
           toastContainerFunction(`Removed!`)
         })
@@ -198,7 +198,7 @@ export default function Folderview(){
                           </IconButton>
                         </div>
                         <IconButton aria-label="share" className={classes.download}>
-                          <OpenInNewIcon onClick={()=>{downloadFile(filedata["s3_key"])}}/>
+                          <OpenInNewIcon onClick={()=>{downloadFile(filedata["_id"])}}/>
                         </IconButton>
                       </CardActions>
                     </CardContent>

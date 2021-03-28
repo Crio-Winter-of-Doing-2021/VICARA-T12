@@ -10,6 +10,7 @@ var storage = multer.memoryStorage();
 const util = require('util')
 var upload = multer({storage:storage});
 const Path = require('path');
+const { ObjectID } = require("bson");
 const s3bucket = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -20,14 +21,51 @@ const s3FileURL = process.env.AWS_Uploaded_File_URL_Link;
 
 
 
-async function getFileUrl(fileName){
-  
-}
+
+router.delete(`/fileInFolder/:dets`, async(req,res,next)=>{
+  let fileId =  req.params.dets.split(',')[0]
+  let userId = req.params.dets.split(',')[1];
+  let folderID = req.params.dets.split(',')[2];
+
+
+FOLDER.findByIdAndUpdate(folderID, { $pullAll: {files:[ObjectId(fileId)]} },(err, docs)=>{
+  if(err)
+    {
+      res.status(500).send(err);
+      console.log(err);
+    }
+    else
+    {
+      
+      console.log(docs);
+      FILE.findById(fileId, (errorinfindingfile, doc)=>{
+        if(!errorinfindingfile){
+          var params = {  Bucket: process.env.AWS_BUCKET_NAME, Key: fileId };
+          s3bucket.deleteObject(params, function(err, data) {
+            if (err) {
+              console.log(err, err.stack);  
+              next(res.status(500).send(err));
+            }// error
+                           // deleted
+          })
+        }
+        else
+        next(res.status(500).send(errorinfindingfile))
+      })
+      FILE.findOneAndDelete({'_id':ObjectId(fileId), 'users':ObjectID(userId)},(error, documents)=>{
+        if(error)
+        res.status(500).send(error);
+        else
+        res.status(200).send(documents);
+      })
+    }
+})
+})
 
 router.get(`/displayfileswithinfolder/:dets`, async(req,res,next)=>{
  
  
-console.log(`thou art here`);
+
 let folderId = req.params.dets.split(',')[0]
 let userId = req.params.dets.split(',')[1];
 
@@ -51,14 +89,14 @@ FILE.find(
 );
 });
 
-router.get('/url/:fileName', async(req,res, next)=>{
-  console.log(req.params.fileName);
+router.get('/url/:fileID', async(req,res, next)=>{
+  console.log(req.params.fileID);
    
 
 
   const params = {
    Bucket: 'files-vicara-drive',
-   Key: req.params.fileName,
+   Key: req.params.fileID,
    Expires: 60 * 5
  };
 try {
@@ -121,21 +159,40 @@ router.get('/:id', async(req,res,next)=>{
 });
 
 router.delete('/folder/:id', async(req,res,next)=>{
+
+  FILE.find({parentFolder: req.params['id']},(err,docs)=>{
+   if(!err){console.log("Going to delete them from s3 bucket");
+   docs.forEach((doc)=>{
+    var params = {  Bucket: process.env.AWS_BUCKET_NAME, Key: doc["_id"].toString() };
+    s3bucket.deleteObject(params, function(err, data) {
+      if (err) {
+        console.log(err, err.stack);  
+        next(res.status(500).send(err));
+      }// error
+                     // deleted
+    })
+   })
+  
+  }
+   else
+   throw err;
+  });
   FILE.deleteMany({ parentFolder: req.params["id"]}, (err, docs)=>{
     if(!err)
     {
+      console.log("These are the files");
       console.log(docs);
       FOLDER.findByIdAndDelete(req.params["id"], (error, deleteddoc)=>{
         if(!err)
         {
-          res.status(200).send(deleteddoc);
+          next(res.status(200).send(deleteddoc));
         }
         else
-          res.status(500).send(error);
+         next(res.status(500).send(error));
       })
     }
     else
-      res.status(500).send(err);
+      next(res.status(500).send(err));
   }); 
 });
 
@@ -146,7 +203,7 @@ router.delete('/:id', async(req,res,next)=>{
       return next(err);
     }
     else if(docs!=null){
-      var params = {  Bucket: process.env.AWS_BUCKET_NAME, Key: docs["s3_key"] };
+      var params = {  Bucket: process.env.AWS_BUCKET_NAME, Key: req.params.id };
       s3bucket.deleteObject(params, function(err, data) {
         if (err) {
           console.log(err, err.stack);  
@@ -182,7 +239,7 @@ router.patch('/folder/:id', async(req,res,next)=>{
   });
 });
 
-router.post('/folder', upload.single('file'), async(req, res, next)=>{
+router.post('/folder', upload.single('folder'),async(req, res, next)=>{
 
  
   var newFolderUploaded = {
@@ -204,56 +261,62 @@ router.post('/folder', upload.single('file'), async(req, res, next)=>{
 });
 
 router.post('/fileinfolder', upload.single('file'), async(req,res,next)=>{
-  console.log("hmm");
+
 const file = req.file;
 const folderID = req.body.folderID;
 console.log(file);
 
+var newFileUploaded = {
+  description: req.body.description,
+  s3_key: file.originalname,
+  users: [req.body.users],
+  parentFolder: folderID,
+  isIndependant: false
+}
 
-  var params = {
-    Bucket: process.env.AWS_BUCKET_NAME,
-    Key: file.originalname,
-    Body: file.buffer,
-    ContentType: file.mimetype,
-    
-  };
+var params = {
+  Bucket: process.env.AWS_BUCKET_NAME,
+  
+  Body: file.buffer,
+  ContentType: file.mimetype,
+  
+};
+var document = new FILE(newFileUploaded);
+document.save(function(filesaveerror, newFile) {
+  
+  if(!filesaveerror){
+      console.log(newFile);
+     
+      FOLDER.findByIdAndUpdate(folderID,{  $push: { files: newFile._id }}, function(errorinfolder, docs){
+        if(!errorinfolder)
+        {
 
-  s3bucket.putObject(params, function(err, data) {
-    if (err) {
-      console.log(err);
-      res.status(500).json({ error: true, Message: err });
-    } else {
-      
-      var newFileUploaded = {
-        description: req.body.description,
-        fileLink: `${s3FileURL}/${file.originalname}`,
-        s3_key: params.Key,
-        users: [req.body.users],
-        parentFolder: folderID,
-        isIndependant: false
-      };
-      var document = new FILE(newFileUploaded);
-      document.save(function(error, newFile) {
-        
-        if(!error){
-            console.log(newFile);
+          params.Key = newFile["_id"].toString();
+
+
+          s3bucket.putObject(params, function(s3err, data) {
+            if (s3err) {
+              console.log(err);
+              next(res.status(500).json({ error: true, Message: s3err }));
+            } else {
+              next(res.status(200).send(docs));
+              
+            }});
            
-            FOLDER.findByIdAndUpdate(folderID,{  $push: { files: newFile._id }}, function(err, docs){
-              if(!err)
-              {
-                
-                res.status(200).send(docs);
+          
 
-              }
-              else
-              res.status(500).send(err);
-            });
         }
-        if (error) {
-          throw error;
-        }
+        else
+        next(res.status(500).send(errorinfolder));
       });
-    }});
+  }
+  if (filesaveerror) {
+   next(res.status(500).send(filesaveerror))
+  }
+});
+ 
+
+ 
 
 
 
@@ -264,42 +327,48 @@ console.log(file);
 router.post('/', upload.single("file"), async(req,res,next)=>{
     const file = req.file;
        
-      var params = {
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Key: file.originalname,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-        
-      };
-    
-      s3bucket.putObject(params, function(err, data) {
+    var newFileUploaded = {
+      description: req.body.description,
+      s3_key: file.originalname,
+      users: [req.body.users]
+    }
+    var params = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Body: file.buffer,
+      ContentType: file.mimetype,
+      
+    }
+
+    var document = new FILE(newFileUploaded);
+    document.save(function(error, newFile) {
+      
+      if(!error){
+          console.log(newFile);
+         
+          params.Key=newFile["_id"].toString();
+          s3bucket.putObject(params, function(err, data) {
 
         
-        if (err) {
-          console.log(err);
-          res.status(500).json({ error: true, Message: err });
-        } else {
-          console.log(data)
-          var newFileUploaded = {
-            description: req.body.description,
-            fileLink: s3FileURL + file.originalname,
-            s3_key: params.Key,
-            users: [req.body.users]
-          };
-          var document = new FILE(newFileUploaded);
-          document.save(function(error, newFile) {
-            
-            if(!error){
-                console.log(newFile);
-                res.status(200).send(newFile);
-            }
-            if (error) {
-              throw error;
+            if (err) {
+              console.log(err);
+              next(res.status(500).json({ error: true, Message: err }));
+            } else {
+              
+             next(res.status(200).send(newFile)) 
+              
+               
+             
             }
           });
-         
-        }
-      });
+
+      }
+      if (error) {
+        throw error;
+      }
+    });
+      
+    
+     
 
 })
 

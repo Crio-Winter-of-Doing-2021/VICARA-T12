@@ -113,6 +113,16 @@ class FileService{
       console.log(error);
     });
   }
+
+  removeFileInAFolder(jwtToken,fileID, userID, folderID){
+    let fileIDuserIDfolderID=[fileID, userID, folderID]
+    return axiosInstance.delete(`api/upload/fileInFolder/${fileIDuserIDfolderID}`,{
+      headers:{
+        'Authorization': `${jwtToken}`
+
+      }
+    })
+  }
   
   removeFile(jwtToken,id){
     return axiosInstance.delete(`api/upload/${id}`,{
