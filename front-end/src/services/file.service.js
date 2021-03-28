@@ -1,13 +1,25 @@
 
 import axiosInstance from '../axios'
+import React from 'react'; 
+import Typography from '@material-ui/core/Typography'
 
+const progressbar=(progressEvent)=>{
+
+   
+           console.log(progressEvent.loaded/progressEvent.total)
+       
+ 
+}
 class FileService{
+
+ 
   
   upload(jwtToken, file, users){
     let formData = new FormData();
     formData.append("file", file);
     formData.append("users", users);
     return axiosInstance.post("api/upload/", formData, {
+      onUploadProgress: progressEvent=>{progressbar(progressEvent) ;console.log("hi")},
         headers: {
             "Content-Type": "multipart/form-data",
             'Authorization': `${jwtToken}`
@@ -16,14 +28,18 @@ class FileService{
     });    
   }
 
+  
+
   uploadFilesInFolder(jwtToken, folderID, file, users){
     let formData = new FormData();
     formData.append("folderID", folderID);
     formData.append("file", file);
     formData.append("users", users);
 
-    return axiosInstance.post("api/upload/fileinfolder", formData,{
+    return axiosInstance.post("api/upload/fileinfolder", formData, {
+       
       headers: {
+
         "Content-Type": "multipart/form-data",
         'Authorization': `${jwtToken}`
       }

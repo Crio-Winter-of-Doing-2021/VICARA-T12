@@ -6,8 +6,16 @@ const FOLDER = require("../models/folder");
 const multer = require("multer");
 var AWS = require("aws-sdk");
 const ObjectId = require('mongoose').Types.ObjectId;
-var storage = multer.memoryStorage();
-const util = require('util')
+var storage = multer.diskStorage({
+  destination: function(req, file, cb){
+     cb(null, '/tmp/uploads')
+  },
+  filename: function(req, file, cb){
+    cb(null, file.fieldname + '_'+ Date.now())
+  }
+
+});
+
 var upload = multer({storage:storage});
 const Path = require('path');
 const { ObjectID } = require("bson");
@@ -262,8 +270,8 @@ document.save(function(filesaveerror, newFile) {
 
 
           s3bucket.putObject(params, function(s3err, data) {
-            if (err) {
-              console.log(err);
+            if (s3err) {
+              console.log(s3err);
               next(res.status(500).json({ error: true, Message: s3err }));
             } else {
               next(res.status(200).send(docs));
