@@ -33,7 +33,7 @@ function App() {
         <Switch>
           <Route exact path="/">
             <Header/>
-            <div style={{ height: menuHeight }} ref={dropdownRef}>
+            <div style={{ height: menuHeight }} ref={dropdownRef}Z>
               <CSSTransition
                 in={activeMenu === 'login'}
                 timeout={500}

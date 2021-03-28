@@ -22,6 +22,8 @@ const useStyles = makeStyles((theme) => ({
 		display: 'flex',
 		flexDirection: 'column',
 		alignItems: 'center',
+		justifyContent: 'center',
+		textAlign: 'center',
 		border: 0,
 		maxWidth: 'auto',
 		maxHeight:'auto',
@@ -55,7 +57,6 @@ export default function Login(props) {
 		password: '',
 	});
 	const [formData, updateFormData] = useState(initialFormData);
-	const [open, setOpen] = useState(false);
 	const [error, setError] = useState(true);
 	// Saving data typed into the state 
 	const handleChange = (e) => {
@@ -101,11 +102,8 @@ export default function Login(props) {
 			.then(response => { 
 				console.log(response);
 				//alert(response);
-				
 				history.push({ pathname: '/welcome',
-			    				state: { detail: response.data }})
-								
-		      
+			    				state: { detail: response.data }}) 
 			})
 			.catch(error => {
 				// If invalid data is given, reset the state so data is cleared. 

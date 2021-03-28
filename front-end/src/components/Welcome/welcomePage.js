@@ -1,7 +1,7 @@
 //eslint-disable-next-line
 
 import React, { useEffect, useState } from 'react';
-import { Route, useHistory, useLocation } from 'react-router-dom';
+import { Route, useHistory, useLocation, Link } from 'react-router-dom';
 import clsx from 'clsx';
 import { fade, makeStyles, useTheme } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -138,10 +138,6 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const initialState = {
-  
-};
-
 export default function MiniDrawer(props) {
   const loc = useLocation();
   const history = useHistory();
@@ -169,12 +165,10 @@ export default function MiniDrawer(props) {
 
 
    useEffect(() => {
-     setAccessKey(loc.state.detail.accessToken);
-  
-        setNames(loc.state.detail.name);
-    setUserDetails(loc.state.detail);
-    setId(loc.state.detail.id);
-    
+      setAccessKey(loc.state.detail.accessToken);
+      setNames(loc.state.detail.name);
+      setUserDetails(loc.state.detail);
+      setId(loc.state.detail.id);  
    }, [loc]);
 
   const handleDrawerOpen = () => {
@@ -200,12 +194,9 @@ export default function MiniDrawer(props) {
 
   const logoutFunction = () => {
     // eslint-disable-next-line no-restricted-globals
-   
     history.replace({ pathname: '/',
-                  state: { detail: "" }}
-                  
+                  state: { detail: "" }} 
                 )
-
   };
 
   const searchFunction = (event) =>{
@@ -224,6 +215,10 @@ export default function MiniDrawer(props) {
     setSearchField("")
   };
 
+   const vicaraStorageIcon = () =>{
+    window.location.reload();
+   };
+  
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
     
@@ -268,9 +263,11 @@ export default function MiniDrawer(props) {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" noWrap>
-                Vicara Storage drive 
-          </Typography>
+          <div onClick = {vicaraStorageIcon}>
+            <Typography variant="h6" noWrap>
+                  Vicara Storage drive 
+            </Typography>
+          </div>
           <div className={classes.search}>
             <div className={classes.searchIcon}>
               <SearchIcon />

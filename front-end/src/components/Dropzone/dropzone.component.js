@@ -369,7 +369,6 @@ useEffect(()=>{
               <Button
                 variant="contained"
                 component="label"
-                //onClick = {fetchData}
               >
                 Choose File
                 <input
@@ -434,9 +433,11 @@ useEffect(()=>{
                                       { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                                     </IconButton>
                                   </div>
-                                  <IconButton aria-label="share" className={classes.download}>
-                                    <OpenInNewIcon onClick={()=>{downloadFile(filedata["s3_key"])}}/>
-                                  </IconButton>
+                                  <div onClick={()=>{downloadFile(filedata["s3_key"])}}> 
+                                    <IconButton aria-label="share" className={classes.download}>
+                                      <OpenInNewIcon/>
+                                    </IconButton>
+                                  </div>
                                 </CardActions>
                               </CardContent>
                             </Card>
@@ -462,9 +463,11 @@ useEffect(()=>{
                               </Avatar>
                             }
                             action={
-                              <IconButton aria-label="add to favorites" >
-                                <DeleteIcon onClick={()=>removeFile(filedata["_id"])}/>
-                              </IconButton>
+                              <div onClick={()=>removeFile(filedata["_id"])}> 
+                                <IconButton aria-label="add to favorites" >
+                                  <DeleteIcon />
+                                </IconButton>
+                              </div>
                             }
                             title={filedata["s3_key"].slice(0,10)}
                           />
@@ -488,9 +491,11 @@ useEffect(()=>{
                                 { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                               </IconButton>
                             </div>
-                            <IconButton aria-label="share" className={classes.download}>
-                              <OpenInNewIcon onClick={()=>{downloadFile(filedata["s3_key"])}}/>
-                            </IconButton>
+                            <div onClick={()=>{downloadFile(filedata["s3_key"])}}> 
+                              <IconButton aria-label="share" className={classes.download}>
+                                <OpenInNewIcon />
+                              </IconButton>
+                            </div>
                           </CardActions>
                           </CardContent>
                         </Card>
@@ -515,9 +520,11 @@ useEffect(()=>{
                           </Avatar>
                         }
                         action={
-                          <IconButton aria-label="add to favorites" >
-                            <DeleteIcon onClick={()=>removeFile(filedata["_id"])}/>
-                          </IconButton>
+                          <div onClick={()=>removeFile(filedata["_id"])} >
+                            <IconButton aria-label="add to favorites" >
+                              <DeleteIcon/>
+                            </IconButton>
+                          </div>
                         }
                         title={filedata["s3_key"].slice(0,10)}
                       />
@@ -541,9 +548,11 @@ useEffect(()=>{
                           { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                         </IconButton>
                       </div>
+                      <div onClick={()=>{downloadFile(filedata["s3_key"])}} >
                         <IconButton aria-label="share" className={classes.download}>
-                          <OpenInNewIcon onClick={()=>{downloadFile(filedata["s3_key"])}} />
+                          <OpenInNewIcon />
                         </IconButton>
+                      </div>
                       </CardActions>
                       </CardContent>
                     </Card>
@@ -569,9 +578,11 @@ useEffect(()=>{
                             </Avatar>
                           }
                           action={
-                            <IconButton aria-label="add to favorites" >
-                              <DeleteIcon onClick={()=>removeFolder(folderData["_id"])}/>
-                            </IconButton>
+                            <div onClick={()=>removeFolder(folderData["_id"])} >
+                              <IconButton aria-label="add to favorites" >
+                                <DeleteIcon />
+                              </IconButton>
+                            </div>
                           }
                           title={folderData["Name"].slice(0,10)}
                         />
@@ -590,9 +601,11 @@ useEffect(()=>{
                               {folderData["createdAt"].slice(0,10)}
                             </Typography>
                           <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                            <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFolder( folderData["_id"] )}}>
-                              { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                            </IconButton>
+                            <div onClick={()=>{makefavouriteFolder( folderData["_id"] )}} >
+                              <IconButton aria-label="add to favorites" >
+                                { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+                              </IconButton>
+                            </div>
                             <IconButton aria-label="share" className={classes.download}>
                               <OpenInNewIcon/>
                             </IconButton>
@@ -620,9 +633,11 @@ useEffect(()=>{
                             </Avatar>
                           }
                           action={
-                            <IconButton aria-label="add to favorites" >
-                              <DeleteIcon onClick={()=>removeFolder(folderData["_id"])}/>
-                            </IconButton>
+                            <div onClick={()=>removeFolder(folderData["_id"])} >
+                              <IconButton aria-label="add to favorites" >
+                                <DeleteIcon/>
+                              </IconButton>
+                            </div>
                           }
                           title={folderData["Name"].slice(0,10)}
                         />
@@ -641,9 +656,11 @@ useEffect(()=>{
                               {folderData["createdAt"].slice(0,10)}
                             </Typography>
                           <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                            <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFolder( folderData["_id"] )}}>
-                              { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                            </IconButton>
+                            <div  onClick={()=>{makefavouriteFolder( folderData["_id"] )}} >
+                              <IconButton aria-label="add to favorites">
+                                { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+                              </IconButton>
+                            </div>
                             <IconButton aria-label="share" className={classes.download}>
                               <OpenInNewIcon/>
                             </IconButton>
@@ -671,9 +688,11 @@ useEffect(()=>{
                             </Avatar>
                           }
                           action={
-                            <IconButton aria-label="add to favorites" >
-                              <DeleteIcon onClick={()=>removeFolder(folderData["_id"])}/>
-                            </IconButton>
+                            <div  onClick={()=>removeFolder(folderData["_id"])}> 
+                              <IconButton aria-label="add to favorites" >
+                                <DeleteIcon/>
+                              </IconButton>
+                            </div>
                           }
                           title={folderData["Name"].slice(0,10)}
                         />
@@ -692,9 +711,11 @@ useEffect(()=>{
                               {folderData["createdAt"].slice(0,10)}
                             </Typography>
                           <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                            <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFolder( folderData["_id"] )}}>
-                              { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                            </IconButton>
+                            <div onClick={()=>{makefavouriteFolder( folderData["_id"] )}}>
+                              <IconButton aria-label="add to favorites" >
+                                { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+                              </IconButton>
+                            </div>
                             <IconButton aria-label="share" className={classes.download}>
                               <OpenInNewIcon/>
                             </IconButton>
