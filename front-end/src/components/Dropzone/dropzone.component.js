@@ -527,7 +527,7 @@ useEffect(()=>{
                                       { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                                     </IconButton>
                                   </div>
-                                  <div onClick={()=>{downloadFile(filedata["id"])}}> 
+                                  <div onClick={()=>{downloadFile(filedata["_id"])}}> 
                                     <IconButton aria-label="share" className={classes.download}>
                                       <OpenInNewIcon/>
                                     </IconButton>
@@ -590,7 +590,7 @@ useEffect(()=>{
                                 { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                               </IconButton>
                             </div>
-                            <div onClick={()=>{downloadFile(filedata["id"])}}> 
+                            <div onClick={()=>{downloadFile(filedata["_id"])}}> 
                               <IconButton aria-label="share" className={classes.download}>
                                 <OpenInNewIcon />
                               </IconButton>
@@ -652,7 +652,7 @@ useEffect(()=>{
                           { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                         </IconButton>
                       </div>
-                      <div onClick={()=>{downloadFile(filedata["id"])}} >
+                      <div onClick={()=>{downloadFile(filedata["_id"])}} >
                         <IconButton aria-label="share" className={classes.download}>
                           <OpenInNewIcon />
                         </IconButton>
