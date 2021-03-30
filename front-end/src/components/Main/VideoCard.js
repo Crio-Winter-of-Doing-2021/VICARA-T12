@@ -3,19 +3,15 @@ import { makeStyles, useTheme } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
-import IconButton from '@material-ui/core/IconButton';
 import Typography from '@material-ui/core/Typography';
-import SkipPreviousIcon from '@material-ui/icons/SkipPrevious';
-import PlayArrowIcon from '@material-ui/icons/PlayArrow';
-import SkipNextIcon from '@material-ui/icons/SkipNext';
 import { Collapse } from '@material-ui/core';
 import VideoCard from '../images/videoExample.mp4';
 
 const useStyles = makeStyles((theme) => ({
 root: {
-    minWidth: '50vh',
-    maxWidth:'50vh',
-    minHeight: '50vh',
+    minWidth: '25vw',
+    maxWidth:'50vw',
+    minHeight: '25vh',
     maxHeight: '50vh',
     border: 0,
     borderRadius: 3,
@@ -28,9 +24,6 @@ root: {
   },
   content: {
     flex: '1 0 auto',
-  },
-  cover: {
-    width: 151,
   },
   controls: {
     display: 'flex',
@@ -58,12 +51,12 @@ export default function MediaControlCard({checked}) {
         <Card className={classes.root}>
         <div className={classes.details}>
             <CardContent className={classes.content}>
-            <Typography component="h5" variant="h5">
-                Video Walkthrough
-            </Typography>
-            <Typography variant="subtitle1" color="textSecondary">
-                Storage Drive Usage
-            </Typography>
+              <Typography component="h5" variant="h5">
+                  Video Walkthrough
+              </Typography>
+              <Typography variant="subtitle1" color="textSecondary">
+                  Storage Drive Usage
+              </Typography>
             </CardContent>
             <CardMedia
                 component="video"

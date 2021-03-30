@@ -3,6 +3,8 @@ import { makeStyles } from '@material-ui/core/styles';
 import OutlinedCard from './AboutCard';
 import useWindowPosition from './useWindowPosition';
 import MediaControlCard from './VideoCard';
+import Container from '@material-ui/core/Container';
+import Grid from '@material-ui/core/Grid';
 
 const useStyles = makeStyles((theme) => ({
     root:{
@@ -10,12 +12,17 @@ const useStyles = makeStyles((theme) => ({
        display:  'flex',
        alignItems: 'center',
        justifyContent: 'center',
+       padding:'10%',
+       flexGrow: 1,
     },
     border: {
         height: '50%',
         width: 1,
+        margin: 'auto',
         backgroundColor: '#909090',
-        margin: '10%',
+    },
+    child: {
+        margin: 'auto',
     },
 }));
 
@@ -23,10 +30,22 @@ export default function (){
     const checked = useWindowPosition('loginRegister');
     const classes = useStyles();
     return(
-        <div className={classes.root} id="about-section">
-            <OutlinedCard checked={checked} />
-            <div className={classes.border}></div>
-            <MediaControlCard checked={checked} />
-        </div>     
+        <Container maxWidth="xl" component="main">
+            <Grid container spacing={5} alignItems="center">
+                <div className={classes.root} id="about-section">
+                    <Grid xs={12} md={5}>
+                        <div className={classes.child}>
+                            <OutlinedCard checked={checked} />
+                        </div>
+                    </Grid>
+                    <div className={classes.border}></div>
+                    <Grid xs={12} md={5}>
+                        <div className={classes.child}>
+                            <MediaControlCard checked={checked} />
+                        </div>
+                    </Grid>
+                </div>  
+            </Grid> 
+        </Container>
     )
 }
