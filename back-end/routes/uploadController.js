@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const FILE = require("../models/file");
 const FOLDER = require("../models/folder");
+const { User } = require("../models/users");
 const multer = require("multer");
 var AWS = require("aws-sdk");
 const ObjectId = require('mongoose').Types.ObjectId;
@@ -174,6 +175,28 @@ router.patch('/renameFile/:fileIDnewNameUserID', async(req,res, next)=>{
     }
   })
 })
+
+
+router.patch('/addUserToFolder/:fileIDmailAddedUserID', async(req,res,next)=>{
+  fileID = req.params.fileIDmailAddedUserID.split(',')[0];
+  mailAdded = req.params.fileIDmailAddedUserID.split(',')[1];
+  userID = req.params.fileIDmailAddedUserID.split(',')[2];
+  await User.findOne({'email':mailAdded}, async(errorInUser, foundDoc)=>{
+    if(errorInUser)
+    next(res.status(400).send(errorInUser));
+    else if(!foundDoc)
+    next(res.status(400).send('cant find'))
+    else
+    {await FILE.findOneAndUpdate({'_id':ObjectId(fileID),'users':userID,  'users': { $ne: ObjectId(foundDoc["_id"]) }}, {$push: { users: foundDoc["_id"] }}, (errorInUpdatingUser, docs)=>{
+      if(!errorInUpdatingUser)
+      next(res.status(200).send(docs));
+      else
+      next(res.status(500).send(errorInUpdatingUser))
+    } )
+  }
+  })
+
+});
 router.get('/:id', async(req,res,next)=>{
   console.log(req.params.id);
     FILE.find(       
