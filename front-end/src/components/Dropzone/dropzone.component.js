@@ -25,6 +25,10 @@ import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import LoadCircularProgress from '../Main/circularProgress';
 import fileService from '../../services/file.service';
 import { ToastContainer, toast } from 'react-toastify';
+import { createMuiTheme } from '@material-ui/core/styles';
+import green from '@material-ui/core/colors/green';
+
+
 import ShareIcon from '@material-ui/icons/Share';
 import Folderview from '../FolderView/folderview.component'
 
@@ -83,6 +87,17 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
   },
 }));
+
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: green[500],
+    },
+    secondary: {
+      main: '#b23c17',
+    },
+  },
+});
 
 export default function Dropzone(props){
   const history = useHistory();
@@ -587,13 +602,14 @@ useEffect(()=>{
             fullWidth
             value = {newName}
             onChange={handleNameChange}
+            label = "New name"
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleRenameClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={()=>{handleRename()}} color="primary">
+          <Button onClick={()=>{handleRename()}} color="secondary">
             Confirm
           </Button>
         </DialogActions>
@@ -602,7 +618,7 @@ useEffect(()=>{
       <Dialog open={openShareForm} onClose={handleShareClose} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title"></DialogTitle>
         <DialogContentText style={{'text-align': 'center'}}>
-          Add people
+          Add a person's mail ID
           </DialogContentText>
         <DialogContent>
           <TextField
@@ -611,12 +627,13 @@ useEffect(()=>{
             id="email"
             type="email"
             fullWidth
+            label ="Email ID"
             value = {mailshared}
             onChange={handleEmailChange}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleShareClose} color="primary">
+          <Button onClick={handleShareClose} color="secondary">
             Cancel
           </Button>
          <Button onClick={handleShare} color="primary">
