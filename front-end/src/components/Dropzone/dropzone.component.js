@@ -26,6 +26,15 @@ import LoadCircularProgress from '../Main/circularProgress';
 import fileService from '../../services/file.service';
 import { ToastContainer, toast } from 'react-toastify';
 import Folderview from '../FolderView/folderview.component'
+
+
+import TextField from '@material-ui/core/TextField';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import EditIcon from '@material-ui/icons/Edit';
 import 'react-toastify/dist/ReactToastify.css';
 import './dropzone.component.css'
 import { useHistory, Link} from "react-router-dom"
@@ -115,6 +124,40 @@ export default function Dropzone(props){
   const [userName, setUserName] = useState({});
   const [isloading, setLoading] = useState(false);
   const [jwtToken, setjwtToken] = useState("");
+  const [openRenameForm, setopenRenameForm] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [oldname,setoldName] = useState("");
+  const [filetobeRenamed, setFileToBeRenamed]=useState("");
+  const handleRenameOpen = (id, name) => {
+    setoldName(name);
+    setFileToBeRenamed(id);
+    setopenRenameForm(true);
+  };
+
+  const handleRenameClose = () => {
+    setopenRenameForm(false);
+  };
+
+  const handleRename =()=>{
+    alert(newName);
+    alert(filetobeRenamed);
+
+    FileService.renameFile(jwtToken, filetobeRenamed, newName, props.id).then((docs)=>{
+      let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
+      let newfilesinDB = [...filesinDB];
+      newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], s3_key: docs["data"]["s3_key"]}
+      setfilesinDB(newfilesinDB); 
+      handleRenameClose();
+    })
+
+   
+    }
+
+  const handleNameChange = (e)=>{
+    
+    setNewName( e.target.value)
+    
+  }
   const option = [
     'Choose File',
     'Choose Folder'
@@ -150,12 +193,6 @@ export default function Dropzone(props){
     })
   };
 
-  const uploadModalRef = useRef();
-  const uploadRef = useRef();
-  const progressRef = useRef();
-  const closeUploadModal = () => {
-      //uploadModalRef.current.style.display = 'none';
-  }
 
   const handleFiles = (files) => {  
     for(let i = 0; i < files.length; i++){       
@@ -230,7 +267,7 @@ export default function Dropzone(props){
 
     });
   }
-
+  
 
   const removeFile = (fileID)=>{
     FileService.removeFile(jwtToken,fileID).then(()=>{
@@ -391,6 +428,31 @@ useEffect(()=>{
               </Button>
             </MenuItem>        
           </Menu>   
+          <Dialog open={openRenameForm} onClose={handleRenameClose} aria-labelledby="form-dialog-title">
+        <DialogTitle id="form-dialog-title"></DialogTitle>
+        <DialogContentText style={{'text-align': 'center'}}>
+          Change {oldname} to
+          </DialogContentText>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="name"
+            type="name"
+            fullWidth
+            value = {newName}
+            onChange={handleNameChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleRenameClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={()=>{handleRename()}} color="primary">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
           <div className="file-display-container">
             {
               props.allFileUpload &&
@@ -436,6 +498,11 @@ useEffect(()=>{
                                   <div onClick={()=>{downloadFile(filedata["id"])}}> 
                                     <IconButton aria-label="share" className={classes.download}>
                                       <OpenInNewIcon/>
+                                    </IconButton>
+                                  </div>
+                                  <div onClick={()=>{handleRenameOpen(filedata["_id"], filedata["s3_key"])}}>
+                                    <IconButton aria-label="rename">
+                                   <EditIcon/>
                                     </IconButton>
                                   </div>
                                 </CardActions>
@@ -496,6 +563,11 @@ useEffect(()=>{
                                 <OpenInNewIcon />
                               </IconButton>
                             </div>
+                            <div onClick={()=>{handleRenameOpen(filedata["_id"], filedata["s3_key"])}}>
+                                    <IconButton aria-label="rename">
+                                   <EditIcon/>
+                                    </IconButton>
+                             </div>
                           </CardActions>
                           </CardContent>
                         </Card>
@@ -553,6 +625,11 @@ useEffect(()=>{
                           <OpenInNewIcon />
                         </IconButton>
                       </div>
+                      <div onClick={()=>{handleRenameOpen(filedata["_id"], filedata["s3_key"])}}>
+                                    <IconButton aria-label="rename">
+                                   <EditIcon/>
+                                    </IconButton>
+                       </div>
                       </CardActions>
                       </CardContent>
                     </Card>
@@ -729,16 +806,7 @@ useEffect(()=>{
             </div>
             }
           </div>
-          <div className="upload-modal" ref={uploadModalRef}>
-              <div className="overlay"></div>
-              <div className="close" onClick={(() => closeUploadModal())}></div>
-              <div className="progress-container">
-                  <span ref={uploadRef}></span>
-                  <div className="progress">
-                      <div className="progress-bar" ref={progressRef}></div>
-                  </div>
-              </div>
-          </div>
+       
         </Typography>
       </Container>
     </React.Fragment>  

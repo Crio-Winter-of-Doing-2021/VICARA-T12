@@ -137,7 +137,24 @@ router.get('/folder/:id', async(req,res,next)=>{
     );
 });
 
+router.patch('/renameFile/:fileIDnewNameUserID', async(req,res, next)=>{
+  let fileID = req.params.fileIDnewNameUserID.split(',')[0];
+  let newName = req.params.fileIDnewNameUserID.split(',')[1];
+  let userID = req.params.fileIDnewNameUserID.split(',')[2];
 
+  FILE.findOneAndUpdate({'_id':ObjectId(fileID), 'users':userID}, {'s3_key': newName}, {
+    new: true
+  }, (errorinRenaming, renamedDoc)=>{
+    if(errorinRenaming)
+    res.status(500).send(errorinRenaming);
+
+    else
+    {
+      console.log(renamedDoc);
+    res.status(200).send(renamedDoc);
+    }
+  })
+})
 router.get('/:id', async(req,res,next)=>{
   console.log(req.params.id);
     FILE.find(       
