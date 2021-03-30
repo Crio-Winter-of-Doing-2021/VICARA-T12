@@ -233,7 +233,7 @@ export default function Dropzone(props){
       }).catch((error)=>{
         
            
-           toastContainerFunction("Couldn't add the user mentioned");
+        toastErrorContainerFunction("Couldn't add the user mentioned");
            setmailshared("");
            setfileToBeShared("");
            setOpenShareForm(false);
@@ -242,7 +242,7 @@ export default function Dropzone(props){
       })
     }
     else{
-      toastContainerFunction("Oops, this is not a valid email format");
+      toastErrorContainerFunction("Oops, this is not a valid email format");
       setmailshared("");
       setfileToBeShared("");
     }
@@ -262,7 +262,7 @@ export default function Dropzone(props){
        
       
     }).catch((error)=>{
-           toastContainerFunction("Error in marking as favourite");
+      toastErrorContainerFunction("Error in marking as favourite");
     }).finally(()=>{
       let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
       let newfilesinDB = [...filesinDB];
@@ -301,6 +301,31 @@ export default function Dropzone(props){
   toast.configure();
   function toastContainerFunction(message) {
     toast.success(message, {
+      position: "bottom-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
+      return (
+          <ToastContainer
+            position="bottom-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            />
+      );
+  }
+
+  function toastErrorContainerFunction(message) {
+    toast.error(message, {
       position: "bottom-right",
       autoClose: 5000,
       hideProgressBar: false,
