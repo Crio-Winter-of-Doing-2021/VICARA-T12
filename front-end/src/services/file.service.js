@@ -40,6 +40,16 @@ class FileService{
     
       
   }
+
+  renameFolder(jwtToken, foldertobeRenamed, newName, id){
+    let folderIDnewNameUserID = [foldertobeRenamed, newName, id];
+    return axiosInstance.patch(`api/upload/renameFolder/${folderIDnewNameUserID}`,{ },{
+      headers:{
+        
+        'Authorization': `${jwtToken}`
+      }
+  })
+}
   uploadFolder(jwtToken,folderName, users){
     console.log(users);
     let formData = new FormData();

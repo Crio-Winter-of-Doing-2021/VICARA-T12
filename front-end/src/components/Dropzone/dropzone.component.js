@@ -128,34 +128,59 @@ export default function Dropzone(props){
   const [newName, setNewName] = useState("");
   const [oldname,setoldName] = useState("");
   const [filetobeRenamed, setFileToBeRenamed]=useState("");
-  const handleRenameOpen = (id, name) => {
+  const [type, setType] = useState("")
+  const handleRenameOpen = (typeProperty, id, name) => {
     setoldName(name);
     setFileToBeRenamed(id);
     setopenRenameForm(true);
+   setType(typeProperty)
   };
 
   const handleRenameClose = () => {
     setopenRenameForm(false);
+    setoldName("");
+    setNewName("");
   };
 
   const handleRename =()=>{
     alert(newName);
     alert(filetobeRenamed);
-
-    FileService.renameFile(jwtToken, filetobeRenamed, newName, props.id).then((docs)=>{
+    alert(type);
+    
+    if(type=="file")
+    {FileService.renameFile(jwtToken, filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), props.id).then((docs)=>{
       let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
       let newfilesinDB = [...filesinDB];
       newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], s3_key: docs["data"]["s3_key"]}
       setfilesinDB(newfilesinDB); 
       handleRenameClose();
+      setoldName("");
+      setNewName("");
     })
+  }
 
+    if(type=="folder"){
+      FileService.renameFolder(jwtToken, filetobeRenamed, newName, props.id).then((docs)=>{
+        let foundIndex = foldersinDB.findIndex((folderinDB)=>folderinDB["_id"] === filetobeRenamed);
+        let newfoldersinDB = [...foldersinDB];
+        newfoldersinDB[foundIndex] = {...newfoldersinDB[foundIndex], Name: docs["data"]["Name"]}
+        setfoldersinDB(newfoldersinDB);
+        handleRenameClose();
+        setoldName("");
+        setNewName("");
+    })
+  }
+  
+    
    
     }
 
   const handleNameChange = (e)=>{
+   
+     setNewName( e.target.value);
+   
+   
     
-    setNewName( e.target.value)
     
   }
   const option = [
@@ -500,7 +525,7 @@ useEffect(()=>{
                                       <OpenInNewIcon/>
                                     </IconButton>
                                   </div>
-                                  <div onClick={()=>{handleRenameOpen(filedata["_id"], filedata["s3_key"])}}>
+                                  <div onClick={()=>{handleRenameOpen('file',filedata["_id"], filedata["s3_key"])}}>
                                     <IconButton aria-label="rename">
                                    <EditIcon/>
                                     </IconButton>
@@ -563,7 +588,7 @@ useEffect(()=>{
                                 <OpenInNewIcon />
                               </IconButton>
                             </div>
-                            <div onClick={()=>{handleRenameOpen(filedata["_id"], filedata["s3_key"])}}>
+                            <div onClick={()=>{handleRenameOpen("file",filedata["_id"], filedata["s3_key"])}}>
                                     <IconButton aria-label="rename">
                                    <EditIcon/>
                                     </IconButton>
@@ -625,7 +650,7 @@ useEffect(()=>{
                           <OpenInNewIcon />
                         </IconButton>
                       </div>
-                      <div onClick={()=>{handleRenameOpen(filedata["_id"], filedata["s3_key"])}}>
+                      <div onClick={()=>{handleRenameOpen("file",filedata["_id"], filedata["s3_key"])}}>
                                     <IconButton aria-label="rename">
                                    <EditIcon/>
                                     </IconButton>
@@ -683,9 +708,16 @@ useEffect(()=>{
                                 { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                               </IconButton>
                             </div>
+                            <div>
                             <IconButton aria-label="share" className={classes.download}>
                               <OpenInNewIcon/>
                             </IconButton>
+                            </div>
+                            <div onClick={()=>{handleRenameOpen('folder',folderData["_id"], folderData["Name"])}}>
+                                    <IconButton aria-label="rename">
+                                   <EditIcon/>
+                                    </IconButton>
+                                  </div>
                           </CardActions>
                         </CardContent>
                       </Card>
@@ -738,9 +770,16 @@ useEffect(()=>{
                                 { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                               </IconButton>
                             </div>
+                            <div>
                             <IconButton aria-label="share" className={classes.download}>
                               <OpenInNewIcon/>
                             </IconButton>
+                            </div>
+                            <div onClick={()=>{handleRenameOpen('folder',folderData["_id"], folderData["Name"])}}>
+                                    <IconButton aria-label="rename">
+                                   <EditIcon/>
+                                    </IconButton>
+                                  </div>
                           </CardActions>
                         </CardContent>
                       </Card>
@@ -793,9 +832,16 @@ useEffect(()=>{
                                 { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                               </IconButton>
                             </div>
-                            <IconButton aria-label="share" className={classes.download}>
+                            <div>
+                              <IconButton aria-label="share" className={classes.download}>
                               <OpenInNewIcon/>
                             </IconButton>
+                            </div>
+                            <div onClick={()=>{handleRenameOpen('folder',folderData["_id"], folderData["Name"])}}>
+                                    <IconButton aria-label="rename">
+                                   <EditIcon/>
+                                    </IconButton>
+                                  </div>
                           </CardActions>
                         </CardContent>
                       </Card>
