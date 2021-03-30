@@ -137,7 +137,43 @@ router.get('/folder/:id', async(req,res,next)=>{
     );
 });
 
+router.patch('/renameFolder/:folderIDnewNameUserID', async(req,res,next)=>{
+let folderID = req.params.folderIDnewNameUserID.split(',')[0];
+let newName = req.params.folderIDnewNameUserID.split(',')[1];
+let userID = req.params.folderIDnewNameUserID.split(',')[2];
 
+FOLDER.findOneAndUpdate({'_id':ObjectId(folderID), 'users':userID}, {'Name': newName}, {
+  new: true
+}, (errorinRenaming, renamedDoc)=>{
+  if(errorinRenaming)
+  next(res.status(500).send(errorinRenaming));
+
+  else
+  {
+    console.log(renamedDoc);
+  next(res.status(200).send(renamedDoc));
+  }
+})
+});
+
+router.patch('/renameFile/:fileIDnewNameUserID', async(req,res, next)=>{
+  let fileID = req.params.fileIDnewNameUserID.split(',')[0];
+  let newName = req.params.fileIDnewNameUserID.split(',')[1];
+  let userID = req.params.fileIDnewNameUserID.split(',')[2];
+
+  FILE.findOneAndUpdate({'_id':ObjectId(fileID), 'users':userID}, {'s3_key': newName}, {
+    new: true
+  }, (errorinRenaming, renamedDoc)=>{
+    if(errorinRenaming)
+    next(res.status(500).send(errorinRenaming));
+
+    else
+    {
+      console.log(renamedDoc);
+    next(res.status(200).send(renamedDoc));
+    }
+  })
+})
 router.get('/:id', async(req,res,next)=>{
   console.log(req.params.id);
     FILE.find(       

@@ -29,7 +29,27 @@ class FileService{
       }
     })
   }
+  renameFile(jwtToken, filetobeRenamed, newName, id){
+    let fileIDnewNameUserID = [filetobeRenamed, newName, id];
+     return axiosInstance.patch(`api/upload/renameFile/${fileIDnewNameUserID}`,{ },{
+      headers:{
+        
+        'Authorization': `${jwtToken}`
+      }
+    })
+    
+      
+  }
 
+  renameFolder(jwtToken, foldertobeRenamed, newName, id){
+    let folderIDnewNameUserID = [foldertobeRenamed, newName, id];
+    return axiosInstance.patch(`api/upload/renameFolder/${folderIDnewNameUserID}`,{ },{
+      headers:{
+        
+        'Authorization': `${jwtToken}`
+      }
+  })
+}
   uploadFolder(jwtToken,folderName, users){
     console.log(users);
     let formData = new FormData();
