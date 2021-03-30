@@ -25,8 +25,6 @@ const useStyles = makeStyles({
 
 export default function OutlinedCard(props) {
   const classes = useStyles();
-  const bull = <span className={classes.bullet}>•</span>;
-
   return (
     <Collapse in={props.checked} {...(props.checked ? { timeout: 1000 } : {})}>
         <Card className={classes.root} variant="outlined">
