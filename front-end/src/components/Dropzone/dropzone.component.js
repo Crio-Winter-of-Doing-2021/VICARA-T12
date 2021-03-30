@@ -147,7 +147,7 @@ export default function Dropzone(props){
     alert(filetobeRenamed);
     alert(type);
     
-    if(type=="file")
+    if(type=="file"&&newName.length)
     {FileService.renameFile(jwtToken, filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), props.id).then((docs)=>{
       let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
       let newfilesinDB = [...filesinDB];
@@ -159,7 +159,7 @@ export default function Dropzone(props){
     })
   }
 
-    if(type=="folder"){
+    if(type=="folder"&&newName.length){
       FileService.renameFolder(jwtToken, filetobeRenamed, newName, props.id).then((docs)=>{
         let foundIndex = foldersinDB.findIndex((folderinDB)=>folderinDB["_id"] === filetobeRenamed);
         let newfoldersinDB = [...foldersinDB];
@@ -170,6 +170,13 @@ export default function Dropzone(props){
         setNewName("");
     })
   }
+
+  else if(newName.length==0)
+    {
+      handleRenameClose();
+        setoldName("");
+        setNewName("");
+    }
   
     
    

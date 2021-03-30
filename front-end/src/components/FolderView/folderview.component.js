@@ -136,7 +136,7 @@ export default function Folderview(){
       alert(filetobeRenamed);
       alert(type);
       
-      if(type=="file")
+      if(type=="file"&& newName.length)
       {FileService.renameFile(loc.state.token, filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), loc.state.id).then((docs)=>{
         let foundIndex = filesInFolder.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
         let newfilesInFolder = [...filesInFolder];
@@ -146,6 +146,12 @@ export default function Folderview(){
         setoldName("");
         setNewName("");
       })
+    }
+    else if(newName.length==0)
+    {
+      handleRenameClose();
+        setoldName("");
+        setNewName("");
     }
   
     }
