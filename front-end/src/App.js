@@ -14,6 +14,8 @@ import IconButton from '@material-ui/core/IconButton'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import AboutSection from './components/Main/AboutSection';
 import { Link as Scroll } from 'react-scroll'
+import Swagger from './components/Main/Swagger';
+import Footer from './components/Main/footer';
 
 const useStyles = makeStyles((theme) => ({
   root:{
@@ -78,7 +80,13 @@ function App() {
                   </IconButton>
                 </Scroll>
               </div>
-            <AboutSection />
+              <div  id = "AboutSection" >
+                <AboutSection />
+              </div>
+              <div  id = "Swagger" >
+                <Swagger />
+              </div>
+              <Footer/>
           </Route>
         </Switch>  
         <Switch>

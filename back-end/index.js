@@ -11,6 +11,7 @@ const uploadController = require('./routes/uploadController');
 const debug = require('debug')('app:startup');
 const welcomePage = require('./routes/welcomePage');
 const users = require('./routes/users');
+const LinkedInProfileInfo = require('./routes/LinkdeInAuth')
 const loginPage = require('./routes/loginPage');
 const path = require('path');
 const app = express();
@@ -26,7 +27,7 @@ app.use('/api/users', users);
 app.use('/api/auth',auth);
 app.use('/api/upload',[authentication.auth],uploadController);
 app.use('/welcome',[authentication.auth],welcomePage);
-
+app.use('/api/LinkedInProfileInfo', LinkedInProfileInfo);
 
 app.use('/*', loginPage);
 // Setting the html using pug 
