@@ -50,6 +50,16 @@ class FileService{
       }
   })
 }
+
+
+shareFile(jwtToken, fileToBeShared, mailshared, id){
+  let fileIDmailAddedUserID = [fileToBeShared, mailshared, id];
+  return axiosInstance.patch(`api/upload/addUserToFolder/${fileIDmailAddedUserID}`,{ },{
+    headers:{
+      'Authorization': `${jwtToken}`
+    }
+  })
+}
   uploadFolder(jwtToken,folderName, users){
     console.log(users);
     let formData = new FormData();

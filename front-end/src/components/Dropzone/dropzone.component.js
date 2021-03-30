@@ -25,6 +25,7 @@ import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import LoadCircularProgress from '../Main/circularProgress';
 import fileService from '../../services/file.service';
 import { ToastContainer, toast } from 'react-toastify';
+import ShareIcon from '@material-ui/icons/Share';
 import Folderview from '../FolderView/folderview.component'
 
 
@@ -98,6 +99,7 @@ export default function Dropzone(props){
   fileImageMap.set("png","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
   fileImageMap.set("jpg","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
   fileImageMap.set("presso","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
+  fileImageMap.set("mp4", "https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
   
   const dragOver=(e)=>{
     e.preventDefault();
@@ -129,6 +131,10 @@ export default function Dropzone(props){
   const [oldname,setoldName] = useState("");
   const [filetobeRenamed, setFileToBeRenamed]=useState("");
   const [type, setType] = useState("")
+  const [openShareForm, setOpenShareForm] = useState(false);
+  const [mailshared, setmailshared]= useState("");
+  const [fileToBeShared, setfileToBeShared] = useState("")
+  
   const handleRenameOpen = (typeProperty, id, name) => {
     setoldName(name);
     setFileToBeRenamed(id);
@@ -159,6 +165,7 @@ export default function Dropzone(props){
     })
   }
 
+  
     if(type=="folder"&&newName.length){
       FileService.renameFolder(jwtToken, filetobeRenamed, newName, props.id).then((docs)=>{
         let foundIndex = foldersinDB.findIndex((folderinDB)=>folderinDB["_id"] === filetobeRenamed);
@@ -186,10 +193,62 @@ export default function Dropzone(props){
    
      setNewName( e.target.value);
    
-   
-    
-    
   }
+  //share
+
+ const handleEmailChange = (e)=>{
+   setmailshared(e.target.value);
+
+ }
+
+  const handleShareOpen = (id) => {
+    setfileToBeShared(id);
+    setOpenShareForm(true)
+  };
+
+  const handleShareClose = () => {
+   setOpenShareForm(false)
+  };
+
+  const handleShare=()=>{
+    alert(fileToBeShared);
+    alert(mailshared);
+    const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if(re.test(mailshared))
+    {
+      FileService.shareFile(jwtToken, fileToBeShared, mailshared, props.id).then((returnObject)=>{
+        console.log(returnObject);
+      
+
+        if(returnObject.status==200)
+         {
+          toastContainerFunction("User Added Successfully")
+          setmailshared("");
+          setfileToBeShared("");
+          setOpenShareForm(false);
+
+         }
+         
+
+      }).catch((error)=>{
+        
+           
+           toastContainerFunction("Couldn't add the user mentioned");
+           setmailshared("");
+           setfileToBeShared("");
+           setOpenShareForm(false);
+           
+         
+      })
+    }
+    else{
+      toastContainerFunction("Oops, this is not a valid email format");
+      setmailshared("");
+      setfileToBeShared("");
+    }
+  }
+
+
   const option = [
     'Choose File',
     'Choose Folder'
@@ -200,11 +259,15 @@ export default function Dropzone(props){
 
   const makefavouriteFile= (fileID)=>{
     FileService.updateFavouriteFiles(jwtToken,fileID).then(()=>{
+       
+      
+    }).catch((error)=>{
+           toastContainerFunction("Error in marking as favourite");
+    }).finally(()=>{
       let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
       let newfilesinDB = [...filesinDB];
       newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], favourite:!(newfilesinDB[foundIndex]["favourite"])}
-      setfilesinDB(newfilesinDB);  
-      
+      setfilesinDB(newfilesinDB); 
     })
   };
   
@@ -485,6 +548,32 @@ useEffect(()=>{
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog open={openShareForm} onClose={handleShareClose} aria-labelledby="form-dialog-title">
+        <DialogTitle id="form-dialog-title"></DialogTitle>
+        <DialogContentText style={{'text-align': 'center'}}>
+          Add people
+          </DialogContentText>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="email"
+            type="email"
+            fullWidth
+            value = {mailshared}
+            onChange={handleEmailChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleShareClose} color="primary">
+            Cancel
+          </Button>
+         <Button onClick={handleShare} color="primary">
+           Confirm
+         </Button>
+        </DialogActions>
+      </Dialog>
           <div className="file-display-container">
             {
               props.allFileUpload &&
@@ -533,8 +622,13 @@ useEffect(()=>{
                                     </IconButton>
                                   </div>
                                   <div onClick={()=>{handleRenameOpen('file',filedata["_id"], filedata["s3_key"])}}>
-                                    <IconButton aria-label="rename">
+                                    <IconButton aria-label="rename" title="edit name">
                                    <EditIcon/>
+                                    </IconButton>
+                                  </div>
+                                  <div onClick={()=>handleShareOpen(filedata["_id"])}>
+                                    <IconButton aria-label="share" title="share">
+                                      <ShareIcon/>
                                     </IconButton>
                                   </div>
                                 </CardActions>
@@ -597,9 +691,14 @@ useEffect(()=>{
                             </div>
                             <div onClick={()=>{handleRenameOpen("file",filedata["_id"], filedata["s3_key"])}}>
                                     <IconButton aria-label="rename">
-                                   <EditIcon/>
+                                   <EditIcon />
                                     </IconButton>
                              </div>
+                             <div onClick={()=>handleShareOpen(filedata["_id"])}>
+                                    <IconButton aria-label="share" title="share">
+                                      <ShareIcon/>
+                                    </IconButton>
+                                  </div>
                           </CardActions>
                           </CardContent>
                         </Card>
@@ -662,6 +761,11 @@ useEffect(()=>{
                                    <EditIcon/>
                                     </IconButton>
                        </div>
+                       <div onClick={()=>handleShareOpen(filedata["_id"])}>
+                                    <IconButton aria-label="share" title="share">
+                                      <ShareIcon/>
+                                    </IconButton>
+                      </div>
                       </CardActions>
                       </CardContent>
                     </Card>
