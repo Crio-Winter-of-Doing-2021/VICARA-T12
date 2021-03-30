@@ -15,11 +15,7 @@ const useStyles = makeStyles({
     borderRadius: 3,
     boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
     padding: 50,
-  },
-  title: {
-    display: 'flex',
-    fontSize: '4rem',
-    justifyContent: 'center',
+    flex: '1 1 0',
   },
 });
 
@@ -29,9 +25,6 @@ export default function OutlinedCard(props) {
     <Collapse in={props.checked} {...(props.checked ? { timeout: 1000 } : {})}>
         <Card className={classes.root} variant="outlined">
           <CardContent>
-              <Typography className={classes.title} variant="h5" component="h2">
-                  About
-              </Typography>
               <Typography variant="body1" gutterBottom>
                   body2. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur
                   unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam

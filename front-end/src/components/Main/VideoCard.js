@@ -17,6 +17,7 @@ root: {
     borderRadius: 3,
     boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
     padding: 50,
+    flex: '1 1 0',
 },
   details: {
     display: 'flex',

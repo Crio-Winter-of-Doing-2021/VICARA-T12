@@ -56,10 +56,6 @@ function Footer() {
 	const classes = useStyles();
 	const [ProfilePic, setProfilePic] = useState("")
 
-	const openSocialPage = () =>{
-		
-	}
-
 	useEffect(()=>{
 		axiosInstance
 			.get('/api/LinkedInProfileInfo')
@@ -67,6 +63,9 @@ function Footer() {
 					console.log(response.data);
 					setProfilePic(response.data);
 				})
+				.catch( error => {
+					// profile info store
+				});
 	},[]);
 
 	return (
