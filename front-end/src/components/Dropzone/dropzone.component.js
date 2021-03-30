@@ -26,6 +26,15 @@ import LoadCircularProgress from '../Main/circularProgress';
 import fileService from '../../services/file.service';
 import { ToastContainer, toast } from 'react-toastify';
 import Folderview from '../FolderView/folderview.component'
+
+
+import TextField from '@material-ui/core/TextField';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import EditIcon from '@material-ui/icons/Edit';
 import 'react-toastify/dist/ReactToastify.css';
 import './dropzone.component.css'
 import { useHistory, Link} from "react-router-dom"
@@ -115,6 +124,72 @@ export default function Dropzone(props){
   const [userName, setUserName] = useState({});
   const [isloading, setLoading] = useState(false);
   const [jwtToken, setjwtToken] = useState("");
+  const [openRenameForm, setopenRenameForm] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [oldname,setoldName] = useState("");
+  const [filetobeRenamed, setFileToBeRenamed]=useState("");
+  const [type, setType] = useState("")
+  const handleRenameOpen = (typeProperty, id, name) => {
+    setoldName(name);
+    setFileToBeRenamed(id);
+    setopenRenameForm(true);
+   setType(typeProperty)
+  };
+
+  const handleRenameClose = () => {
+    setopenRenameForm(false);
+    setoldName("");
+    setNewName("");
+  };
+
+  const handleRename =()=>{
+    alert(newName);
+    alert(filetobeRenamed);
+    alert(type);
+    
+    if(type=="file"&&newName.length)
+    {FileService.renameFile(jwtToken, filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), props.id).then((docs)=>{
+      let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
+      let newfilesinDB = [...filesinDB];
+      newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], s3_key: docs["data"]["s3_key"]}
+      setfilesinDB(newfilesinDB); 
+      handleRenameClose();
+      setoldName("");
+      setNewName("");
+    })
+  }
+
+    if(type=="folder"&&newName.length){
+      FileService.renameFolder(jwtToken, filetobeRenamed, newName, props.id).then((docs)=>{
+        let foundIndex = foldersinDB.findIndex((folderinDB)=>folderinDB["_id"] === filetobeRenamed);
+        let newfoldersinDB = [...foldersinDB];
+        newfoldersinDB[foundIndex] = {...newfoldersinDB[foundIndex], Name: docs["data"]["Name"]}
+        setfoldersinDB(newfoldersinDB);
+        handleRenameClose();
+        setoldName("");
+        setNewName("");
+    })
+  }
+
+  else if(newName.length==0)
+    {
+      handleRenameClose();
+        setoldName("");
+        setNewName("");
+    }
+  
+    
+   
+    }
+
+  const handleNameChange = (e)=>{
+   
+     setNewName( e.target.value);
+   
+   
+    
+    
+  }
   const option = [
     'Choose File',
     'Choose Folder'
@@ -150,12 +225,6 @@ export default function Dropzone(props){
     })
   };
 
-  const uploadModalRef = useRef();
-  const uploadRef = useRef();
-  const progressRef = useRef();
-  const closeUploadModal = () => {
-      //uploadModalRef.current.style.display = 'none';
-  }
 
   const handleFiles = (files) => {  
     for(let i = 0; i < files.length; i++){       
@@ -230,7 +299,7 @@ export default function Dropzone(props){
 
     });
   }
-
+  
 
   const removeFile = (fileID)=>{
     FileService.removeFile(jwtToken,fileID).then(()=>{
@@ -391,6 +460,31 @@ useEffect(()=>{
               </Button>
             </MenuItem>        
           </Menu>   
+          <Dialog open={openRenameForm} onClose={handleRenameClose} aria-labelledby="form-dialog-title">
+        <DialogTitle id="form-dialog-title"></DialogTitle>
+        <DialogContentText style={{'text-align': 'center'}}>
+          Change {oldname} to
+          </DialogContentText>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="name"
+            type="name"
+            fullWidth
+            value = {newName}
+            onChange={handleNameChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleRenameClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={()=>{handleRename()}} color="primary">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
           <div className="file-display-container">
             {
               props.allFileUpload &&
@@ -433,9 +527,14 @@ useEffect(()=>{
                                       { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                                     </IconButton>
                                   </div>
-                                  <div onClick={()=>{downloadFile(filedata["id"])}}> 
+                                  <div onClick={()=>{downloadFile(filedata["_id"])}}> 
                                     <IconButton aria-label="share" className={classes.download}>
                                       <OpenInNewIcon/>
+                                    </IconButton>
+                                  </div>
+                                  <div onClick={()=>{handleRenameOpen('file',filedata["_id"], filedata["s3_key"])}}>
+                                    <IconButton aria-label="rename">
+                                   <EditIcon/>
                                     </IconButton>
                                   </div>
                                 </CardActions>
@@ -491,11 +590,16 @@ useEffect(()=>{
                                 { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                               </IconButton>
                             </div>
-                            <div onClick={()=>{downloadFile(filedata["id"])}}> 
+                            <div onClick={()=>{downloadFile(filedata["_id"])}}> 
                               <IconButton aria-label="share" className={classes.download}>
                                 <OpenInNewIcon />
                               </IconButton>
                             </div>
+                            <div onClick={()=>{handleRenameOpen("file",filedata["_id"], filedata["s3_key"])}}>
+                                    <IconButton aria-label="rename">
+                                   <EditIcon/>
+                                    </IconButton>
+                             </div>
                           </CardActions>
                           </CardContent>
                         </Card>
@@ -548,11 +652,16 @@ useEffect(()=>{
                           { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                         </IconButton>
                       </div>
-                      <div onClick={()=>{downloadFile(filedata["id"])}} >
+                      <div onClick={()=>{downloadFile(filedata["_id"])}} >
                         <IconButton aria-label="share" className={classes.download}>
                           <OpenInNewIcon />
                         </IconButton>
                       </div>
+                      <div onClick={()=>{handleRenameOpen("file",filedata["_id"], filedata["s3_key"])}}>
+                                    <IconButton aria-label="rename">
+                                   <EditIcon/>
+                                    </IconButton>
+                       </div>
                       </CardActions>
                       </CardContent>
                     </Card>
@@ -606,9 +715,16 @@ useEffect(()=>{
                                 { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                               </IconButton>
                             </div>
+                            <div>
                             <IconButton aria-label="share" className={classes.download}>
                               <OpenInNewIcon/>
                             </IconButton>
+                            </div>
+                            <div onClick={()=>{handleRenameOpen('folder',folderData["_id"], folderData["Name"])}}>
+                                    <IconButton aria-label="rename">
+                                   <EditIcon/>
+                                    </IconButton>
+                                  </div>
                           </CardActions>
                         </CardContent>
                       </Card>
@@ -661,9 +777,16 @@ useEffect(()=>{
                                 { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                               </IconButton>
                             </div>
+                            <div>
                             <IconButton aria-label="share" className={classes.download}>
                               <OpenInNewIcon/>
                             </IconButton>
+                            </div>
+                            <div onClick={()=>{handleRenameOpen('folder',folderData["_id"], folderData["Name"])}}>
+                                    <IconButton aria-label="rename">
+                                   <EditIcon/>
+                                    </IconButton>
+                                  </div>
                           </CardActions>
                         </CardContent>
                       </Card>
@@ -716,9 +839,16 @@ useEffect(()=>{
                                 { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                               </IconButton>
                             </div>
-                            <IconButton aria-label="share" className={classes.download}>
+                            <div>
+                              <IconButton aria-label="share" className={classes.download}>
                               <OpenInNewIcon/>
                             </IconButton>
+                            </div>
+                            <div onClick={()=>{handleRenameOpen('folder',folderData["_id"], folderData["Name"])}}>
+                                    <IconButton aria-label="rename">
+                                   <EditIcon/>
+                                    </IconButton>
+                                  </div>
                           </CardActions>
                         </CardContent>
                       </Card>
@@ -729,16 +859,7 @@ useEffect(()=>{
             </div>
             }
           </div>
-          <div className="upload-modal" ref={uploadModalRef}>
-              <div className="overlay"></div>
-              <div className="close" onClick={(() => closeUploadModal())}></div>
-              <div className="progress-container">
-                  <span ref={uploadRef}></span>
-                  <div className="progress">
-                      <div className="progress-bar" ref={progressRef}></div>
-                  </div>
-              </div>
-          </div>
+       
         </Typography>
       </Container>
     </React.Fragment>  

@@ -25,7 +25,16 @@ import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import LoadCircularProgress from '../Main/circularProgress';
 import fileService from '../../services/file.service';
 import { ToastContainer, toast } from 'react-toastify';
-import { Route, useLocation} from 'react-router-dom'
+import { Route, useLocation} from 'react-router-dom';
+import TextField from '@material-ui/core/TextField';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import EditIcon from '@material-ui/icons/Edit';
+
+
 import Header from '../Main/header'
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
@@ -104,7 +113,59 @@ export default function Folderview(){
     const [folderID, setFolderID]= useState({});
     const [userID, setUserID] = useState({});
     const [filesInFolder, setFilesInFolder]=useState([])
-
+    const [openRenameForm, setopenRenameForm] = useState(false);
+    const [newName, setNewName] = useState("");
+    const [oldname,setoldName] = useState("");
+    const [filetobeRenamed, setFileToBeRenamed]=useState("");
+    const [type, setType] = useState("")
+    const handleRenameOpen = (typeProperty, id, name) => {
+      setoldName(name);
+      setFileToBeRenamed(id);
+      setopenRenameForm(true);
+     setType(typeProperty)
+    };
+  
+    const handleRenameClose = () => {
+      setopenRenameForm(false);
+      setoldName("");
+      setNewName("");
+    };
+  
+    const handleRename =()=>{
+      alert(newName);
+      alert(filetobeRenamed);
+      alert(type);
+      
+      if(type=="file"&& newName.length)
+      {FileService.renameFile(loc.state.token, filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), loc.state.id).then((docs)=>{
+        let foundIndex = filesInFolder.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
+        let newfilesInFolder = [...filesInFolder];
+        newfilesInFolder[foundIndex] = {...newfilesInFolder[foundIndex], s3_key: docs["data"]["s3_key"]}
+        setFilesInFolder(newfilesInFolder); 
+        handleRenameClose();
+        setoldName("");
+        setNewName("");
+      })
+    }
+    else if(newName.length==0)
+    {
+      handleRenameClose();
+        setoldName("");
+        setNewName("");
+    }
+  
+    }
+    
+      
+    
+      
+  
+    const handleNameChange = (e)=>{
+     
+       setNewName( e.target.value);
+     
+      
+    }
     const fileImageMap = new Map();
     fileImageMap.set("pdf","https://is4-ssl.mzstatic.com/image/thumb/Purple124/v4/2b/2b/e1/2b2be10d-870f-c4cd-68b6-f3d5204c22b4/AppIcon-0-0-1x_U007emarketing-0-0-0-7-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/1200x630wa.png");
     fileImageMap.set("xlsx","https://www.slashgear.com/wp-content/uploads/2019/03/excel_main-1280x720.jpg")
@@ -160,7 +221,34 @@ export default function Folderview(){
 
     return(
         <div>
-        <Header/>
+          <div>
+            <Dialog open={openRenameForm} onClose={handleRenameClose} aria-labelledby="form-dialog-title">
+        <DialogTitle id="form-dialog-title"></DialogTitle>
+        <DialogContentText style={{'text-align': 'center'}}>
+          Change {oldname} to
+          </DialogContentText>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="name"
+            type="name"
+            fullWidth
+            value = {newName}
+            onChange={handleNameChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleRenameClose} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={()=>{handleRename()}} color="primary">
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
+      </div>
+            <Header/>
         <div container spacing={2} alignitems="center" component="div" style={{ top:'20vh', height: '100vh' }}>   
         <Grid container spacing={2} alignitems="center">
           {
@@ -197,9 +285,15 @@ export default function Folderview(){
                             { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                           </IconButton>
                         </div>
-                        <IconButton aria-label="share" className={classes.download}>
+                        <div><IconButton aria-label="share" className={classes.download}>
                           <OpenInNewIcon onClick={()=>{downloadFile(filedata["_id"])}}/>
                         </IconButton>
+                        </div>
+                        <div onClick={()=>{handleRenameOpen('file',filedata["_id"], filedata["s3_key"])}}>
+                                    <IconButton aria-label="rename">
+                                   <EditIcon/>
+                                    </IconButton>
+                                  </div>
                       </CardActions>
                     </CardContent>
                   </Card>
