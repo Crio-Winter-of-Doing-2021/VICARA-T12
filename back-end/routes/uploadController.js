@@ -24,9 +24,9 @@ const s3FileURL = process.env.AWS_Uploaded_File_URL_Link;
 
 
 router.delete(`/fileInFolder/:dets`, async(req,res,next)=>{
-  let fileId =  req.params.dets.split(',')[0]
-  let userId = req.params.dets.split(',')[1];
-  let folderID = req.params.dets.split(',')[2];
+  let fileId =  req.params.dets.split('&')[0]
+  let userId = req.params.dets.split('&')[1];
+  let folderID = req.params.dets.split('&')[2];
 
 
 FOLDER.findByIdAndUpdate(folderID, { $pullAll: {files:[ObjectId(fileId)]} },(err, docs)=>{
@@ -82,7 +82,7 @@ FILE.find(
   },
   (err, docs) => {
     if (err) {
-      return next(err);
+     res.status(500).send(err);
     }  
     console.log(docs);
     res.status(200).send(docs);
@@ -157,7 +157,7 @@ FOLDER.findOneAndUpdate({'_id':ObjectId(folderID), 'users':userID}, {'Name': new
 })
 });
 
-router.patch('/renameFile/', async(req,res, next)=>{
+router.patch('/renameFile/:fileIDnewNameUserID', async(req,res, next)=>{
   let fileID = req.params.fileIDnewNameUserID.split(',')[0];
   let newName = req.params.fileIDnewNameUserID.split(',')[1];
   let userID = req.params.fileIDnewNameUserID.split(',')[2];

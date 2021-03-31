@@ -174,10 +174,17 @@ export default function Dropzone(props){
       let newfilesinDB = [...filesinDB];
       newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], s3_key: docs["data"]["s3_key"]}
       setfilesinDB(newfilesinDB); 
+      
+    }).catch((err)=>{
+      console.log(err);
+      toastErrorContainerFunction(err.toString().split(':')[1]);
+
+    }).finally(()=>{
       handleRenameClose();
       setoldName("");
       setNewName("");
     })
+
   }
 
   
@@ -190,7 +197,13 @@ export default function Dropzone(props){
         handleRenameClose();
         setoldName("");
         setNewName("");
-    })
+    }).catch((err)=>{
+      toastErrorContainerFunction(err)
+  }).finally(()=>{
+    handleRenameClose();
+    setoldName("");
+    setNewName("");
+  })
   }
 
   else if(newName.length==0)
@@ -281,7 +294,7 @@ export default function Dropzone(props){
   };
 
   const makefavouriteFile= (fileID)=>{
-    FileService.updateFavouriteFiles(jwtToken,fileID).then(()=>{
+    FileService.updateFavouriteFiles(fileID).then(()=>{
       let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
       let newfilesinDB = [...filesinDB];
       newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], favourite:!(newfilesinDB[foundIndex]["favourite"])}

@@ -27,9 +27,9 @@ app.use(express.json());
 app.use(cookieParser())
 app.use(helmet());
 app.use(function (req, res, next) {
-    res.setHeader('Access-Control-Allow-Headers', 'Origin,X-Requested-    With,content-type,Accept,content-type,application/json,Set-');
+    res.setHeader('Access-Control-Allow-Headers', '*');
     res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS,PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Methods', 'PATCH, DELETE, GET, POST, OPTIONS,PUT');
     res.setHeader('Access-Control-Allow-Credentials', true);
     next();
 });
@@ -37,8 +37,8 @@ var corsOptions = {
     origin: 'http://localhost:3001',
     credentials : true
    }
-app.use(cors(corsOptions));
 
+app.options('*', cors(corsOptions));
 app.use('/api/users', users);
 app.use('/api/auth',auth);
 app.use('/api/upload',[authentication.auth],uploadController);
