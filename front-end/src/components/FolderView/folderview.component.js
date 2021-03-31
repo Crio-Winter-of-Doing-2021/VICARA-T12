@@ -137,7 +137,7 @@ export default function Folderview(){
       alert(type);
       
       if(type=="file"&& newName.length)
-      {FileService.renameFile(loc.state.token, filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), loc.state.id).then((docs)=>{
+      {FileService.renameFile(filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), loc.state.id).then((docs)=>{
         let foundIndex = filesInFolder.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
         let newfilesInFolder = [...filesInFolder];
         newfilesInFolder[foundIndex] = {...newfilesInFolder[foundIndex], s3_key: docs["data"]["s3_key"]}
@@ -188,30 +188,30 @@ export default function Folderview(){
     },[loc]);
 
     useEffect(()=>{
-        getFilesWithinAFolder(loc.state.token, loc.state.folderID,loc.state.id)
+        getFilesWithinAFolder(loc.state.folderID,loc.state.id)
     },[loc.state.id])
 
-    const getFilesWithinAFolder=(token, fid, uid)=>{
-        fileService.getFilesWithinAFolder(token, fid, uid).then((docs)=>{
+    const getFilesWithinAFolder=(fid, uid)=>{
+        fileService.getFilesWithinAFolder(fid, uid).then((docs)=>{
             console.log(docs["data"]);
             setFilesInFolder(docs.data)  
         })
     }
     const downloadFile=(fileName)=>{
-        FileService.downloadFile(loc.state.token, fileName).then((link)=>{
+        FileService.downloadFile(fileName).then((link)=>{
           console.log(link["data"]);
            window.open(link["data"],"_blank")
         })
        }
 
     const removeFile = (fileID)=>{
-        FileService.removeFileInAFolder(loc.state.token,fileID, userID, folderID).then(()=>{
+        FileService.removeFileInAFolder(fileID, userID, folderID).then(()=>{
           setFilesInFolder(filesInFolder.filter((file)=>file["_id"] !== fileID));
           toastContainerFunction(`Removed!`)
         })
       }
       const makefavouriteFile= (fileID)=>{
-        FileService.updateFavouriteFiles(loc.state.token,fileID).then(()=>{
+        FileService.updateFavouriteFiles(fileID).then(()=>{
           let foundIndex = filesInFolder.findIndex((fileinFolder)=>fileinFolder["_id"] === fileID);
           let newfilesinFolder = [...filesInFolder];
           newfilesinFolder[foundIndex] = {...newfilesinFolder[foundIndex], favourite:!(newfilesinFolder[foundIndex]["favourite"])}

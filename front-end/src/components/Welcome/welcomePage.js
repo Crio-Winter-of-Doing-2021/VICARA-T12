@@ -169,6 +169,7 @@ export default function MiniDrawer(props) {
       setNames(loc.state.detail.name);
       setUserDetails(loc.state.detail);
       setId(loc.state.detail.id);  
+      console.log(loc.state.detail)
    }, [loc]);
 
   const handleDrawerOpen = () => {
@@ -402,7 +403,7 @@ export default function MiniDrawer(props) {
         <div className={classes.toolbar} />
         <Route 
         render={()=>{
-          if(loc.state.detail.accessToken)
+          
           return <Dropzone id={id} name={name} accessKey={loc.state.detail.accessToken} searchFiled = {searchFiled} allFileUpload = {fileUpdate.allFileUpload} recentFileUpload = {fileUpdate.recentFileUpload} starredFiles = {fileUpdate.starredFiles}  allFolderUpload = {fileUpdate.allFolderUpload} recentFolderUpload = {fileUpdate.recentFolderUpload} starredFolder={fileUpdate.starredFolder} />
          
         }}

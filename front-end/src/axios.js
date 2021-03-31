@@ -8,6 +8,9 @@ const axiosInstance = axios.create({
 		'Content-Type': 'application/json',
 		accept: 'application/json',
 	}, 
+	crossdomain: true ,
+	withCredentials: true,
+
 });
 
 export default axiosInstance;

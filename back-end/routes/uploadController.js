@@ -133,7 +133,7 @@ router.get('/folder/:id', async(req,res,next)=>{
         if (err) {
           return next(err);
         }
-        res.status(200).send(docs);
+        next(res.status(200).send(docs));
       }
     );
 });
@@ -157,7 +157,7 @@ FOLDER.findOneAndUpdate({'_id':ObjectId(folderID), 'users':userID}, {'Name': new
 })
 });
 
-router.patch('/renameFile/:fileIDnewNameUserID', async(req,res, next)=>{
+router.patch('/renameFile/', async(req,res, next)=>{
   let fileID = req.params.fileIDnewNameUserID.split(',')[0];
   let newName = req.params.fileIDnewNameUserID.split(',')[1];
   let userID = req.params.fileIDnewNameUserID.split(',')[2];
@@ -210,9 +210,13 @@ router.get('/:id', async(req,res,next)=>{
       },
       (err, docs) => {
         if (err) {
-          return next(err);
+         next(res.status(500).send(err));
+
         }  
-        res.status(200).send(docs);
+        else
+        {
+          next(res.status(200).send(docs));
+        }
       }
     );
 });
