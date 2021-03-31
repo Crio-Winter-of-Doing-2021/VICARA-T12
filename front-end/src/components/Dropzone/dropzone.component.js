@@ -25,6 +25,10 @@ import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import LoadCircularProgress from '../Main/circularProgress';
 import fileService from '../../services/file.service';
 import { ToastContainer, toast } from 'react-toastify';
+import { createMuiTheme } from '@material-ui/core/styles';
+import green from '@material-ui/core/colors/green';
+
+
 import ShareIcon from '@material-ui/icons/Share';
 import Folderview from '../FolderView/folderview.component'
 
@@ -83,6 +87,17 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
   },
 }));
+
+const theme = createMuiTheme({
+  palette: {
+    primary: {
+      main: green[500],
+    },
+    secondary: {
+      main: '#b23c17',
+    },
+  },
+});
 
 export default function Dropzone(props){
   const history = useHistory();
@@ -259,15 +274,15 @@ export default function Dropzone(props){
 
   const makefavouriteFile= (fileID)=>{
     FileService.updateFavouriteFiles(jwtToken,fileID).then(()=>{
-       
-      
-    }).catch((error)=>{
-      toastErrorContainerFunction("Error in marking as favourite");
-    }).finally(()=>{
       let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
       let newfilesinDB = [...filesinDB];
       newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], favourite:!(newfilesinDB[foundIndex]["favourite"])}
       setfilesinDB(newfilesinDB); 
+      
+    }).catch((error)=>{
+      toastErrorContainerFunction("Error in marking as favourite");
+    }).finally(()=>{
+      
     })
   };
   
@@ -286,7 +301,12 @@ export default function Dropzone(props){
       newfoldersinDB[foundIndex]={...newfoldersinDB[foundIndex], favourite:!(newfoldersinDB[foundIndex]["favourite"])}
       setfoldersinDB(newfoldersinDB);   
     })
-  };
+    .catch((err)=>{
+    toastErrorContainerFunction("Couldn't mark the folder as favourite");
+    }).finally(()=>{
+      
+  })
+}
 
 
   const handleFiles = (files) => {  
@@ -356,8 +376,12 @@ export default function Dropzone(props){
    .then(
     (docs)=>{
       toastContainerFunction(`Uploading ${file.name} was successful`)
-      setLoading(false)
+      
       setfilesinDB(prevArray=>[...prevArray, docs["data"]]);
+    }).catch((err)=>{
+      toastErrorContainerFunction("Couldn't upload the file to the drive")
+    }).finally(()=>{
+      setLoading(false);
     })
   };
 
@@ -377,7 +401,7 @@ export default function Dropzone(props){
         uploadFilesInFolder(res["data"]["_id"], theFiles[i]).then((docs)=>{
           console.log(docs);  
           if(i===(theFiles.length-1)){
-            setLoading(false)
+            
             setfoldersinDB((prevArray)=>[...prevArray, docs["data"]]);
             toastContainerFunction(`Uploading ${folder} was successful`)
           } 
@@ -385,6 +409,8 @@ export default function Dropzone(props){
         })
       }
 
+    }).catch((err)=>{toastErrorContainerFunction("The folder couldn't be uploaded")}).finally(()=>{
+      setLoading(false)
     });
   }
   
@@ -392,14 +418,19 @@ export default function Dropzone(props){
   const removeFile = (fileID)=>{
     FileService.removeFile(jwtToken,fileID).then(()=>{
       setfilesinDB(filesinDB.filter((file)=>file["_id"] !== fileID));
-      toastContainerFunction(`Removed!`)
+      toastContainerFunction(`removed File!`)
+      
+    }).catch((err)=>{toastErrorContainerFunction("The file couldn't be removed")}).finally(()=>{
+     
     })
   }
 
   const removeFolder = (folderID)=>{
     FileService.removeFolder(jwtToken,folderID).then(()=>{
       setfoldersinDB(foldersinDB.filter((folder)=>folder["_id"] !== folderID));
-      toastContainerFunction(`removed Folder!`)
+      toastContainerFunction(`removed Folder!`);
+    }).catch((err)=>{toastErrorContainerFunction("The folder couldn't be removed")}).finally(()=>{
+     
     })
   }
   useEffect(()=>{
@@ -428,6 +459,10 @@ useEffect(()=>{
       FileService.getFiles(jwtToken,{id}).then((response)=>{
         setfilesinDB(response.data);  
         console.log(filesinDB);
+      }).catch((err)=>{
+        console.log(err);
+      }).finally(()=>{
+
       });
     }
   }
@@ -442,6 +477,11 @@ useEffect(()=>{
       FileService.getFolders(jwtToken,{id}).then((response)=>{
         setfoldersinDB(response.data);  
         console.log(foldersinDB);
+      }).catch((err)=>{
+        
+        console.log(err);
+      }).finally(()=>{
+
       });
     }
   }
@@ -562,13 +602,14 @@ useEffect(()=>{
             fullWidth
             value = {newName}
             onChange={handleNameChange}
+            label = "New name"
           />
         </DialogContent>
         <DialogActions>
           <Button onClick={handleRenameClose} color="primary">
             Cancel
           </Button>
-          <Button onClick={()=>{handleRename()}} color="primary">
+          <Button onClick={()=>{handleRename()}} color="secondary">
             Confirm
           </Button>
         </DialogActions>
@@ -577,7 +618,7 @@ useEffect(()=>{
       <Dialog open={openShareForm} onClose={handleShareClose} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title"></DialogTitle>
         <DialogContentText style={{'text-align': 'center'}}>
-          Add people
+          Add a person's mail ID
           </DialogContentText>
         <DialogContent>
           <TextField
@@ -586,12 +627,13 @@ useEffect(()=>{
             id="email"
             type="email"
             fullWidth
+            label ="Email ID"
             value = {mailshared}
             onChange={handleEmailChange}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleShareClose} color="primary">
+          <Button onClick={handleShareClose} color="secondary">
             Cancel
           </Button>
          <Button onClick={handleShare} color="primary">
