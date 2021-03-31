@@ -6,13 +6,33 @@ import Login from './components/Authentication/login';
 import Register from './components/Authentication/register';
 import { CSSTransition } from 'react-transition-group';
 import Header from './components/Main/header';
+import WelcomePage from './components/Welcome/welcomePage';
+import Folderview from './components/FolderView/folderview.component';
+import { makeStyles } from '@material-ui/core/styles';
+import { Collapse } from '@material-ui/core';
+import IconButton from '@material-ui/core/IconButton'
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import AboutSection from './components/Main/AboutSection';
+import { Link as Scroll } from 'react-scroll'
+import Swagger from './components/Main/Swagger';
 import Footer from './components/Main/footer';
-import UploadPage from './components/Upload/uploadPage.component';
+
+const useStyles = makeStyles((theme) => ({
+  root:{
+    minHeight: '100vh',
+   },
+   down:{
+     fontSize: '4rem',
+   }
+  })
+);
 
 function App() {
+  const classes = useStyles();
   const [activeMenu, setActiveMenu] = useState('login');
   const [menuHeight, setMenuHeight] = useState(null);  
   const dropdownRef = useRef(null);
+  const [checked, setChecked] = useState(false);
 
   function calcHeight(el){
     const height = el.offsetHeight;
@@ -21,6 +41,7 @@ function App() {
 
   useEffect(() => {
     setMenuHeight(dropdownRef.current?.firstChild.offsetHeight)
+    setChecked(true)
   }, [])
 
   function handleChangeInForm(newValue) {
@@ -29,45 +50,55 @@ function App() {
 
   return (
     <div className="App">
-      
       <BrowserRouter>
-      <Switch>
-          <Route path="/welcome">
-            <UploadPage/>
+        <Switch>
+          <Route exact path="/">
+            <Header/>
+              <div style={{ height: menuHeight }} ref={dropdownRef} className={classes.root} id = "loginRegister">
+                <CSSTransition
+                  in={activeMenu === 'login'}
+                  timeout={500}
+                  classNames="page-primary"
+                  onEnter = {calcHeight}
+                  unmountOnExit      
+                  
+                >
+                  <Login activeMenu = {activeMenu} onChange={handleChangeInForm} />
+                </CSSTransition>
+                <CSSTransition
+                  in={activeMenu === 'register'}
+                  timeout={500}
+                  classNames="page-secondary"
+                  unmountOnExit    
+                  onEnter = {calcHeight}  
+                >
+                  <Register activeMenu = {activeMenu} onChange={handleChangeInForm} />
+                </CSSTransition>
+                <Scroll to="about-section" smooth={true}>
+                  <IconButton>
+                    <ExpandMoreIcon className={classes.down} />
+                  </IconButton>
+                </Scroll>
+              </div>
+              <div  id = "AboutSection" >
+                <AboutSection />
+              </div>
+              <div  id = "Swagger" >
+                <Swagger />
+              </div>
+              <Footer/>
+          </Route>
+        </Switch>  
+        <Switch>
+            <Route path="/welcome">
+              <WelcomePage/>
+            </Route>
+        </Switch>
+        <Switch>
+          <Route path='/folderview'>
+            <Folderview/>
           </Route>
         </Switch>
-
-      <Switch>
-          <Route path="/login">
-            
-         <Header/>
-      <div style={{ height: menuHeight }} ref={dropdownRef}>
-        <CSSTransition
-          in={activeMenu === 'login'}
-          timeout={500}
-          classNames="page-primary"
-          onEnter = {calcHeight}
-          unmountOnExit      
-          
-        >
-          <Login activeMenu = {activeMenu} onChange={handleChangeInForm} />
-        </CSSTransition>
-        <CSSTransition
-          in={activeMenu === 'register'}
-          timeout={500}
-          classNames="page-secondary"
-          unmountOnExit    
-          onEnter = {calcHeight}  
-        >
-          <Register activeMenu = {activeMenu} onChange={handleChangeInForm} />
-        </CSSTransition>
-        
-        
-      </div>
-      </Route>
-        </Switch>
-        
-                  
       </BrowserRouter>
     </div>
   );

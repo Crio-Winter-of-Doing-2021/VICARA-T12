@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import axiosInstance from '../../axios';
 //MaterialUI
 import Button from '@material-ui/core/Button';
@@ -11,13 +12,19 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
-import UploadPage from '../Upload/uploadPage.component';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Cookies from 'js-cookie';
+
+const jwtTokenDescription ={};
 const useStyles = makeStyles((theme) => ({
 	paper: {
 		marginTop: theme.spacing(8),
 		display: 'flex',
 		flexDirection: 'column',
 		alignItems: 'center',
+		justifyContent: 'center',
+		textAlign: 'center',
 		border: 0,
 		maxWidth: 'auto',
 		maxHeight:'auto',
@@ -40,7 +47,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function Login(props) {
-
+	const history = useHistory();
 	function handleChangeInForm(event) {
 		props.onChange("register");
 	}
@@ -51,7 +58,7 @@ export default function Login(props) {
 		password: '',
 	});
 	const [formData, updateFormData] = useState(initialFormData);
-	const [open, setOpen] = useState(false);
+	const [error, setError] = useState(true);
 	// Saving data typed into the state 
 	const handleChange = (e) => {
         updateFormData({
@@ -60,25 +67,52 @@ export default function Login(props) {
         });
 	};
 
+	toast.configure();
+	function toastContainerFunction(errorMessage) {
+		toast.error(errorMessage, {
+		position: "top-center",
+		autoClose: 5000,
+		hideProgressBar: false,
+		closeOnClick: true,
+		pauseOnHover: true,
+		draggable: true,
+		progress: undefined,
+		});
+    	return (
+          <ToastContainer
+            position="top-center"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            />
+      	);
+  	}
 	// Handling the submit using axious ( Post )  Base URL is hard-coded.
 	const handleSubmit = (e) => {
-		
 		e.preventDefault();
 		axiosInstance
-			.post('api/auth/',{
+			.post('http://localhost:3000/api/auth/',{
 				email: formData.email,
 				password: formData.password,
 			})
 			.then(response => { 
-				window.location.reload();
+				Cookies.set('jwt', response.headers['Set-Cookie'])
+				history.push({ pathname: '/welcome',
+			    				state: { detail: response.data }}) 
 				
 			})
 			.catch(error => {
 				// If invalid data is given, reset the state so data is cleared. 
+				toastContainerFunction(error.response.data)
 				updateFormData({
 					...formData,
-					['email']: '',
-					['password']: '',
+					'email': '',
+					'password': '',
 				});		
 			});
 	};
@@ -99,17 +133,34 @@ export default function Login(props) {
 				<form className={classes.form} noValidate>
 					<Grid container spacing={2}>
 						<Grid item xs={12}>
-							<TextField
-								variant="outlined"
-								required
-								fullWidth
-								id="email"
-								label="email"
-								name="email"
-								autoComplete="email"
-								value={formData.email}
-								onChange={handleChange}
-							/>
+							{
+								!error &&
+								<TextField
+									variant="outlined"
+									required
+									fullWidth
+									id="email"
+									label="email"
+									name="email"
+									autoComplete="email"
+									value={formData.email}
+									onChange={handleChange}
+								/>
+							}
+							{
+								error &&
+								<TextField
+									variant="outlined"
+									required
+									fullWidth
+									id="email"
+									label="email"
+									name="email"
+									autoComplete="email"
+									value={formData.email}
+									onChange={handleChange}
+								/>
+							}
 						</Grid>
 						<Grid item xs={12}>
 							<TextField
@@ -137,7 +188,7 @@ export default function Login(props) {
 						Sign In
 					</Button>
 				</form>
-				<Typography component="h7" variant="h7">
+				<Typography component="h6" variant="h6">
 					Don't have an account? 
 					<Divider orientation="vertical" flexItem />
 					<Button 

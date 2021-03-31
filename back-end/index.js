@@ -1,35 +1,54 @@
 const bodyParser = require('body-parser');
 const express = require('express');
+require('./db');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const auth = require('./routes/authentication');
+const authentication = require('./middleware/authentication');
 const cors = require('cors')
 const config = require('config');
+const uploadController = require('./routes/uploadController');
 const debug = require('debug')('app:startup');
 const welcomePage = require('./routes/welcomePage');
 const users = require('./routes/users');
-
+const LinkedInProfileInfo = require('./routes/LinkdeInAuth')
+const loginPage = require('./routes/loginPage');
+const path = require('path');
 const app = express();
 
+const cookieParser = require('cookie-parser')
+const {login, refresh} = require('./routes/authentication');
+
+app.use(express.static(path.join(__dirname, 'build')))
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(express.static('public'));
-app.use(cors())
 
+app.use(cookieParser())
 app.use(helmet());
-app.use('/', welcomePage);
+app.use(function (req, res, next) {
+    res.setHeader('Access-Control-Allow-Headers', '*');
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001');
+    res.setHeader('Access-Control-Allow-Methods', 'PATCH, DELETE, GET, POST, OPTIONS,PUT');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    next();
+});
+var corsOptions = {
+    origin: 'http://localhost:3001',
+    credentials : true
+   }
+
+app.options('*', cors(corsOptions));
 app.use('/api/users', users);
 app.use('/api/auth',auth);
+app.use('/api/upload',[authentication.auth],uploadController);
+app.use('/welcome',[authentication.auth],welcomePage);
+app.use('/api/LinkedInProfileInfo', LinkedInProfileInfo);
 
-// Db settings.
-const mongoose = require('mongoose');
-// To get rid of deprecation warning
-mongoose.set('useCreateIndex', true);
-mongoose.connect('mongodb://localhost/userAuthenticate', { useNewUrlParser: true, useUnifiedTopology: true})
-    .then(() => console.log('Connected to Mongodb!') )
-    .catch(err => console.error('Could not connect to Mongodb!', err));
 
+
+
+app.use('/*', loginPage);
 // Setting the html using pug 
 app.set('view engine', 'pug');
 app.set('views','./views');
@@ -39,6 +58,8 @@ if(!config.get('jwtPrivateKey')){
     console.error(' jwtPrivateKey is not defined.')
     process.exit(1);
 }
+
+
 
 // To logg our requests on console. Change during production. Not needed
 if( app.get('env') === 'development'){

@@ -5,7 +5,10 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const config = require('config');
+
+
+let users={};
+
 
 router.post('/', async (req,res) => {
     const {error} = validate(req.body);
@@ -21,8 +24,23 @@ router.post('/', async (req,res) => {
         return res.status(400).send('Invalid Email or Password');
     
     //Authentication key
-    const token = jwt.sign({ _id: user._id }, config.get('jwtPrivateKey') );
-    res.send(token);
+    const token = jwt.sign({ _id: user._id }, process.env.ACCESS_TOKEN_SECRET,{ expiresIn: process.env.ACCESS_TOKEN_LIFE });
+    
+
+    //send the access token to the client inside a cookie
+    res.header("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.cookie("jwt", token, { httpOnly: true});
+    
+    res.status(200).send({id:user._id,
+        name: user.name,
+        email: user.email,
+       })
+      
+      
+  
+  
+        
+    
 });
 
 function validate(req){
@@ -32,5 +50,12 @@ function validate(req){
     });
     return schema.validate(req);
 }
+
+
+
+
+
+  
+    
 
 module.exports = router; 
