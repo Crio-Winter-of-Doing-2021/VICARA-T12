@@ -15,19 +15,38 @@ const LinkedInProfileInfo = require('./routes/LinkdeInAuth')
 const loginPage = require('./routes/loginPage');
 const path = require('path');
 const app = express();
+
+const cookieParser = require('cookie-parser')
+const {login, refresh} = require('./routes/authentication');
+
 app.use(express.static(path.join(__dirname, 'build')))
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(cors())
 
+app.use(cookieParser())
 app.use(helmet());
+app.use(function (req, res, next) {
+    res.setHeader('Access-Control-Allow-Headers', '*');
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001');
+    res.setHeader('Access-Control-Allow-Methods', 'PATCH, DELETE, GET, POST, OPTIONS,PUT');
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    next();
+});
+var corsOptions = {
+    origin: 'http://localhost:3001',
+    credentials : true
+   }
 
+app.options('*', cors(corsOptions));
 app.use('/api/users', users);
 app.use('/api/auth',auth);
 app.use('/api/upload',[authentication.auth],uploadController);
 app.use('/welcome',[authentication.auth],welcomePage);
 app.use('/api/LinkedInProfileInfo', LinkedInProfileInfo);
+
+
+
 
 app.use('/*', loginPage);
 // Setting the html using pug 

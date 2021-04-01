@@ -168,21 +168,28 @@ export default function Dropzone(props){
     alert(filetobeRenamed);
     alert(type);
     
-    if(type=="file"&&newName.length)
-    {FileService.renameFile(jwtToken, filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), props.id).then((docs)=>{
+    if(type=="file"&&newName.length&&newName.length<=20)
+    {FileService.renameFile(filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), props.id).then((docs)=>{
       let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
       let newfilesinDB = [...filesinDB];
       newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], s3_key: docs["data"]["s3_key"]}
       setfilesinDB(newfilesinDB); 
+      
+    }).catch((err)=>{
+    
+      toastErrorContainerFunction(err.toString().split(':')[1]);
+
+    }).finally(()=>{
       handleRenameClose();
       setoldName("");
       setNewName("");
     })
+
   }
 
   
-    if(type=="folder"&&newName.length){
-      FileService.renameFolder(jwtToken, filetobeRenamed, newName, props.id).then((docs)=>{
+    if(type=="folder"&&newName.length&&newName.length<=20){
+      FileService.renameFolder(filetobeRenamed, newName, props.id).then((docs)=>{
         let foundIndex = foldersinDB.findIndex((folderinDB)=>folderinDB["_id"] === filetobeRenamed);
         let newfoldersinDB = [...foldersinDB];
         newfoldersinDB[foundIndex] = {...newfoldersinDB[foundIndex], Name: docs["data"]["Name"]}
@@ -190,7 +197,13 @@ export default function Dropzone(props){
         handleRenameClose();
         setoldName("");
         setNewName("");
-    })
+    }).catch((err)=>{
+      toastErrorContainerFunction(err)
+  }).finally(()=>{
+    handleRenameClose();
+    setoldName("");
+    setNewName("");
+  })
   }
 
   else if(newName.length==0)
@@ -199,6 +212,14 @@ export default function Dropzone(props){
         setoldName("");
         setNewName("");
     }
+
+  else if(newName.length>20)
+  {
+    toastErrorContainerFunction("File name cannot be more than 20 characters");
+    handleRenameClose();
+    setoldName("");
+    setNewName("");
+  }
   
     
    
@@ -231,7 +252,7 @@ export default function Dropzone(props){
     const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     if(re.test(mailshared))
     {
-      FileService.shareFile(jwtToken, fileToBeShared, mailshared, props.id).then((returnObject)=>{
+      FileService.shareFile(fileToBeShared, mailshared, props.id).then((returnObject)=>{
         console.log(returnObject);
       
 
@@ -273,7 +294,7 @@ export default function Dropzone(props){
   };
 
   const makefavouriteFile= (fileID)=>{
-    FileService.updateFavouriteFiles(jwtToken,fileID).then(()=>{
+    FileService.updateFavouriteFiles(fileID).then(()=>{
       let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
       let newfilesinDB = [...filesinDB];
       newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], favourite:!(newfilesinDB[foundIndex]["favourite"])}
@@ -288,14 +309,14 @@ export default function Dropzone(props){
   
 
   const downloadFile=(fileName)=>{
-   FileService.downloadFile(jwtToken, fileName).then((link)=>{
+   FileService.downloadFile( fileName).then((link)=>{
      console.log(link["data"]);
       window.open(link["data"],"_blank")
         
    })
   }
   const makefavouriteFolder= (fileID)=>{
-    FileService.updateFavouriteFolders(jwtToken,fileID).then(()=>{
+    FileService.updateFavouriteFolders(fileID).then(()=>{
       let foundIndex = foldersinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
       let newfoldersinDB =[...foldersinDB];
       newfoldersinDB[foundIndex]={...newfoldersinDB[foundIndex], favourite:!(newfoldersinDB[foundIndex]["favourite"])}
@@ -372,7 +393,7 @@ export default function Dropzone(props){
   const uploadFiles = (file) => {
     console.log(file);
     fetchData()
-    FileService.upload(jwtToken,file, [userDetails])
+    FileService.upload(file, [userDetails])
    .then(
     (docs)=>{
       toastContainerFunction(`Uploading ${file.name} was successful`)
@@ -386,7 +407,7 @@ export default function Dropzone(props){
   };
 
   const uploadFilesInFolder = (folderID, file)=>{
-    return FileService.uploadFilesInFolder( jwtToken,folderID, file, [userDetails]);
+    return FileService.uploadFilesInFolder( folderID, file, [userDetails]);
   }
   
   const handleFolder=(e)=>{
@@ -395,7 +416,7 @@ export default function Dropzone(props){
     var folder = relativePath.split("/");
     folder = folder[0];
     fetchData()
-    fileService.uploadFolder(jwtToken,folder, [userDetails]).then((res)=>{
+    fileService.uploadFolder(folder, [userDetails]).then((res)=>{
       console.log(res);
       for(let i = 0; i < theFiles.length; i++){       
         uploadFilesInFolder(res["data"]["_id"], theFiles[i]).then((docs)=>{
@@ -416,7 +437,7 @@ export default function Dropzone(props){
   
 
   const removeFile = (fileID)=>{
-    FileService.removeFile(jwtToken,fileID).then(()=>{
+    FileService.removeFile(fileID).then(()=>{
       setfilesinDB(filesinDB.filter((file)=>file["_id"] !== fileID));
       toastContainerFunction(`removed File!`)
       
@@ -426,7 +447,7 @@ export default function Dropzone(props){
   }
 
   const removeFolder = (folderID)=>{
-    FileService.removeFolder(jwtToken,folderID).then(()=>{
+    FileService.removeFolder(folderID).then(()=>{
       setfoldersinDB(foldersinDB.filter((folder)=>folder["_id"] !== folderID));
       toastContainerFunction(`removed Folder!`);
     }).catch((err)=>{toastErrorContainerFunction("The folder couldn't be removed")}).finally(()=>{
@@ -443,7 +464,7 @@ export default function Dropzone(props){
       
       setUserName(props.name);
      
-      setjwtToken(props.accessKey);
+    
 
       //console.log(fileImageMap.get("pdf"));
   },[props]);
@@ -451,12 +472,12 @@ export default function Dropzone(props){
 useEffect(()=>{
   getFiles(props.id);
   getFolders(props.id);  
-},[props.accessKey,props.id])
+},[props.id])
   const getFiles=(id)=>{
     
-    if(id&&jwtToken)
+    if(id)
     {
-      FileService.getFiles(jwtToken,{id}).then((response)=>{
+      FileService.getFiles({id}).then((response)=>{
         setfilesinDB(response.data);  
         console.log(filesinDB);
       }).catch((err)=>{
@@ -472,9 +493,9 @@ useEffect(()=>{
   }
   
   const getFolders=(id)=>{
-    if(id&&jwtToken)
+    if(id)
     {
-      FileService.getFolders(jwtToken,{id}).then((response)=>{
+      FileService.getFolders({id}).then((response)=>{
         setfoldersinDB(response.data);  
         console.log(foldersinDB);
       }).catch((err)=>{
@@ -867,7 +888,7 @@ useEffect(()=>{
                           title={folderData["Name"].slice(0,10)}
                         />
                         <Link to={{pathname: "/folderview",
-                          state: { folderID: folderData["_id"], id:userDetails, token:props.accessKey}}}  >
+                          state: { folderID: folderData["_id"], id:userDetails}}}  >
                           <CardMedia
                               className={classes.cardMedia} 
                               // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
@@ -929,7 +950,7 @@ useEffect(()=>{
                           title={folderData["Name"].slice(0,10)}
                         />
                         <Link to={{pathname: "/folderview",
-                          state: { folderID: folderData["_id"], id:userDetails, token:props.accessKey}}}  >
+                          state: { folderID: folderData["_id"], id:userDetails}}}  >
                           <CardMedia
                               className={classes.cardMedia} 
                               // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
@@ -991,7 +1012,7 @@ useEffect(()=>{
                           title={folderData["Name"].slice(0,10)}
                         />
                         <Link to={{pathname: "/folderview",
-                          state: { folderID: folderData["_id"], id:userDetails, token:props.accessKey}}}  >
+                          state: { folderID: folderData["_id"], id:userDetails}}}  >
                           <CardMedia
                               className={classes.cardMedia} 
                               // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image

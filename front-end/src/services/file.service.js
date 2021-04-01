@@ -1,22 +1,25 @@
 
 import axiosInstance from '../axios'
+import Cookies from 'js-cookie';
+
+const jwtToken = Cookies.get("jwt");
 
 class FileService{
   
-  upload(jwtToken, file, users){
+  upload(file, users){
     let formData = new FormData();
     formData.append("file", file);
     formData.append("users", users);
     return axiosInstance.post("api/upload/", formData, {
         headers: {
             "Content-Type": "multipart/form-data",
-            'Authorization': `${jwtToken}`
+            
           },
           // onUploadProgress,
     });    
   }
 
-  uploadFilesInFolder(jwtToken, folderID, file, users){
+  uploadFilesInFolder(folderID, file, users){
     let formData = new FormData();
     formData.append("folderID", folderID);
     formData.append("file", file);
@@ -25,42 +28,42 @@ class FileService{
     return axiosInstance.post("api/upload/fileinfolder", formData,{
       headers: {
         "Content-Type": "multipart/form-data",
-        'Authorization': `${jwtToken}`
+        
       }
     })
   }
-  renameFile(jwtToken, filetobeRenamed, newName, id){
+  renameFile(filetobeRenamed, newName, id){
     let fileIDnewNameUserID = [filetobeRenamed, newName, id];
      return axiosInstance.patch(`api/upload/renameFile/${fileIDnewNameUserID}`,{ },{
       headers:{
+        "Content-Type": "multipart/form-data",
         
-        'Authorization': `${jwtToken}`
       }
     })
     
       
   }
 
-  renameFolder(jwtToken, foldertobeRenamed, newName, id){
+  renameFolder(foldertobeRenamed, newName, id){
     let folderIDnewNameUserID = [foldertobeRenamed, newName, id];
     return axiosInstance.patch(`api/upload/renameFolder/${folderIDnewNameUserID}`,{ },{
       headers:{
         
-        'Authorization': `${jwtToken}`
+       
       }
   })
 }
 
 
-shareFile(jwtToken, fileToBeShared, mailshared, id){
+shareFile(fileToBeShared, mailshared, id){
   let fileIDmailAddedUserID = [fileToBeShared, mailshared, id];
   return axiosInstance.patch(`api/upload/addUserToFolder/${fileIDmailAddedUserID}`,{ },{
     headers:{
-      'Authorization': `${jwtToken}`
+      
     }
   })
 }
-  uploadFolder(jwtToken,folderName, users){
+  uploadFolder(folderName, users){
     console.log(users);
     let formData = new FormData();
     formData.append("folderName", folderName);
@@ -69,57 +72,57 @@ shareFile(jwtToken, fileToBeShared, mailshared, id){
     return axiosInstance.post("api/upload/folder", formData,{
       headers: {
         "Content-Type": "multipart/form-data; charset=utf-8;",
-        'Authorization': `${jwtToken}`
+        
       }
     })   
   }
 
-  downloadFile(jwtToken, fileName){
+  downloadFile(fileName){
 
     return axiosInstance.get(`api/upload/url/${fileName}`,{
       headers:{
-        'Authorization': `${jwtToken}`
+        "Content-Type": "multipart/form-data; charset=utf-8;",
       }
     })
   }
 
-  getFilesWithinAFolder(jwtToken, folderid, userId){
+  getFilesWithinAFolder(folderid, userId){
     
     let folderiduserId=[folderid, userId];
     
     return axiosInstance.get(`api/upload/displayfileswithinfolder/${folderiduserId}`,{
       headers:{
-        'Authorization': `${jwtToken}`
+        "Content-Type": "multipart/form-data; charset=utf-8;",
       }
     });
   
   }
 
-  getFolders(jwtToken, id){
+  getFolders(id){
     if(id)
       return axiosInstance.get(`api/upload/folder/${id["id"]}`,{
         headers:{
-          'Authorization': `${jwtToken}`
+          "Content-Type": "multipart/form-data; charset=utf-8;",
         }
       });
       
   }
-  getFiles(jwtToken,id) {
+  getFiles(id) {
     console.log(id["id"]);
      //alert(jwtToken);
     if(id)
       return axiosInstance.get(`api/upload/${id["id"]}`,{
         headers:{
-          'Authorization': `${jwtToken}`
+          "Content-Type": "multipart/form-data; charset=utf-8;",
         }
       });
   }
-  updateFavouriteFiles(jwtToken,id){
+  updateFavouriteFiles(id){
     return axiosInstance
     .patch(`api/upload/files/${id}`,{ },{
       headers:{
-        
-        'Authorization': `${jwtToken}`
+        "Content-Type": "multipart/form-data; charset=utf-8;",
+       
       }
     })
     .then(response => { 
@@ -130,10 +133,10 @@ shareFile(jwtToken, fileToBeShared, mailshared, id){
     });
   }
 
-  updateFavouriteFolders(jwtToken,id){
+  updateFavouriteFolders(id){
     return axiosInstance.patch(`api/upload/folder/${id}`,{ },{
       headers:{
-               'Authorization': `${jwtToken}`
+        "Content-Type": "multipart/form-data; charset=utf-8;",    
       }
     })
     .then(response => { 
@@ -144,30 +147,31 @@ shareFile(jwtToken, fileToBeShared, mailshared, id){
     });
   }
 
-  removeFileInAFolder(jwtToken,fileID, userID, folderID){
-    let fileIDuserIDfolderID=[fileID, userID, folderID]
+  removeFileInAFolder(fileID, userID, folderID){
+    let fileIDuserIDfolderID=[fileID, userID, folderID].join('&');
+    
     return axiosInstance.delete(`api/upload/fileInFolder/${fileIDuserIDfolderID}`,{
       headers:{
-        'Authorization': `${jwtToken}`
+        "Content-Type": "multipart/form-data; charset=utf-8;",
 
       }
     })
   }
   
-  removeFile(jwtToken,id){
+  removeFile(id){
     return axiosInstance.delete(`api/upload/${id}`,{
       headers:{
-        'Authorization': `${jwtToken}`
+        "Content-Type": "multipart/form-data; charset=utf-8;",
       }
     });
   }
 
-  removeFolder(jwtToken,folderID){
+  removeFolder(folderID){
     console.log(folderID)
     alert(folderID);
     return axiosInstance.delete(`api/upload/folder/${folderID}`, {
       headers:{
-        'Authorization': `${jwtToken}`
+        "Content-Type": "multipart/form-data; charset=utf-8;",
       }
     })
   }

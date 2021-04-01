@@ -14,6 +14,7 @@ import Container from '@material-ui/core/Container';
 import Divider from '@material-ui/core/Divider';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Cookies from 'js-cookie';
 
 const jwtTokenDescription ={};
 const useStyles = makeStyles((theme) => ({
@@ -95,15 +96,15 @@ export default function Login(props) {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		axiosInstance
-			.post('/api/auth/',{
+			.post('http://localhost:3000/api/auth/',{
 				email: formData.email,
 				password: formData.password,
 			})
 			.then(response => { 
-				console.log(response);
-				//alert(response);
+				Cookies.set('jwt', response.headers['Set-Cookie'])
 				history.push({ pathname: '/welcome',
 			    				state: { detail: response.data }}) 
+				
 			})
 			.catch(error => {
 				// If invalid data is given, reset the state so data is cleared. 

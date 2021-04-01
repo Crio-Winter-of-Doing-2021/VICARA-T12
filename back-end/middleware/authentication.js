@@ -1,16 +1,20 @@
 const jwt = require('jsonwebtoken');
-const config = require('config');
 
+require("dotenv").config();
 function auth( req, res, next ){
-    const token = req.header('Authorization');
+    const token = req.cookies.jwt;
+    console.log("..................")
+    console.log(req.cookies.jwt);
+    console.log("------------")
     if(!token)
-        return res.status(401).send('Access denied. No token')
+     res.status(401).send('Access denied. No token')
 
     try{
-        req.user = jwt.verify(token, config.get('jwtPrivateKey'),(err,decoded)=>{
+        req.user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET,(err,decoded)=>{
             if(err){
-                return res.status(401).send({message:"Unauthorised. Denied entry!"})
-
+                console.log(err);
+               res.status(401).send({message:err})
+                 
             }
             req.userId= decoded.id;
             //next();

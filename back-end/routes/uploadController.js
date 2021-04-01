@@ -24,9 +24,9 @@ const s3FileURL = process.env.AWS_Uploaded_File_URL_Link;
 
 
 router.delete(`/fileInFolder/:dets`, async(req,res,next)=>{
-  let fileId =  req.params.dets.split(',')[0]
-  let userId = req.params.dets.split(',')[1];
-  let folderID = req.params.dets.split(',')[2];
+  let fileId =  req.params.dets.split('&')[0]
+  let userId = req.params.dets.split('&')[1];
+  let folderID = req.params.dets.split('&')[2];
 
 
 FOLDER.findByIdAndUpdate(folderID, { $pullAll: {files:[ObjectId(fileId)]} },(err, docs)=>{
@@ -82,7 +82,7 @@ FILE.find(
   },
   (err, docs) => {
     if (err) {
-      return next(err);
+     res.status(500).send(err);
     }  
     console.log(docs);
     res.status(200).send(docs);
@@ -133,7 +133,7 @@ router.get('/folder/:id', async(req,res,next)=>{
         if (err) {
           return next(err);
         }
-        res.status(200).send(docs);
+        next(res.status(200).send(docs));
       }
     );
 });
@@ -210,9 +210,13 @@ router.get('/:id', async(req,res,next)=>{
       },
       (err, docs) => {
         if (err) {
-          return next(err);
+         next(res.status(500).send(err));
+
         }  
-        res.status(200).send(docs);
+        else
+        {
+          next(res.status(200).send(docs));
+        }
       }
     );
 });

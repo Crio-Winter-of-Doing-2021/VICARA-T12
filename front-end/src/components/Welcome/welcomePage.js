@@ -165,10 +165,11 @@ export default function MiniDrawer(props) {
 
 
    useEffect(() => {
-      setAccessKey(loc.state.detail.accessToken);
+     
       setNames(loc.state.detail.name);
       setUserDetails(loc.state.detail);
       setId(loc.state.detail.id);  
+      console.log(loc.state.detail)
    }, [loc]);
 
   const handleDrawerOpen = () => {
@@ -264,7 +265,7 @@ export default function MiniDrawer(props) {
             <MenuIcon />
           </IconButton>
           <div onClick = {vicaraStorageIcon}>
-            <Typography variant="h6" noWrap>
+            <Typography variant="h6" style={{cursor: 'pointer'}} noWrap>
                   Vicara Storage drive 
             </Typography>
           </div>
@@ -402,8 +403,8 @@ export default function MiniDrawer(props) {
         <div className={classes.toolbar} />
         <Route 
         render={()=>{
-          if(loc.state.detail.accessToken)
-          return <Dropzone id={id} name={name} accessKey={loc.state.detail.accessToken} searchFiled = {searchFiled} allFileUpload = {fileUpdate.allFileUpload} recentFileUpload = {fileUpdate.recentFileUpload} starredFiles = {fileUpdate.starredFiles}  allFolderUpload = {fileUpdate.allFolderUpload} recentFolderUpload = {fileUpdate.recentFolderUpload} starredFolder={fileUpdate.starredFolder} />
+          
+          return <Dropzone id={id} name={name} searchFiled = {searchFiled} allFileUpload = {fileUpdate.allFileUpload} recentFileUpload = {fileUpdate.recentFileUpload} starredFiles = {fileUpdate.starredFiles}  allFolderUpload = {fileUpdate.allFolderUpload} recentFolderUpload = {fileUpdate.recentFolderUpload} starredFolder={fileUpdate.starredFolder} />
          
         }}
 
