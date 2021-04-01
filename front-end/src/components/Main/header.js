@@ -4,7 +4,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { makeStyles } from '@material-ui/core/styles';
-
+import {useHistory} from 'react-router-dom';
 const useStyles = makeStyles((theme) => ({
 	root: {
 		flexGrow: 1,
@@ -28,6 +28,7 @@ const useStyles = makeStyles((theme) => ({
 
 function Header() {
 	const classes = useStyles();
+	const history = useHistory();
 	return (
 		<React.Fragment>
 			<CssBaseline />
@@ -37,7 +38,7 @@ function Header() {
 				className={classes.appBar}
 			>
 				<Toolbar>
-					<Typography variant="h6" color="inherit" noWrap>
+					<Typography  onClick={()=>{history.goBack()}}variant="h6" color="inherit" style={{cursor: 'pointer'}} noWrap>
 						Vicara Storage Drive
 					</Typography>
 				</Toolbar>

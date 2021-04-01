@@ -176,7 +176,7 @@ export default function Dropzone(props){
       setfilesinDB(newfilesinDB); 
       
     }).catch((err)=>{
-      console.log(err);
+    
       toastErrorContainerFunction(err.toString().split(':')[1]);
 
     }).finally(()=>{
@@ -464,7 +464,7 @@ export default function Dropzone(props){
       
       setUserName(props.name);
      
-      setjwtToken(props.accessKey);
+    
 
       //console.log(fileImageMap.get("pdf"));
   },[props]);
@@ -472,7 +472,7 @@ export default function Dropzone(props){
 useEffect(()=>{
   getFiles(props.id);
   getFolders(props.id);  
-},[props.accessKey,props.id])
+},[props.id])
   const getFiles=(id)=>{
     
     if(id)
@@ -888,7 +888,7 @@ useEffect(()=>{
                           title={folderData["Name"].slice(0,10)}
                         />
                         <Link to={{pathname: "/folderview",
-                          state: { folderID: folderData["_id"], id:userDetails, token:props.accessKey}}}  >
+                          state: { folderID: folderData["_id"], id:userDetails}}}  >
                           <CardMedia
                               className={classes.cardMedia} 
                               // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
@@ -950,7 +950,7 @@ useEffect(()=>{
                           title={folderData["Name"].slice(0,10)}
                         />
                         <Link to={{pathname: "/folderview",
-                          state: { folderID: folderData["_id"], id:userDetails, token:props.accessKey}}}  >
+                          state: { folderID: folderData["_id"], id:userDetails}}}  >
                           <CardMedia
                               className={classes.cardMedia} 
                               // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
@@ -1012,7 +1012,7 @@ useEffect(()=>{
                           title={folderData["Name"].slice(0,10)}
                         />
                         <Link to={{pathname: "/folderview",
-                          state: { folderID: folderData["_id"], id:userDetails, token:props.accessKey}}}  >
+                          state: { folderID: folderData["_id"], id:userDetails}}}  >
                           <CardMedia
                               className={classes.cardMedia} 
                               // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image

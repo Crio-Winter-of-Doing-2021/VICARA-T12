@@ -25,7 +25,7 @@ import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import LoadCircularProgress from '../Main/circularProgress';
 import fileService from '../../services/file.service';
 import { ToastContainer, toast } from 'react-toastify';
-import { Route, useLocation} from 'react-router-dom';
+import { useLocation} from 'react-router-dom';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -108,6 +108,7 @@ toast.configure();
   }
 
 export default function Folderview(){
+  
     const loc = useLocation();
     const classes = useStyles();
     const [folderID, setFolderID]= useState({});
