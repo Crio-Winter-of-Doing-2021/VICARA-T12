@@ -44,7 +44,7 @@ app.use('/api/auth',auth);
 app.use('/api/upload',[authentication.auth],uploadController);
 app.use('/welcome',[authentication.auth],welcomePage);
 app.use('/api/LinkedInProfileInfo', LinkedInProfileInfo);
-
+app.use(cors())
 
 
 
