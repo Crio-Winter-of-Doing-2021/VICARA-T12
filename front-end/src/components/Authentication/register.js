@@ -56,7 +56,6 @@ export default function Register(props) {
 		snackState: '',
 	});
 	const [formData, updateFormData] = useState(initialFormData);
-	const [open, setOpen] = useState(false);
 	// Saving data typed into the state 
 	const handleChange = (e) => {
         updateFormData({

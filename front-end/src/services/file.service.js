@@ -1,8 +1,5 @@
 
 import axiosInstance from '../axios'
-import Cookies from 'js-cookie';
-
-const jwtToken = Cookies.get("jwt");
 
 class FileService{
   
