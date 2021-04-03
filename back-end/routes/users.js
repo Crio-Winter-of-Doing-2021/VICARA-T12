@@ -3,8 +3,7 @@ const _ = require('lodash');
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-var cors = require('cors')
-router.use(cors())
+
 
 router.post('/', async (req,res) => {
     const {error} = validate(req.body);

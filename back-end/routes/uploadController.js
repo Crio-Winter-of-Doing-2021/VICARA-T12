@@ -7,10 +7,22 @@ const { User } = require("../models/users");
 const multer = require("multer");
 var AWS = require("aws-sdk");
 const ObjectId = require('mongoose').Types.ObjectId;
-var storage = multer.memoryStorage();
-const util = require('util')
-var upload = multer({storage:storage});
 const Path = require('path');
+const fs = require('fs')
+const { promisify } = require('util')
+
+const unlinkAsync = promisify(fs.unlink)
+var storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, Path.join(__dirname, '/uploads/'));
+   },
+  filename: function (req, file, cb) {
+      cb(null , file.originalname);
+  }
+});
+
+var upload = multer({storage:storage});
+
 const { ObjectID } = require("bson");
 const s3bucket = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
@@ -357,12 +369,13 @@ document.save(function(filesaveerror, newFile) {
           params.Key = newFile["_id"].toString();
 
 
-          s3bucket.putObject(params, function(s3err, data) {
+          s3bucket.putObject(params, async function(s3err, data) {
             if (s3err) {
-              console.log(err);
-              next(res.status(500).json({ error: true, Message: s3err }));
+              await console.log(err);
+              await next(res.status(500).json({ error: true, Message: s3err }));
             } else {
-              next(res.status(200).send(docs));
+              await unlinkAsync(req.file.path)
+              await next(res.status(200).send(docs));
               
             }});
            
@@ -409,15 +422,15 @@ router.post('/', upload.single("file"), async(req,res,next)=>{
           console.log(newFile);
          
           params.Key=newFile["_id"].toString();
-          s3bucket.putObject(params, function(err, data) {
+          s3bucket.putObject(params, async function(err, data) {
 
         
             if (err) {
-              console.log(err);
-              next(res.status(500).json({ error: true, Message: err }));
+              await console.log(err);
+              await next(res.status(500).json({ error: true, Message: err }));
             } else {
-              
-             next(res.status(200).send(newFile)) 
+              await unlinkAsync(req.file.path) 
+              await next(res.status(200).send(newFile)) 
               
                
              
