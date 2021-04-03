@@ -28,13 +28,13 @@ app.use(cookieParser())
 app.use(helmet());
 app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Headers', '*');
-    res.setHeader('Access-Control-Allow-Origin', 'https://vicara-storage-drive.netlify.app/');
+    res.setHeader('Access-Control-Allow-Origin', 'https://vicara-storage-drive.netlify.app');
     res.setHeader('Access-Control-Allow-Methods', 'PATCH, DELETE, GET, POST, OPTIONS,PUT');
     res.setHeader('Access-Control-Allow-Credentials', true);
     next();
 });
 var corsOptions = {
-    origin: 'https://vicara-storage-drive.netlify.app/',
+    origin: 'https://vicara-storage-drive.netlify.app',
     credentials : true
    }
 
@@ -54,10 +54,7 @@ app.set('view engine', 'pug');
 app.set('views','./views');
 
 //Config check for pvt key 
-if(!config.get('jwtPrivateKey')){
-    console.error(' jwtPrivateKey is not defined.')
-    process.exit(1);
-}
+
 
 
 
