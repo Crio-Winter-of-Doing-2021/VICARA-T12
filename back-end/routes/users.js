@@ -1,10 +1,8 @@
-const { User, validate } = require('../models/users'); 
+const { User, validate, validatePatch } = require('../models/users'); 
 const _ = require('lodash');
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-var cors = require('cors')
-router.use(cors())
 
 router.post('/', async (req,res) => {
     const {error} = validate(req.body);
@@ -27,6 +25,32 @@ router.post('/', async (req,res) => {
     await user.save();
 
     res.send( _.pick(user, ['name', 'email'] ) );
+});
+
+router.patch('/update/:id', async (req,res) => {
+    console.log(req.body)
+    const {error} = validatePatch(req.body);
+    if ( error )
+        return res.status(400).send(error.details[0].message);
+    
+    const salt = await bcrypt.genSalt(10);
+    let resetPassword
+    if(req.body.password)
+         resetPassword = await bcrypt.hash(req.body.password, salt);
+    User.findOne({ email: req.body.email }, function(err, docs) {
+        docs.name = req.body.name;
+        if(req.body.password)
+            docs.password = resetPassword
+        docs.save(function(err, updatedDoc) {
+            if(!err)
+                res.status(200).send(updatedDoc)
+            else {
+                console.log(err)
+                res.status(500).send(err);
+            }
+                
+        }); 
+    });
 });
 
 module.exports = router; 

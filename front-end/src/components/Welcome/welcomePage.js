@@ -24,9 +24,19 @@ import Dropzone from '../Dropzone/dropzone.component'
 import InputBase from '@material-ui/core/InputBase';
 import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
+import axiosInstance from '../../axios';
 //import { faFolder, faFolderOpen,  faStar, faFile, faCopy } from "@fortawesome/free-solid-svg-icons";
 import { faFolder, faFolderOpen,  faStar, faFile, faCopy } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Button from '@material-ui/core/Button';
+import TextField from '@material-ui/core/TextField';
+import Grid from '@material-ui/core/Grid';
+import { ToastContainer, toast } from 'react-toastify';
+import Cookies from 'js-cookie';
 
 const drawerWidth = 240;
 
@@ -136,6 +146,9 @@ const useStyles = makeStyles((theme) => ({
     flexGrow: 1,
     padding: theme.spacing(3),
   },
+  avatar: {
+    marginLeft: 'auto',
+  }
 }));
 
 export default function MiniDrawer(props) {
@@ -152,6 +165,11 @@ export default function MiniDrawer(props) {
   const [accessKey, setAccessKey] = useState(null);
   const [id, setId]= useState(null);
   const [searchFiled, setSearchField] = useState("");
+  const [openSetting, setOpenSetting] = useState(false);
+  const initialSettingData = Object.freeze({
+    name: '',
+    password: '',
+  });
   const initalfileUpdate = Object.freeze({
     allFileUpload: true,
 		recentFileUpload: false,
@@ -162,7 +180,7 @@ export default function MiniDrawer(props) {
 	});
 
   const [fileUpdate, setFileUpdate] = useState(initalfileUpdate);
-
+  const [userSettingUpdate, setUserSettingUpdate] =  useState(initialSettingData);
 
    useEffect(() => {
      
@@ -219,7 +237,78 @@ export default function MiniDrawer(props) {
    const vicaraStorageIcon = () =>{
     window.location.reload();
    };
-  
+
+   const handleCloseSetting = () =>{
+    setOpenSetting(false)
+    setUserSettingUpdate({
+      ...userSettingUpdate,
+      'name': '',
+      'password': '',
+    });		
+   }
+   
+   const openUserSettings = () => {
+    setOpenSetting(true)
+    handleMenuClose()
+   };
+
+   toast.configure();
+	function toastContainerFunction(errorMessage) {
+		toast.error(errorMessage, {
+		position: "top-center",
+		autoClose: 5000,
+		hideProgressBar: false,
+		closeOnClick: true,
+		pauseOnHover: true,
+		draggable: true,
+		progress: undefined,
+		});
+    	return (
+          <ToastContainer
+            position="top-center"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            />
+      	);
+  	}
+
+    const handleChange = (e) => {
+      setUserSettingUpdate({
+          ...userSettingUpdate,
+          [e.target.name]: e.target.value.trim(),
+      });
+    };
+
+   const handleProfileUpdate = (e) => {
+    e.preventDefault();
+    axiosInstance
+    .patch(`api/users/update/${id}` ,{
+      name: userSettingUpdate.name,
+      password: userSettingUpdate.password,
+      email: loc.state.detail.email,
+    })
+    .then(response => { 
+      Cookies.set('jwt', response.headers['Set-Cookie'])
+      handleCloseSetting()
+      setNames(userSettingUpdate.name)
+    })
+    .catch(error => {
+      toastContainerFunction(error.response.data)
+      setUserSettingUpdate({
+        ...userSettingUpdate,
+        'name': '',
+        'password': '',
+      });		
+    });
+      
+   }
+
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
     
@@ -232,7 +321,7 @@ export default function MiniDrawer(props) {
       open={isMenuOpen}
       onClose={handleMenuClose}
     >
-      <MenuItem onClick={handleMenuClose}>Settings</MenuItem>
+      <MenuItem onClick={openUserSettings}>Settings</MenuItem>
       <MenuItem onClick={logoutFunction}>Logout</MenuItem>
     </Menu>
   );
@@ -293,6 +382,49 @@ export default function MiniDrawer(props) {
               <AccountCircle />
             </IconButton>
             {renderMenu}
+            <Dialog open={openSetting} onClose={handleCloseSetting} aria-labelledby="form-dialog-title">
+              <DialogTitle id="form-dialog-title">
+                <Typography> {name}'s Details</Typography>
+              </DialogTitle>  
+              <DialogContent>
+              <Grid container spacing={2}>
+                <Grid item xs={12}>
+                  <TextField
+                    variant="outlined"
+                    required
+                    fullWidth
+                    id="name"
+                    label="Rest Name"
+                    name="name"
+                    autoComplete="name"
+                    value={userSettingUpdate.name}
+                    onChange={handleChange}
+                  />
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    variant="outlined"
+                    required
+                    fullWidth
+                    id="password"
+                    label="Reset Password"
+                    name="password"
+                    autoComplete="password"
+                    value={userSettingUpdate.password}
+                    onChange={handleChange}
+                  />
+                </Grid>
+              </Grid>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleCloseSetting} color="primary">
+                  Cancel
+                </Button>
+                <Button onClick={handleProfileUpdate} color="primary">
+                  Update
+                </Button>
+              </DialogActions>
+            </Dialog>
           </div>        
         </Toolbar>
       </AppBar>
