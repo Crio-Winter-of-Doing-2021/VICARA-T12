@@ -90,32 +90,45 @@ FILE.find(
 );
 });
 
-router.get('/url/:fileID', async(req,res, next)=>{
-  console.log(req.params.fileID);
-   
+router.get('/url/:fileNameUserID', async(req,res, next)=>{
+  fileName = req.params.fileNameUserID.split(',')[0];
+  userID = req.params.fileNameUserID.split(',')[1];
+  console.log(fileName);
+  console.log(userID);
+   FILE.findOne({"_id":ObjectID(fileName), "users": userID},async(errorInFindingFile, doc)=>{
+      if(errorInFindingFile)
+      {
+        await next(res.status(500).send("You can't view the file"));
+
+      }
+      else
+      {
+        const params = {
+          Bucket: 'files-vicara-drive',
+          Key: doc["_id"].toString(),
+          Expires: 60 * 5
+        };
+       try {
+          const url = await new Promise(async (resolve, reject) => {
+            await s3bucket.getSignedUrl('getObject', params, async(err, url) => {
+             await err ? reject(err) : resolve(url);
+            });
+          });
+          await console.log(url);
+          
+         await next(res.status(200).send(url));
+       
+        } catch (err) {
+          if (err) {
+            await console.log(err);
+            await next(res.status(500).send(err));
+          }
+        }
+      }
+   })
 
 
-  const params = {
-   Bucket: 'files-vicara-drive',
-   Key: req.params.fileID,
-   Expires: 60 * 5
- };
-try {
-   const url = await new Promise((resolve, reject) => {
-     s3bucket.getSignedUrl('getObject', params, (err, url) => {
-       err ? reject(err) : resolve(url);
-     });
-   });
-   console.log(url);
-   
-  res.status(200).send(url);
-
- } catch (err) {
-   if (err) {
-     console.log(err);
-     res.status(500).send(err);
-   }
- }
+ 
 });
 
 router.get('/folder/:id', async(req,res,next)=>{
@@ -280,9 +293,11 @@ router.delete('/:id', async(req,res,next)=>{
   });
 });
 
-router.patch('/files/:id', async(req,res,next)=>{
-  console.log(req.params.id);
-  FILE.findOne({ _id: req.params.id }, function(err, docs) {
+router.patch('/files/:fileIDuserID', async(req,res,next)=>{
+
+  let fileID = req.params.fileIDuserID.split(',')[0];
+  let userID = req.params.fileIDuserID.split(',')[1];
+  FILE.findOne({ _id:ObjectId(fileID.toString()),users:ObjectId(userID.toString())}, function(err, docs) {
     docs.favourite = !(docs.favourite);
     docs.save(function(err, updatedDoc) {
       if(!err)res.status(200).send(updatedDoc)
@@ -291,9 +306,11 @@ router.patch('/files/:id', async(req,res,next)=>{
   });
 });
 
-router.patch('/folder/:id', async(req,res,next)=>{
-  console.log(req.params.id);
-  FOLDER.findOne({ _id: req.params.id }, function(err, docs) {
+router.patch('/folder/:folderIDuserID', async(req,res,next)=>{
+
+  let folderID = req.params.folderIDuserID.split(',')[0];
+  let userID = req.params.folderIDuserID.split(',')[1];
+  FOLDER.findOne({ _id:folderID, users: userID}, function(err, docs) {
     docs.favourite = !(docs.favourite);
     docs.save(function(err, updatedDoc) {
       if(!err)res.status(200).send(updatedDoc)

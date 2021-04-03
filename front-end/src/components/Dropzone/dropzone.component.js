@@ -247,8 +247,7 @@ export default function Dropzone(props){
   };
 
   const handleShare=()=>{
-    alert(fileToBeShared);
-    alert(mailshared);
+    
     const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     if(re.test(mailshared))
     {
@@ -294,7 +293,7 @@ export default function Dropzone(props){
   };
 
   const makefavouriteFile= (fileID)=>{
-    FileService.updateFavouriteFiles(fileID).then(()=>{
+    FileService.updateFavouriteFiles(fileID, userDetails).then(()=>{
       let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
       let newfilesinDB = [...filesinDB];
       newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], favourite:!(newfilesinDB[foundIndex]["favourite"])}
@@ -309,14 +308,14 @@ export default function Dropzone(props){
   
 
   const downloadFile=(fileName)=>{
-   FileService.downloadFile( fileName).then((link)=>{
+   FileService.downloadFile( fileName, userDetails).then((link)=>{
      console.log(link["data"]);
       window.open(link["data"],"_blank")
         
    })
   }
   const makefavouriteFolder= (fileID)=>{
-    FileService.updateFavouriteFolders(fileID).then(()=>{
+    FileService.updateFavouriteFolders(fileID, userDetails).then(()=>{
       let foundIndex = foldersinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
       let newfoldersinDB =[...foldersinDB];
       newfoldersinDB[foundIndex]={...newfoldersinDB[foundIndex], favourite:!(newfoldersinDB[foundIndex]["favourite"])}
@@ -616,6 +615,7 @@ useEffect(()=>{
           </DialogContentText>
         <DialogContent>
           <TextField
+
             autoFocus
             margin="dense"
             id="name"
@@ -642,6 +642,13 @@ useEffect(()=>{
           Add a person's mail ID
           </DialogContentText>
         <DialogContent>
+        <FormLabel component="legend">Access</FormLabel>
+       <RadioGroup aria-label="access" name="access" value={value} onChange={handleChange}>
+    <FormControlLabel value="female" title="User can only view your file" control={<Radio />} label="Viewer Access" />
+    <FormControlLabel value="male" control={<Radio />} label="Male" />
+    <FormControlLabel value="other" control={<Radio />} label="Other" />
+    <FormControlLabel value="disabled" disabled control={<Radio />} label="(Disabled option)" />
+  </RadioGroup>
           <TextField
             autoFocus
             margin="dense"

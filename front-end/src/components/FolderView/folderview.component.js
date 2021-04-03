@@ -186,7 +186,7 @@ export default function Folderview(){
         setFolderID(loc.state.folderID);
        
           
-    },[loc]);
+    },[]);
 
     useEffect(()=>{
         getFilesWithinAFolder(loc.state.folderID,loc.state.id)
@@ -198,8 +198,8 @@ export default function Folderview(){
             setFilesInFolder(docs.data)  
         })
     }
-    const downloadFile=(fileName)=>{
-        FileService.downloadFile(fileName).then((link)=>{
+    const downloadFile=(fileName, userID)=>{
+        FileService.downloadFile(fileName, loc.state.id).then((link)=>{
           console.log(link["data"]);
            window.open(link["data"],"_blank")
         })
@@ -212,7 +212,7 @@ export default function Folderview(){
         })
       }
       const makefavouriteFile= (fileID)=>{
-        FileService.updateFavouriteFiles(fileID).then(()=>{
+        FileService.updateFavouriteFiles(fileID, userID).then(()=>{
           let foundIndex = filesInFolder.findIndex((fileinFolder)=>fileinFolder["_id"] === fileID);
           let newfilesinFolder = [...filesInFolder];
           newfilesinFolder[foundIndex] = {...newfilesinFolder[foundIndex], favourite:!(newfilesinFolder[foundIndex]["favourite"])}
