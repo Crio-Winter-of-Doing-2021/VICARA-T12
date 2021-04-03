@@ -167,8 +167,8 @@ export default function MiniDrawer(props) {
   const [searchFiled, setSearchField] = useState("");
   const [openSetting, setOpenSetting] = useState(false);
   const initialSettingData = Object.freeze({
-    updatedName: "",
-    updatedPassword: "",
+    name: '',
+    password: '',
   });
   const initalfileUpdate = Object.freeze({
     allFileUpload: true,
@@ -240,6 +240,11 @@ export default function MiniDrawer(props) {
 
    const handleCloseSetting = () =>{
     setOpenSetting(false)
+    setUserSettingUpdate({
+      ...userSettingUpdate,
+      'name': '',
+      'password': '',
+    });		
    }
    
    const openUserSettings = () => {
@@ -273,34 +278,36 @@ export default function MiniDrawer(props) {
       	);
   	}
 
-   const handleProfileUpdate = () => {
-     
+    const handleChange = (e) => {
+      setUserSettingUpdate({
+          ...userSettingUpdate,
+          [e.target.name]: e.target.value.trim(),
+      });
+    };
+
+   const handleProfileUpdate = (e) => {
+    e.preventDefault();
     axiosInstance
-    .patch('api/users/update/'+ id ,{
-      updatedName: userSettingUpdate.updatedName,
-      updatedPassword: userSettingUpdate.updatedPassword,
+    .patch(`api/users/update/${id}` ,{
+      name: userSettingUpdate.name,
+      password: userSettingUpdate.password,
+      email: loc.state.detail.email,
     })
     .then(response => { 
       Cookies.set('jwt', response.headers['Set-Cookie'])
       handleCloseSetting()
+      setNames(userSettingUpdate.name)
     })
     .catch(error => {
-      //toastContainerFunction(error.response.data)
+      toastContainerFunction(error.response.data)
       setUserSettingUpdate({
         ...userSettingUpdate,
-        'updatedName': '',
-        'updatedPassword': '',
+        'name': '',
+        'password': '',
       });		
     });
       
    }
-   
-   const handleChange = (e) => {
-    setUserSettingUpdate({
-        ...userSettingUpdate,
-        [e.target.name]: e.target.value.trim(),
-    });
-  };
 
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
@@ -386,10 +393,11 @@ export default function MiniDrawer(props) {
                     variant="outlined"
                     required
                     fullWidth
-                    id="updatedName"
-                    label="name"
-                    name="updatedName"
+                    id="name"
+                    label="Rest Name"
+                    name="name"
                     autoComplete="name"
+                    value={userSettingUpdate.name}
                     onChange={handleChange}
                   />
                 </Grid>
@@ -398,10 +406,11 @@ export default function MiniDrawer(props) {
                     variant="outlined"
                     required
                     fullWidth
-                    id="updatedPassword"
-                    label="password"
-                    name="updatedPassword"
+                    id="password"
+                    label="Reset Password"
+                    name="password"
                     autoComplete="password"
+                    value={userSettingUpdate.password}
                     onChange={handleChange}
                   />
                 </Grid>

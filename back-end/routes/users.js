@@ -3,8 +3,6 @@ const _ = require('lodash');
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-var cors = require('cors')
-router.use(cors())
 
 router.post('/', async (req,res) => {
     const {error} = validate(req.body);
@@ -30,18 +28,29 @@ router.post('/', async (req,res) => {
 });
 
 router.patch('/update/:id', async (req,res) => {
+    console.log(req.body)
     const {error} = validatePatch(req.body);
     if ( error )
         return res.status(400).send(error.details[0].message);
-
-    let user = await User.findOne({ _id: req.body.id })
-
-    user = new User( _.pick(req.body, ['name', 'password']) );
+    
     const salt = await bcrypt.genSalt(10);
-    user.password = await bcrypt.hash(user.password, salt);
-    await user.save();
-
-    res.send( _.pick(user, ['name'] ) );
+    let resetPassword
+    if(req.body.password)
+         resetPassword = await bcrypt.hash(req.body.password, salt);
+    User.findOne({ email: req.body.email }, function(err, docs) {
+        docs.name = req.body.name;
+        if(req.body.password)
+            docs.password = resetPassword
+        docs.save(function(err, updatedDoc) {
+            if(!err)
+                res.status(200).send(updatedDoc)
+            else {
+                console.log(err)
+                res.status(500).send(err);
+            }
+                
+        }); 
+    });
 });
 
 module.exports = router; 
