@@ -1,5 +1,5 @@
 import React from 'react';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
@@ -41,12 +41,6 @@ root: {
 
 export default function MediaControlCard({checked}) {
   const classes = useStyles();
-  const theme = useTheme();
-  
-  const play = () => {
-    document.getElementById("video").src += "?autoplay=1";
-  };
-
   return (
     <Collapse in={checked} {...(checked ? { timeout: 1000 } : {})}>
         <Card className={classes.root}>

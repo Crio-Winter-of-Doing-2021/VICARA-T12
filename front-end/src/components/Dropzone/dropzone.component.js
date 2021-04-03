@@ -1,4 +1,4 @@
-import React,{ useState, useRef, useEffect}from 'react';
+import React,{ useState, useEffect}from 'react';
 import FileService from "../../services/file.service";
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -27,12 +27,7 @@ import fileService from '../../services/file.service';
 import { ToastContainer, toast } from 'react-toastify';
 import { createMuiTheme } from '@material-ui/core/styles';
 import green from '@material-ui/core/colors/green';
-
-
 import ShareIcon from '@material-ui/icons/Share';
-import Folderview from '../FolderView/folderview.component'
-
-
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -42,7 +37,7 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import EditIcon from '@material-ui/icons/Edit';
 import 'react-toastify/dist/ReactToastify.css';
 import './dropzone.component.css'
-import { useHistory, Link} from "react-router-dom"
+import { Link} from "react-router-dom"
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
 		paddingTop: '56.25%', // 16:9,
@@ -100,7 +95,6 @@ const theme = createMuiTheme({
 });
 
 export default function Dropzone(props){
-  const history = useHistory();
   const classes = useStyles();
 
   // Set Map, still in progress for card.
@@ -140,7 +134,6 @@ export default function Dropzone(props){
   const [userDetails, setUserDetails] = useState({});
   const [userName, setUserName] = useState({});
   const [isloading, setLoading] = useState(false);
-  const [jwtToken, setjwtToken] = useState("");
   const [openRenameForm, setopenRenameForm] = useState(false);
   const [newName, setNewName] = useState("");
   const [oldname,setoldName] = useState("");
@@ -168,7 +161,7 @@ export default function Dropzone(props){
     alert(filetobeRenamed);
     alert(type);
     
-    if(type=="file"&&newName.length&&newName.length<=20)
+    if(type === "file"&&newName.length&&newName.length<=20)
     {FileService.renameFile(filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), props.id).then((docs)=>{
       let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
       let newfilesinDB = [...filesinDB];
@@ -188,7 +181,7 @@ export default function Dropzone(props){
   }
 
   
-    if(type=="folder"&&newName.length&&newName.length<=20){
+    if(type === "folder"&&newName.length&&newName.length<=20){
       FileService.renameFolder(filetobeRenamed, newName, props.id).then((docs)=>{
         let foundIndex = foldersinDB.findIndex((folderinDB)=>folderinDB["_id"] === filetobeRenamed);
         let newfoldersinDB = [...foldersinDB];
@@ -206,7 +199,7 @@ export default function Dropzone(props){
   })
   }
 
-  else if(newName.length==0)
+  else if(newName.length === 0)
     {
       handleRenameClose();
         setoldName("");
@@ -256,7 +249,7 @@ export default function Dropzone(props){
         console.log(returnObject);
       
 
-        if(returnObject.status==200)
+        if(returnObject.status === 200)
          {
           toastContainerFunction("User Added Successfully")
           setmailshared("");
@@ -454,27 +447,16 @@ export default function Dropzone(props){
      
     })
   }
-  useEffect(()=>{
-    //setjwtToken(props.accessKey);
-  },[]);
-
+  
   useEffect(()=>{ 
-     
       setUserDetails(props.id);
-      
       setUserName(props.name);
-     
-    
-
       //console.log(fileImageMap.get("pdf"));
   },[props]);
  
-useEffect(()=>{
-  getFiles(props.id);
-  getFolders(props.id);  
-},[props.id])
+
+  
   const getFiles=(id)=>{
-    
     if(id)
     {
       FileService.getFiles({id}).then((response)=>{
@@ -506,6 +488,11 @@ useEffect(()=>{
       });
     }
   }
+
+  useEffect(()=>{
+    getFiles(props.id);
+    getFolders(props.id);  
+  },[props.id])
 
   const fileSize = (size) => {
       if (size === 0) return '0 Bytes';
