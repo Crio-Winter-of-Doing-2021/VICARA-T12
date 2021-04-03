@@ -28,7 +28,7 @@ router.post('/', async (req,res) => {
     
 
     //send the access token to the client inside a cookie
-    res.header("Access-Control-Allow-Origin", "http://localhost:3001");
+    res.header("Access-Control-Allow-Origin", "https://vicara-storage-drive.netlify.app");
     res.cookie("jwt", token, { httpOnly: true});
     
     res.status(200).send({id:user._id,
