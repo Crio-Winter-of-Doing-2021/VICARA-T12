@@ -1,7 +1,6 @@
 //eslint-disable-next-line
-
 import React, { useEffect, useState } from 'react';
-import { Route, useHistory, useLocation, Link } from 'react-router-dom';
+import { Route, useHistory, useLocation } from 'react-router-dom';
 import clsx from 'clsx';
 import { fade, makeStyles, useTheme } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -159,16 +158,14 @@ export default function MiniDrawer(props) {
   const [name, setNames] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [open, setOpen] = useState(false);
-  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
   const isMenuOpen = Boolean(anchorEl);
   const [userDetails, setUserDetails] = useState(null);
-  const [accessKey, setAccessKey] = useState(null);
   const [id, setId]= useState(null);
   const [searchFiled, setSearchField] = useState("");
   const [openSetting, setOpenSetting] = useState(false);
   const initialSettingData = Object.freeze({
     name: '',
-    password: '',
+    password: null,
   });
   const initalfileUpdate = Object.freeze({
     allFileUpload: true,
@@ -202,13 +199,8 @@ export default function MiniDrawer(props) {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleMobileMenuClose = () => {
-    setMobileMoreAnchorEl(null);
-  };
-
   const handleMenuClose = () => {
     setAnchorEl(null);
-    handleMobileMenuClose();
   };
 
   const logoutFunction = () => {
@@ -384,7 +376,7 @@ export default function MiniDrawer(props) {
             {renderMenu}
             <Dialog open={openSetting} onClose={handleCloseSetting} aria-labelledby="form-dialog-title">
               <DialogTitle id="form-dialog-title">
-                <Typography> {name}'s Details</Typography>
+                <Typography> Update {name}'s Details</Typography>
               </DialogTitle>  
               <DialogContent>
               <Grid container spacing={2}>
@@ -397,7 +389,6 @@ export default function MiniDrawer(props) {
                     label="Rest Name"
                     name="name"
                     autoComplete="name"
-                    value={userSettingUpdate.name}
                     onChange={handleChange}
                   />
                 </Grid>
@@ -410,7 +401,6 @@ export default function MiniDrawer(props) {
                     label="Reset Password"
                     name="password"
                     autoComplete="password"
-                    value={userSettingUpdate.password}
                     onChange={handleChange}
                   />
                 </Grid>

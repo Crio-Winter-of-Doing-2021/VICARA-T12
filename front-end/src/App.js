@@ -9,7 +9,6 @@ import Header from './components/Main/header';
 import WelcomePage from './components/Welcome/welcomePage';
 import Folderview from './components/FolderView/folderview.component';
 import { makeStyles } from '@material-ui/core/styles';
-import { Collapse } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton'
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import AboutSection from './components/Main/AboutSection';
@@ -32,7 +31,6 @@ function App() {
   const [activeMenu, setActiveMenu] = useState('login');
   const [menuHeight, setMenuHeight] = useState(null);  
   const dropdownRef = useRef(null);
-  const [checked, setChecked] = useState(false);
 
   function calcHeight(el){
     const height = el.offsetHeight;
@@ -41,7 +39,6 @@ function App() {
 
   useEffect(() => {
     setMenuHeight(dropdownRef.current?.firstChild.offsetHeight)
-    setChecked(true)
   }, [])
 
   function handleChangeInForm(newValue) {
