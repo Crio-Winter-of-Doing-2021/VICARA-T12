@@ -33,15 +33,10 @@ export default function (){
                 <Card className={classes.Cardborder} variant="outlined">
                     <CardContent>
                         <Typography className={classes.title} variant="h5" component="h2">
-                            Swagger API and Frontend Integration
+                            Custom Frontend Integration
                         </Typography>
                         <Typography variant="body1" gutterBottom>
-                            body2. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur
-                            unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam
-                            dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.
-                        </Typography>
-                        <Typography className={classes.pos} color="textSecondary">
-                        adjective
+                            Easily integrate our backend api's to your preferred front-end of choice. Below, we have listed our backend API's and their functionality. 
                         </Typography>
                     </CardContent>
                 </Card>

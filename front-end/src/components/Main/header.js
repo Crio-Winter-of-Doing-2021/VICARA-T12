@@ -20,11 +20,6 @@ const useStyles = makeStyles((theme) => ({
 		background: 'linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(236,46,4,1) 100%, rgba(6,223,240,1) 100%)'
 	},
 }));
-// // Swagger redirect 
-// const routeChange = () =>{ 
-//     const url = "https://rahulsenguttuvan-xmeme-app.herokuapp.com/swagger-ui/";
-// 	window.open(url,'_blank');
-//   }
 
 function Header() {
 	const classes = useStyles();
