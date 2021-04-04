@@ -65,7 +65,7 @@ FOLDER.findByIdAndUpdate(folderID, { $pullAll: {files:[ObjectId(fileId)]} },(err
         else
         next(res.status(500).send(errorinfindingfile))
       })
-      FILE.findOneAndDelete({'_id':ObjectId(fileId), 'users':ObjectID(userId)},(error, documents)=>{
+      FILE.findOneAndDelete({'_id':ObjectId(fileId), 'users':ObjectId(userId)},(error, documents)=>{
         if(error)
         res.status(500).send(error);
         else
@@ -102,32 +102,53 @@ FILE.find(
 );
 });
 
-router.get('/url/:fileID', async(req,res, next)=>{
-  console.log(req.params.fileID);
-   
+router.get('/url/:fileNameUserID', async(req,res, next)=>{
+  fileName = req.params.fileNameUserID.split(',')[0].toString();
+  userID = req.params.fileNameUserID.split(',')[1].toString();
+  console.log(fileName);
+  console.log(userID);
+   FILE.findOne({"_id":ObjectId(fileName),
+    $or:[ 
+    {'users':ObjectId(userID)},
+     {'viewers':ObjectId(userID)} 
+   ]},async(errorInFindingFile, doc)=>{
+      if(errorInFindingFile)
+      {
+        await next(res.status(500).send("You can't view the file"));
+
+      }
+      else if(doc==null)
+      {
+        await next(res.status(403).send("You can't view the file"))
+      }
+      else
+      {
+        const params = {
+          Bucket: 'files-vicara-drive',
+          Key: doc["_id"].toString(),
+          Expires: 60 * 5
+        };
+       try {
+          const url = await new Promise(async (resolve, reject) => {
+            await s3bucket.getSignedUrl('getObject', params, async(err, url) => {
+             await err ? reject(err) : resolve(url);
+            });
+          });
+          await console.log(url);
+          
+         await next(res.status(200).send(url));
+       
+        } catch (err) {
+          if (err) {
+            await console.log(err);
+            await next(res.status(500).send(err));
+          }
+        }
+      }
+   })
 
 
-  const params = {
-   Bucket: 'files-vicara-drive',
-   Key: req.params.fileID,
-   Expires: 60 * 5
- };
-try {
-   const url = await new Promise((resolve, reject) => {
-     s3bucket.getSignedUrl('getObject', params, (err, url) => {
-       err ? reject(err) : resolve(url);
-     });
-   });
-   console.log(url);
-   
-  res.status(200).send(url);
-
- } catch (err) {
-   if (err) {
-     console.log(err);
-     res.status(500).send(err);
-   }
- }
+ 
 });
 
 router.get('/folder/:id', async(req,res,next)=>{
@@ -179,7 +200,10 @@ router.patch('/renameFile/:fileIDnewNameUserID', async(req,res, next)=>{
   }, (errorinRenaming, renamedDoc)=>{
     if(errorinRenaming)
     next(res.status(500).send(errorinRenaming));
-
+    else if(renamedDoc==null)
+    {
+      next(res.status(403).send("The file is not allowed to be renamed by you"))
+    }
     else
     {
       console.log(renamedDoc);
@@ -189,22 +213,42 @@ router.patch('/renameFile/:fileIDnewNameUserID', async(req,res, next)=>{
 })
 
 
-router.patch('/addUserToFolder/:fileIDmailAddedUserID', async(req,res,next)=>{
-  fileID = req.params.fileIDmailAddedUserID.split(',')[0];
-  mailAdded = req.params.fileIDmailAddedUserID.split(',')[1];
-  userID = req.params.fileIDmailAddedUserID.split(',')[2];
+router.patch('/addUserToFile/:accessFileIDmailAddedUserID', async(req,res,next)=>{
+  access = req.params.accessFileIDmailAddedUserID.split(',')[0]
+  fileID = req.params.accessFileIDmailAddedUserID.split(',')[1];
+  mailAdded = req.params.accessFileIDmailAddedUserID.split(',')[2];
+  userID = req.params.accessFileIDmailAddedUserID.split(',')[3];
+
   await User.findOne({'email':mailAdded}, async(errorInUser, foundDoc)=>{
     if(errorInUser)
     next(res.status(400).send(errorInUser));
     else if(!foundDoc)
-    next(res.status(400).send('cant find'))
+    next(res.status(400).send("can't find user"))
+    
     else
-    {await FILE.findOneAndUpdate({'_id':ObjectId(fileID),'users':userID,  'users': { $ne: ObjectId(foundDoc["_id"]) }}, {$push: { users: foundDoc["_id"] }}, (errorInUpdatingUser, docs)=>{
-      if(!errorInUpdatingUser)
+    {
+      if(access=="All")
+      {
+        await FILE.findOneAndUpdate({'_id':ObjectId(fileID),'users':userID,  'users': { $ne: ObjectId(foundDoc["_id"]) }}, {$push: { users: foundDoc["_id"] }}, (errorInUpdatingUser, docs)=>{
+      if(docs==null)
+      next(res.status(400).send("The user can't be added by you"))
+      else if(!errorInUpdatingUser)
       next(res.status(200).send(docs));
       else
       next(res.status(500).send(errorInUpdatingUser))
     } )
+  }
+
+  if(access=="View"){
+    await FILE.findOneAndUpdate({'_id':ObjectId(fileID),'users':userID,'viewers': { $ne: ObjectId(foundDoc["_id"]) }}, {$push: {viewers: foundDoc["_id"] }}, (errorInUpdatingViewer, viewerDocs)=>{
+      if(viewerDocs==null)
+      next(res.status(400).send("The user can't be added by you"))
+      else if(!errorInUpdatingViewer)
+      next(res.status(200).send(viewerDocs));
+      else
+      next(res.status(500).send(errorInUpdatingViewer))
+    } )
+  }
   }
   })
 
@@ -213,7 +257,10 @@ router.get('/:id', async(req,res,next)=>{
   console.log(req.params.id);
     FILE.find(       
       {
-        'users':ObjectId(req.params.id),
+        $or:[ 
+         {'users':ObjectId(req.params.id)}, {'viewers':ObjectId(req.params.id)} 
+        ]
+        ,
         'isIndependant':true
       },
       null,
@@ -233,9 +280,12 @@ router.get('/:id', async(req,res,next)=>{
     );
 });
 
-router.delete('/folder/:id', async(req,res,next)=>{
-
-  FILE.find({parentFolder: req.params['id']},(err,docs)=>{
+router.delete('/folder/:folderIDuserID', async(req,res,next)=>{
+let folderID = req.params.folderIDuserID.split(',')[0];
+let userID = req.params.folderIDuserID.split(',')[1];
+console.log(`-----------${folderID}-----`);
+console.log(userID)
+  FILE.find({parentFolder: ObjectId(folderID), users: ObjectId(userID)},(err,docs)=>{
    if(!err){console.log("Going to delete them from s3 bucket");
    docs.forEach((doc)=>{
     var params = {  Bucket: process.env.AWS_BUCKET_NAME, Key: doc["_id"].toString() };
@@ -252,12 +302,12 @@ router.delete('/folder/:id', async(req,res,next)=>{
    else
    throw err;
   });
-  FILE.deleteMany({ parentFolder: req.params["id"]}, (err, docs)=>{
+  FILE.deleteMany({ parentFolder: ObjectId(folderID), users: ObjectId(userID)}, (err, docs)=>{
     if(!err)
     {
       console.log("These are the files");
       console.log(docs);
-      FOLDER.findByIdAndDelete(req.params["id"], (error, deleteddoc)=>{
+      FOLDER.findByIdAndDelete(ObjectId(folderID), (error, deleteddoc)=>{
         if(!err)
         {
           next(res.status(200).send(deleteddoc));
@@ -271,14 +321,19 @@ router.delete('/folder/:id', async(req,res,next)=>{
   }); 
 });
 
-router.delete('/:id', async(req,res,next)=>{
-  console.log(req.params.id);
-  FILE.findOneAndDelete({ _id: ObjectId(req.params["id"]) }, (err,docs)=>{
+router.delete('/:fileIDuserID', async(req,res,next)=>{
+  let fileID = req.params.fileIDuserID.split(',')[0].toString();
+  let userID = req.params.fileIDuserID.split(',')[1].toString();
+  
+  FILE.findOneAndDelete({ _id: ObjectId(fileID), users: ObjectId(userID)}, (err,docs)=>{
     if(err){
       return next(err);
     }
+    else if(docs==null){
+      return res.status(403).send("You don't have access to delete the file or file ID is wrong")
+    }
     else if(docs!=null){
-      var params = {  Bucket: process.env.AWS_BUCKET_NAME, Key: req.params.id };
+      var params = {  Bucket: process.env.AWS_BUCKET_NAME, Key: fileID };
       s3bucket.deleteObject(params, function(err, data) {
         if (err) {
           console.log(err, err.stack);  
@@ -292,20 +347,32 @@ router.delete('/:id', async(req,res,next)=>{
   });
 });
 
-router.patch('/files/:id', async(req,res,next)=>{
-  console.log(req.params.id);
-  FILE.findOne({ _id: req.params.id }, function(err, docs) {
-    docs.favourite = !(docs.favourite);
+router.patch('/files/:fileIDuserID', async(req,res,next)=>{
+
+  let fileID = req.params.fileIDuserID.split(',')[0];
+  let userID = req.params.fileIDuserID.split(',')[1];
+  FILE.findOne({ _id:ObjectId(fileID.toString()),users:ObjectId(userID.toString())}, function(err, docs) {
+    if(err)
+    res.status(500).send("I can't find the file");
+    else if(docs!=null)
+     { docs.favourite = !(docs.favourite);
     docs.save(function(err, updatedDoc) {
       if(!err)res.status(200).send(updatedDoc)
       else res.status(500).send(err);
     }); 
+  }
+  else
+  res.status(400).send("The file cannot be made a favourite for you")
+
   });
+
 });
 
-router.patch('/folder/:id', async(req,res,next)=>{
-  console.log(req.params.id);
-  FOLDER.findOne({ _id: req.params.id }, function(err, docs) {
+router.patch('/folder/:folderIDuserID', async(req,res,next)=>{
+
+  let folderID = req.params.folderIDuserID.split(',')[0];
+  let userID = req.params.folderIDuserID.split(',')[1];
+  FOLDER.findOne({ _id:folderID, users: userID}, function(err, docs) {
     docs.favourite = !(docs.favourite);
     docs.save(function(err, updatedDoc) {
       if(!err)res.status(200).send(updatedDoc)
@@ -319,7 +386,8 @@ router.post('/folder', upload.single('folder'),async(req, res, next)=>{
  
   var newFolderUploaded = {
     Name: req.body.folderName,
-    users: [req.body.users]
+    users: [req.body.users], 
+    viewers:[req.body.users]
     }
 
   var document = new FOLDER(newFolderUploaded);
@@ -345,17 +413,25 @@ var newFileUploaded = {
   description: req.body.description,
   s3_key: file.originalname,
   users: [req.body.users],
+  viewers: [req.body.users],
   parentFolder: folderID,
   isIndependant: false
 }
-
-var params = {
-  Bucket: process.env.AWS_BUCKET_NAME,
+fs.readFile(file.path, (error, fileContent)=>{
+  if(error)
+   {
+     console.log("error in fs");
+     res.status(500).send("Hmm, looks like there is something wrong with the code");
+   }
+  else if(!error)
+  {var params = {
+    Bucket: process.env.AWS_BUCKET_NAME,
+    
+    Body: fileContent,
+    ContentType: file.mimetype,
+    
+  };
   
-  Body: file.buffer,
-  ContentType: file.mimetype,
-  
-};
 var document = new FILE(newFileUploaded);
 document.save(function(filesaveerror, newFile) {
   
@@ -390,6 +466,10 @@ document.save(function(filesaveerror, newFile) {
    next(res.status(500).send(filesaveerror))
   }
 });
+}
+
+});
+
  
 
  
@@ -406,23 +486,32 @@ router.post('/', upload.single("file"), async(req,res,next)=>{
     var newFileUploaded = {
       description: req.body.description,
       s3_key: file.originalname,
-      users: [req.body.users]
+      users: [req.body.users],
+      viewers: [req.body.users]
     }
-    var params = {
+
+   await fs.readFile(file.path, async(error, fileContent)=>{
+     if(error)
+     {
+       await next(res.status(500).send("The file can't be uploaded"))
+     }
+    if(!error)
+    {
+      var params = {
       Bucket: process.env.AWS_BUCKET_NAME,
-      Body: file.buffer,
+      Body: fileContent,
       ContentType: file.mimetype,
       
     }
-
+    
     var document = new FILE(newFileUploaded);
-    document.save(function(error, newFile) {
+    await document.save(async function(error, newFile) {
       
       if(!error){
-          console.log(newFile);
+          await console.log(newFile);
          
           params.Key=newFile["_id"].toString();
-          s3bucket.putObject(params, async function(err, data) {
+          await s3bucket.putObject(params, async function(err, data) {
 
         
             if (err) {
@@ -439,9 +528,13 @@ router.post('/', upload.single("file"), async(req,res,next)=>{
 
       }
       if (error) {
-        throw error;
+        res.status(500).send("File couldn't be saved")
       }
     });
+  }
+   });
+
+    
       
     
      
