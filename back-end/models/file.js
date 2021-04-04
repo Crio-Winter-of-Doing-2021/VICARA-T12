@@ -11,6 +11,14 @@ let FilesSchema = new Schema(
     fileLink: { type: String },
     s3_key: { type: String },
     favourite: {type: Boolean, default:false},
+    viewers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+      }
+
+    ],
+  
     users: [
       {
         type: mongoose.Schema.Types.ObjectId,

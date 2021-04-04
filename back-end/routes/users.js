@@ -30,10 +30,18 @@ router.post('/', async (req,res) => {
 
 router.patch('/update/:id', async (req,res) => {
     console.log(req.body)
-    const {error} = validatePatch(req.body);
-    if ( error )
-        return res.status(400).send(error.details[0].message);
-    
+    if( req.body.password == ''){
+        req.body.password = 'testPasswordForvalidation'
+        const {error} = validatePatch(req.body);
+        if ( error )
+            return res.status(400).send(error.details[0].message);
+            req.body.password = null
+    }
+    else{
+        const {error} = validatePatch(req.body);
+        if ( error )
+            return res.status(400).send(error.details[0].message);
+    }
     const salt = await bcrypt.genSalt(10);
     let resetPassword
     if(req.body.password)

@@ -1,4 +1,4 @@
-import React,{ useState, useRef, useEffect}from 'react';
+import React,{ useState, useEffect}from 'react';
 import FileService from "../../services/file.service";
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -27,12 +27,7 @@ import fileService from '../../services/file.service';
 import { ToastContainer, toast } from 'react-toastify';
 import { createMuiTheme } from '@material-ui/core/styles';
 import green from '@material-ui/core/colors/green';
-
-
 import ShareIcon from '@material-ui/icons/Share';
-import Folderview from '../FolderView/folderview.component'
-
-
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -41,8 +36,10 @@ import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import EditIcon from '@material-ui/icons/Edit';
 import 'react-toastify/dist/ReactToastify.css';
+import { FormLabel, RadioGroup, FormControlLabel, Radio } from '@material-ui/core';
 import './dropzone.component.css'
-import { useHistory, Link} from "react-router-dom"
+import { Link} from "react-router-dom"
+
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
 		paddingTop: '56.25%', // 16:9,
@@ -100,7 +97,6 @@ const theme = createMuiTheme({
 });
 
 export default function Dropzone(props){
-  const history = useHistory();
   const classes = useStyles();
 
   // Set Map, still in progress for card.
@@ -140,7 +136,6 @@ export default function Dropzone(props){
   const [userDetails, setUserDetails] = useState({});
   const [userName, setUserName] = useState({});
   const [isloading, setLoading] = useState(false);
-  const [jwtToken, setjwtToken] = useState("");
   const [openRenameForm, setopenRenameForm] = useState(false);
   const [newName, setNewName] = useState("");
   const [oldname,setoldName] = useState("");
@@ -148,8 +143,8 @@ export default function Dropzone(props){
   const [type, setType] = useState("")
   const [openShareForm, setOpenShareForm] = useState(false);
   const [mailshared, setmailshared]= useState("");
-  const [fileToBeShared, setfileToBeShared] = useState("")
-  
+  const [fileToBeShared, setfileToBeShared] = useState("");
+  const [access, setAccess] = useState("View");
   const handleRenameOpen = (typeProperty, id, name) => {
     setoldName(name);
     setFileToBeRenamed(id);
@@ -168,12 +163,15 @@ export default function Dropzone(props){
     alert(filetobeRenamed);
     alert(type);
     
-    if(type=="file"&&newName.length&&newName.length<=20)
+    if(type === "file"&&newName.length&&newName.length<=20)
     {FileService.renameFile(filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), props.id).then((docs)=>{
+      if(docs!=null)
+      {
       let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
       let newfilesinDB = [...filesinDB];
       newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], s3_key: docs["data"]["s3_key"]}
       setfilesinDB(newfilesinDB); 
+      }
       
     }).catch((err)=>{
     
@@ -188,7 +186,7 @@ export default function Dropzone(props){
   }
 
   
-    if(type=="folder"&&newName.length&&newName.length<=20){
+    if(type === "folder"&&newName.length&&newName.length<=20){
       FileService.renameFolder(filetobeRenamed, newName, props.id).then((docs)=>{
         let foundIndex = foldersinDB.findIndex((folderinDB)=>folderinDB["_id"] === filetobeRenamed);
         let newfoldersinDB = [...foldersinDB];
@@ -206,7 +204,7 @@ export default function Dropzone(props){
   })
   }
 
-  else if(newName.length==0)
+  else if(newName.length === 0)
     {
       handleRenameClose();
         setoldName("");
@@ -247,16 +245,15 @@ export default function Dropzone(props){
   };
 
   const handleShare=()=>{
-    alert(fileToBeShared);
-    alert(mailshared);
+    alert(access);
     const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     if(re.test(mailshared))
     {
-      FileService.shareFile(fileToBeShared, mailshared, props.id).then((returnObject)=>{
+      FileService.shareFile(access, fileToBeShared, mailshared, props.id).then((returnObject)=>{
         console.log(returnObject);
       
 
-        if(returnObject.status==200)
+        if(returnObject.status === 200)
          {
           toastContainerFunction("User Added Successfully")
           setmailshared("");
@@ -294,7 +291,7 @@ export default function Dropzone(props){
   };
 
   const makefavouriteFile= (fileID)=>{
-    FileService.updateFavouriteFiles(fileID).then(()=>{
+    FileService.updateFavouriteFiles(fileID, userDetails).then(()=>{
       let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
       let newfilesinDB = [...filesinDB];
       newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], favourite:!(newfilesinDB[foundIndex]["favourite"])}
@@ -309,14 +306,14 @@ export default function Dropzone(props){
   
 
   const downloadFile=(fileName)=>{
-   FileService.downloadFile( fileName).then((link)=>{
+   FileService.downloadFile( fileName, userDetails).then((link)=>{
      console.log(link["data"]);
       window.open(link["data"],"_blank")
         
    })
   }
   const makefavouriteFolder= (fileID)=>{
-    FileService.updateFavouriteFolders(fileID).then(()=>{
+    FileService.updateFavouriteFolders(fileID, userDetails).then(()=>{
       let foundIndex = foldersinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
       let newfoldersinDB =[...foldersinDB];
       newfoldersinDB[foundIndex]={...newfoldersinDB[foundIndex], favourite:!(newfoldersinDB[foundIndex]["favourite"])}
@@ -437,7 +434,7 @@ export default function Dropzone(props){
   
 
   const removeFile = (fileID)=>{
-    FileService.removeFile(fileID).then(()=>{
+    FileService.removeFile(fileID, userDetails).then(()=>{
       setfilesinDB(filesinDB.filter((file)=>file["_id"] !== fileID));
       toastContainerFunction(`removed File!`)
       
@@ -447,34 +444,23 @@ export default function Dropzone(props){
   }
 
   const removeFolder = (folderID)=>{
-    FileService.removeFolder(folderID).then(()=>{
+    FileService.removeFolder(folderID,userDetails).then(()=>{
       setfoldersinDB(foldersinDB.filter((folder)=>folder["_id"] !== folderID));
       toastContainerFunction(`removed Folder!`);
     }).catch((err)=>{toastErrorContainerFunction("The folder couldn't be removed")}).finally(()=>{
      
     })
   }
-  useEffect(()=>{
-    //setjwtToken(props.accessKey);
-  },[]);
-
+  
   useEffect(()=>{ 
-     
       setUserDetails(props.id);
-      
       setUserName(props.name);
-     
-    
-
       //console.log(fileImageMap.get("pdf"));
   },[props]);
  
-useEffect(()=>{
-  getFiles(props.id);
-  getFolders(props.id);  
-},[props.id])
+
+  
   const getFiles=(id)=>{
-    
     if(id)
     {
       FileService.getFiles({id}).then((response)=>{
@@ -506,6 +492,11 @@ useEffect(()=>{
       });
     }
   }
+
+  useEffect(()=>{
+    getFiles(props.id);
+    getFolders(props.id);  
+  },[props.id])
 
   const fileSize = (size) => {
       if (size === 0) return '0 Bytes';
@@ -616,6 +607,7 @@ useEffect(()=>{
           </DialogContentText>
         <DialogContent>
           <TextField
+
             autoFocus
             margin="dense"
             id="name"
@@ -642,6 +634,11 @@ useEffect(()=>{
           Add a person's mail ID
           </DialogContentText>
         <DialogContent>
+        <FormLabel component="legend">Access</FormLabel>
+       <RadioGroup aria-label="access" name="access" value={access} onChange={(event)=>{setAccess(event.target.value)}}>
+    <FormControlLabel value="View" title="User can only view your file" control={<Radio />} label="Viewer Access" />
+    <FormControlLabel value="All" control={<Radio />} label="All Access" />
+     </RadioGroup>
           <TextField
             autoFocus
             margin="dense"

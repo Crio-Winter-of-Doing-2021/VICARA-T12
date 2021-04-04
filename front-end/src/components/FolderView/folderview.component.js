@@ -137,7 +137,7 @@ export default function Folderview(){
       alert(filetobeRenamed);
       alert(type);
       
-      if(type=="file"&& newName.length)
+      if(type === "file"&& newName.length)
       {FileService.renameFile(filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), loc.state.id).then((docs)=>{
         let foundIndex = filesInFolder.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
         let newfilesInFolder = [...filesInFolder];
@@ -148,7 +148,7 @@ export default function Folderview(){
         setNewName("");
       })
     }
-    else if(newName.length==0)
+    else if(newName.length === 0)
     {
       handleRenameClose();
         setoldName("");
@@ -186,7 +186,7 @@ export default function Folderview(){
         setFolderID(loc.state.folderID);
        
           
-    },[loc]);
+    },[]);
 
     useEffect(()=>{
         getFilesWithinAFolder(loc.state.folderID,loc.state.id)
@@ -198,8 +198,8 @@ export default function Folderview(){
             setFilesInFolder(docs.data)  
         })
     }
-    const downloadFile=(fileName)=>{
-        FileService.downloadFile(fileName).then((link)=>{
+    const downloadFile=(fileName, userID)=>{
+        FileService.downloadFile(fileName, loc.state.id).then((link)=>{
           console.log(link["data"]);
            window.open(link["data"],"_blank")
         })
@@ -212,7 +212,7 @@ export default function Folderview(){
         })
       }
       const makefavouriteFile= (fileID)=>{
-        FileService.updateFavouriteFiles(fileID).then(()=>{
+        FileService.updateFavouriteFiles(fileID, userID).then(()=>{
           let foundIndex = filesInFolder.findIndex((fileinFolder)=>fileinFolder["_id"] === fileID);
           let newfilesinFolder = [...filesInFolder];
           newfilesinFolder[foundIndex] = {...newfilesinFolder[foundIndex], favourite:!(newfilesinFolder[foundIndex]["favourite"])}
