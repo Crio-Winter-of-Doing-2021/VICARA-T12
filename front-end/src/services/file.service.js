@@ -52,9 +52,9 @@ class FileService{
 }
 
 
-shareFile(fileToBeShared, mailshared, id){
-  let fileIDmailAddedUserID = [fileToBeShared, mailshared, id];
-  return axiosInstance.patch(`api/upload/addUserToFolder/${fileIDmailAddedUserID}`,{ },{
+shareFile(access, fileToBeShared, mailshared, id){
+  let accessFileIDmailAddedUserID = [access,fileToBeShared, mailshared, id];
+  return axiosInstance.patch(`api/upload/addUserToFile/${accessFileIDmailAddedUserID}`,{ },{
     headers:{
       "Content-Type": "multipart/form-data; charset=utf-8;",
     }
@@ -168,7 +168,7 @@ shareFile(fileToBeShared, mailshared, id){
 
   removeFolder(folderID, userID){
     let folderIDuserID = [folderID, userID]
-    alert(folderID);
+    console.log(folderIDuserID);
     return axiosInstance.delete(`api/upload/folder/${folderIDuserID}`, {
       headers:{
         "Content-Type": "multipart/form-data; charset=utf-8;",
