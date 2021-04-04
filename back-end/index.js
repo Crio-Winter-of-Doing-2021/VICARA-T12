@@ -54,10 +54,7 @@ app.set('view engine', 'pug');
 app.set('views','./views');
 
 //Config check for pvt key 
-if(!config.get('jwtPrivateKey')){
-    console.error(' jwtPrivateKey is not defined.')
-    process.exit(1);
-}
+
 
 
 
