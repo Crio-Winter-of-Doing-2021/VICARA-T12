@@ -94,7 +94,7 @@ export default function Login(props) {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		axiosInstance
-			.post('http://localhost:3000/api/auth/',{
+			.post('https://vicara-storage-drive.herokuapp.com/api/auth/',{
 				email: formData.email,
 				password: formData.password,
 			})
