@@ -774,35 +774,35 @@ const handleFolderMenuClose=(()=>{
         onClick = {handleFolderMenuClose}
         onClose={handleFolderMenuClose}
       >
-        <MenuItem onClick={handleFolderMenuClose}>
+       
        
                                     <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFolder( folderDataOfMenu["_id"] )}} >
                                       { folderDataOfMenu["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                                     </IconButton>
-                                    <label>Star</label>
+                                  
                                
-        </MenuItem>
+    
         
-        <MenuItem onClick={handleFolderMenuClose}>
+        
                                     <IconButton  onClick={()=>{handleRenameOpen('folder',folderDataOfMenu["_id"], folderDataOfMenu["Name"])}}aria-label="rename" title="edit name">
                                    <EditIcon/>
                                     </IconButton>
-                                    Rename
-                                  </MenuItem>
-                                  <MenuItem onClick={handleFolderMenuClose}> 
+                                 
+                                  
+                                  
                                     <IconButton onClick={()=>handleShareOpen("folder",folderDataOfMenu["_id"])}aria-label="share" title="share">
                                       <ShareIcon/>
-                                    </IconButton> Share
-                                   </MenuItem>
-                                  <MenuItem onClick={handleFolderMenuClose}>
+                                    </IconButton>
+                                 
+                                  
                                     <Link to={{pathname: "/folderview",
                           state: { folderID: folderDataOfMenu["_id"], id:userDetails}}}  >
                               <IconButton >
                                    <VisibilityIcon />
                                     </IconButton>
-                                    View
+                                   
                             </Link>
-                            </MenuItem>
+                          
 
                                   
 
@@ -816,34 +816,36 @@ const handleFolderMenuClose=(()=>{
         onClick = {handleMenuClose}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={handleMenuClose}>
+       
        
                                     <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFile( fileDataOfMenu["_id"] )}} >
                                       { fileDataOfMenu["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                                     </IconButton>
-                                    <label>Star</label>
+                                 
                                
-        </MenuItem>
+      
         
-        <MenuItem onClick={handleMenuClose}>  <div onClick={()=>{handleRenameOpen('file',fileDataOfMenu["_id"], fileDataOfMenu["s3_key"])}}>
-                                    <IconButton aria-label="rename" title="edit name">
+        
+                                    <IconButton onClick={()=>{handleRenameOpen('file',fileDataOfMenu["_id"], fileDataOfMenu["s3_key"])}}aria-label="rename" title="edit name">
                                    <EditIcon/>
                                     </IconButton>
-                                    Rename
-                                  </div></MenuItem>
-                                  <MenuItem onClick={handleMenuClose}> <div onClick={()=>handleShareOpen("file",fileDataOfMenu["_id"])}>
-                                    <IconButton aria-label="share" title="share">
+                                  
+                                  
+                                    <IconButton  onClick={()=>handleShareOpen("file",fileDataOfMenu["_id"])}aria-label="share" title="share">
                                       <ShareIcon/>
-                                    </IconButton> Share
-                                  </div> </MenuItem>
-                                  <MenuItem  onClick ={()=>{openFile(fileDataOfMenu["_id"])}}>
-                                  <div >
-                                    <IconButton >
+                                    </IconButton> 
+                              
+                                 
+                                 
+                                    <IconButton onClick ={()=>{openFile(fileDataOfMenu["_id"])}}>
                                    <VisibilityIcon />
                                     </IconButton>
-                                    View
-                                  </div>
-                                  </MenuItem>
+                                   
+                                    <IconButton aria-label="share" onClick={()=>{downloadFile(fileDataOfMenu["_id"])}}>
+                                  <OpenInNewIcon/> 
+                                </IconButton>
+                             
+                              
 
       </Menu>
           <div className="file-display-container">
@@ -870,14 +872,12 @@ const handleFolderMenuClose=(()=>{
                                     <IconButton aria-label="add to favorites" >
                                       <DeleteIcon onClick={()=>removeFile(filedata["_id"])}/>
                                     </IconButton>
-                                    <IconButton aria-label="share" onClick={()=>{downloadFile(fileDataOfMenu["_id"])}}>
-                                  <OpenInNewIcon/> 
-                                </IconButton>
+                                  
                                   </div>
                                  
-                                  
-                              
                                 }
+                                title={filedata["createdAt"].slice(0,10)}
+                               
                                 
                               />
                               <CardMedia
@@ -925,8 +925,10 @@ const handleFolderMenuClose=(()=>{
                                 <IconButton aria-label="add to favorites" >
                                   <DeleteIcon />
                                 </IconButton>
+                                
                               </div>
                             }
+                            title={filedata["createdAt"].slice(0,10)}
                             
                           />
                           <CardMedia
@@ -971,10 +973,12 @@ const handleFolderMenuClose=(()=>{
                             <IconButton aria-label="add to favorites" >
                               <DeleteIcon/>
                             </IconButton>
+                            
                           </div>
                          
                         }
-                        title= {filedata["createdAt"]}
+                        title={filedata["createdAt"].slice(0,10)}
+                       
                       />
                       <CardMedia
                           className={classes.cardMedia} 

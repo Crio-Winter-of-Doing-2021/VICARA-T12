@@ -119,19 +119,72 @@ export default function Folderview(){
     const [type, setType] = useState("")
     const [openMenu, setOpenMenu] =  useState(null);
     const [fileDataOfMenu, setFileDataOfMenu] = useState({ });
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [isloading, setLoading] = useState(false);
+    const [foldersinFolder, setfoldersinFolder] = useState([])
     const handleRenameOpen = (typeProperty, id, name) => {
       setoldName(name);
       setFileToBeRenamed(id);
       setopenRenameForm(true);
      setType(typeProperty)
     };
+    const fetchData = () =>{
+      setLoading(true);
+    }
+    const handleFolder=(e)=>{
+      var theFiles = e.target.files;
+      var relativePath = theFiles[0].webkitRelativePath;
+      var folder = relativePath.split("/");
+      folder = folder[0];
+      fetchData()
+      fileService.uploadFolder(folder, loc.state.id).then((res)=>{
+        console.log(res);
+        for(let i = 0; i < theFiles.length; i++){       
+          uploadFilesInFolder(res["data"]["_id"], theFiles[i]).then((docs)=>{
+            console.log(docs);  
+            if(i===(theFiles.length-1)){
+              
+              setfoldersinFolder((prevArray)=>[...prevArray, docs["data"]]);
+              toastContainerFunction(`Uploading ${folder} was successful`)
+            } 
   
+          })
+        }
+  
+      }).catch((err)=>{toastErrorContainerFunction("The folder couldn't be uploaded")}).finally(()=>{
+        setLoading(false)
+      });
+    }
+    
+    const option = [
+      'Choose File',
+      'Choose Folder'
+    ];
+    const handleClose = () => {
+      setAnchorEl(null);
+    };
     const handleRenameClose = () => {
       setopenRenameForm(false);
       setoldName("");
       setNewName("");
     };
   
+    const uploadFilesInFolder = (folderID, file)=>{
+      return FileService.uploadFilesInFolder( folderID, file, [loc.state.id]);
+    }
+
+    function toastErrorContainerFunction(message) {
+      toast.error(message, {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
+
     const handleRename =()=>{
       alert(newName);
       alert(filetobeRenamed);
@@ -195,6 +248,10 @@ export default function Folderview(){
     fileImageMap.set("wmv","https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/317b3233-97e7-4abe-b365-6d02b5862313/d277ol1-84f41fa1-3deb-4297-957d-5457456b32bb.png")
 
 
+    const handleFiles=(file)=>{
+      alert(file);
+    }
+
     useEffect(()=>{
         setUserID(loc.state.id);
         setFolderID(loc.state.folderID);
@@ -219,6 +276,10 @@ export default function Folderview(){
         })
        }
 
+       const handleClickListItem = (event) => {
+        setAnchorEl(event.currentTarget);
+      };
+
     const removeFile = (fileID)=>{
         FileService.removeFileInAFolder(fileID, userID, folderID).then(()=>{
           setFilesInFolder(filesInFolder.filter((file)=>file["_id"] !== fileID));
@@ -235,7 +296,10 @@ export default function Folderview(){
       };
 
     return(
+      
+         
         <div>
+          
           <div>
             <Dialog open={openRenameForm} onClose={handleRenameClose} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title"></DialogTitle>
@@ -299,6 +363,56 @@ export default function Folderview(){
                                   
 
       </Menu>
+      <Button
+              variant="contained"
+              className={classes.button}
+              onClick={handleClickListItem} 
+              startIcon={<CloudUploadIcon />}
+            >
+              Upload
+              <input
+                  type="file"
+                  className="file-input"
+                  hidden
+                  multiple
+                  onChange={(e) => handleFiles(e.target.files)}
+                />
+            </Button>
+
+            <Menu
+            id="lock-menu"
+            anchorEl={anchorEl}
+            keepMounted
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
+            <MenuItem key={option} selected={option === 'Choose File'} onClick={handleClose}>
+              <Button
+                variant="contained"
+                component="label"
+              >
+                Choose File
+                <input
+                  type="file"
+                  className="file-input"
+                  hidden
+                  multiple
+                  onChange={(e) => handleFiles(e.target.files)}
+                />
+              </Button>
+              <Button
+                variant="contained"
+                component="label"
+              >
+                Choose Folder
+                < input  directory="" webkitdirectory="" type="file"
+                  hidden
+                  onChange={(e) => handleFolder(e)}
+                />
+              </Button>
+            </MenuItem>        
+          </Menu>   
+            
         <div container spacing={5} alignitems="center" component="div" style={{ top:'20vh', height: '100vh' }}>   
         <Grid container spacing={5} alignitems="center">
           {
