@@ -147,6 +147,8 @@ export default function Dropzone(props){
   const [access, setAccess] = useState("View");
  const [openMenu, setOpenMenu] =  useState(null);
  const [fileDataOfMenu, setFileDataOfMenu] = useState({ });
+ const [openFolderMenu, setOpenFolderMenu] = useState(null);
+ const [folderDataOfMenu, setFolderDataOfMenu] = useState({ });
 const [openFileToView, setOpenFileToView] = useState(false);
  const [linkToView, setLinkToView] = useState("");
 
@@ -482,6 +484,11 @@ const handleMenuOpen=(event, filedata)=>
   {setOpenMenu(event.currentTarget);
     setFileDataOfMenu(filedata);
   }
+
+  const handleFolderMenuOpen=(event, folderData)=>{
+    setOpenFolderMenu(event.currentTarget);
+    setFolderDataOfMenu(folderData)
+  }
   
   const getFiles=(id)=>{
     if(id)
@@ -526,9 +533,18 @@ const handleMenuClose=(()=>{
   setOpenMenu((openMenu)=>{
     return null
   });
+ 
   console.log(openMenu);
   
 
+})
+
+const handleFolderMenuClose=(()=>{
+  setOpenFolderMenu((openFolderMenu)=>{
+    return null
+  });
+
+  
 })
   const fileSize = (size) => {
       if (size === 0) return '0 Bytes';
@@ -696,6 +712,48 @@ const handleMenuClose=(()=>{
         </DialogActions>
       </Dialog>
       <Menu
+        id="folder-menu"
+        anchorEl={openFolderMenu}
+        
+        open={Boolean(openFolderMenu)}
+       
+        onClick = {handleFolderMenuClose}
+        onClose={handleFolderMenuClose}
+      >
+        <MenuItem onClick={handleFolderMenuClose}>
+       
+                                    <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFolder( folderDataOfMenu["_id"] )}} >
+                                      { folderDataOfMenu["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+                                    </IconButton>
+                                    <label>Add to favourites</label>
+                               
+        </MenuItem>
+        
+        <MenuItem onClick={handleFolderMenuClose}>  <div onClick={()=>{handleRenameOpen('folder',folderDataOfMenu["_id"], folderDataOfMenu["Name"])}}>
+                                    <IconButton aria-label="rename" title="edit name">
+                                   <EditIcon/>
+                                    </IconButton>
+                                    Rename folder
+                                  </div></MenuItem>
+                                  <MenuItem onClick={handleFolderMenuClose}> <div onClick={()=>handleShareOpen(folderDataOfMenu["_id"])}>
+                                    <IconButton aria-label="share" title="share">
+                                      <ShareIcon/>
+                                    </IconButton> Share Folder
+                                  </div> </MenuItem>
+                                  <MenuItem onClick={handleFolderMenuClose}>
+                                    <Link to={{pathname: "/folderview",
+                          state: { folderID: folderDataOfMenu["_id"], id:userDetails}}}  >
+                              <IconButton >
+                                   <VisibilityIcon />
+                                    </IconButton>
+                                    View folder
+                            </Link>
+                            </MenuItem>
+
+                                  
+
+      </Menu>
+      <Menu
         id="file-menu"
         anchorEl={openMenu}
         
@@ -796,7 +854,9 @@ const handleMenuClose=(()=>{
               props.recentFileUpload && 
                 <div container spacing={5} alignItems="center">   
                   <Grid container spacing={5} alignItems="center">
-                    {filesinDB.filter( (filedata) => filedata.s3_key.includes(props.searchFiled)).slice(0,10).reverse().map((filedata, i) => {
+                    {filesinDB.filter( (filedata) => filedata.s3_key.includes(props.searchFiled)).sort(function(a,b){
+                     return a["updatedAt"]>b["updatedAt"]                   
+                    }).slice(0,10).reverse().map((filedata, i) => {
                       return (
                         <Grid item onClick={(event)=>handleMenuOpen(event, filedata)} key={filedata["_id"]} xs={12} md={3}>
                         <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={filedata["s3_key"]}> 
@@ -891,7 +951,7 @@ const handleMenuClose=(()=>{
                 <Grid container spacing={5} alignItems="center">
                 {foldersinDB.filter( (folderData) => folderData.Name.includes(props.searchFiled)).slice(0).reverse().map((folderData, i) => {
                   return (
-                    <Grid item key={folderData["_id"]} xs={12} md={3} style={{cursor: 'pointer'}} >
+                    <Grid onClick={(event)=>handleFolderMenuOpen(event, folderData)} item key={folderData["_id"]} xs={12} md={3} style={{cursor: 'pointer'}} >
                       <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={folderData.Name}> 
                       <CardHeader 
                           avatar={
@@ -908,8 +968,7 @@ const handleMenuClose=(()=>{
                           }
                           title={folderData["Name"].slice(0,10)}
                         />
-                        <Link to={{pathname: "/folderview",
-                          state: { folderID: folderData["_id"], id:userDetails}}}  >
+                       
                           <CardMedia
                               className={classes.cardMedia} 
                               // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
@@ -917,28 +976,12 @@ const handleMenuClose=(()=>{
                               title="Image title"
                               clickable 
                           />
-                        </Link>
+                        
                         <CardContent className={classes.cardContent}>
                             <Typography variant="subtitle1" color="textSecondary" >
                               {folderData["createdAt"].slice(0,10)}
                             </Typography>
-                          <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                            <div onClick={()=>{makefavouriteFolder( folderData["_id"] )}} >
-                              <IconButton aria-label="add to favorites" >
-                                { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                              </IconButton>
-                            </div>
-                            <div>
-                            <IconButton aria-label="share" className={classes.download}>
-                              <OpenInNewIcon/>
-                            </IconButton>
-                            </div>
-                            <div onClick={()=>{handleRenameOpen('folder',folderData["_id"], folderData["Name"])}}>
-                                    <IconButton aria-label="rename">
-                                   <EditIcon/>
-                                    </IconButton>
-                                  </div>
-                          </CardActions>
+                          
                         </CardContent>
                       </Card>
                     </Grid>
@@ -984,23 +1027,7 @@ const handleMenuClose=(()=>{
                             <Typography variant="subtitle1" color="textSecondary" >
                               {folderData["createdAt"].slice(0,10)}
                             </Typography>
-                          <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                            <div  onClick={()=>{makefavouriteFolder( folderData["_id"] )}} >
-                              <IconButton aria-label="add to favorites">
-                                { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                              </IconButton>
-                            </div>
-                            <div>
-                            <IconButton aria-label="share" className={classes.download}>
-                              <OpenInNewIcon/>
-                            </IconButton>
-                            </div>
-                            <div onClick={()=>{handleRenameOpen('folder',folderData["_id"], folderData["Name"])}}>
-                                    <IconButton aria-label="rename">
-                                   <EditIcon/>
-                                    </IconButton>
-                                  </div>
-                          </CardActions>
+                          
                         </CardContent>
                       </Card>
                     </Grid>
@@ -1046,23 +1073,7 @@ const handleMenuClose=(()=>{
                             <Typography variant="subtitle1" color="textSecondary" >
                               {folderData["createdAt"].slice(0,10)}
                             </Typography>
-                          <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                            <div onClick={()=>{makefavouriteFolder( folderData["_id"] )}}>
-                              <IconButton aria-label="add to favorites" >
-                                { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                              </IconButton>
-                            </div>
-                            <div>
-                              <IconButton aria-label="share" className={classes.download}>
-                              <OpenInNewIcon/>
-                            </IconButton>
-                            </div>
-                            <div onClick={()=>{handleRenameOpen('folder',folderData["_id"], folderData["Name"])}}>
-                                    <IconButton aria-label="rename">
-                                   <EditIcon/>
-                                    </IconButton>
-                                  </div>
-                          </CardActions>
+                        
                         </CardContent>
                       </Card>
                     </Grid>
