@@ -38,7 +38,7 @@ import EditIcon from '@material-ui/icons/Edit';
 import Header from '../Main/header'
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
-		paddingTop: '56.25%', // 16:9,
+		paddingTop: '50%', // 16:9,
 	},
 	link: {
 		margin: theme.spacing(1, 1.5),
@@ -48,10 +48,9 @@ const useStyles = makeStyles((theme) => ({
 			theme.palette.type === 'light'
 				? theme.palette.grey[200]
 				: theme.palette.grey[700],
-                fontSize: `8px`
 	},
 	formTitle: {
-		fontSize: '8px',
+		fontSize: '16px',
 		textAlign: 'left',
 	},
 	formText: {
@@ -60,12 +59,9 @@ const useStyles = makeStyles((theme) => ({
 		alignItems: 'baseline',
 		fontSize: '12px',
 		textAlign: 'left',
-		marginBottom: theme.spacing(2),
+		
 	},
-  download: {
-    display: 'flex',
-    marginLeft : "auto",
-  },
+  
   encapculate:{
     display: 'flex',
   },
@@ -81,6 +77,8 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
   },
 }));
+
+
 toast.configure();
   function toastContainerFunction(message) {
     toast.success(message, {
@@ -119,6 +117,8 @@ export default function Folderview(){
     const [oldname,setoldName] = useState("");
     const [filetobeRenamed, setFileToBeRenamed]=useState("");
     const [type, setType] = useState("")
+    const [openMenu, setOpenMenu] =  useState(null);
+    const [fileDataOfMenu, setFileDataOfMenu] = useState({ });
     const handleRenameOpen = (typeProperty, id, name) => {
       setoldName(name);
       setFileToBeRenamed(id);
@@ -157,6 +157,20 @@ export default function Folderview(){
   
     }
     
+    const handleMenuOpen=(event, filedata)=>
+  {setOpenMenu(event.currentTarget);
+    setFileDataOfMenu(filedata);
+  }
+
+  const handleMenuClose=(()=>{
+    
+    setOpenMenu((openMenu)=>{
+      return null
+    });
+   
+  
+    
+  })
       
     
       
@@ -198,7 +212,7 @@ export default function Folderview(){
             setFilesInFolder(docs.data)  
         })
     }
-    const downloadFile=(fileName, userID)=>{
+    const downloadFile=(fileName)=>{
         FileService.downloadFile(fileName, loc.state.id).then((link)=>{
           console.log(link["data"]);
            window.open(link["data"],"_blank")
@@ -250,12 +264,47 @@ export default function Folderview(){
       </Dialog>
       </div>
             <Header/>
-        <div container spacing={2} alignitems="center" component="div" style={{ top:'20vh', height: '100vh' }}>   
-        <Grid container spacing={2} alignitems="center">
+      <Menu
+        id="file-menu"
+        anchorEl={openMenu}
+        
+        open={Boolean(openMenu)}
+       
+        onClick = {handleMenuClose}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={handleMenuClose}>
+       
+                                    <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFile( fileDataOfMenu["_id"] )}} >
+                                      { fileDataOfMenu["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+                                    </IconButton>
+                                    <label>Add to favourites</label>
+                               
+        </MenuItem>
+        <MenuItem>
+      
+                                    <IconButton aria-label="open" onClick={()=>{downloadFile(fileDataOfMenu["_id"])}}>
+                                      <OpenInNewIcon/> 
+                                    </IconButton>
+                                    Open file
+                                  
+        </MenuItem>
+        <MenuItem onClick={handleMenuClose}>  <div onClick={()=>{handleRenameOpen('file',fileDataOfMenu["_id"], fileDataOfMenu["s3_key"])}}>
+                                    <IconButton aria-label="rename" title="edit name">
+                                   <EditIcon/>
+                                    </IconButton>
+                                    Rename file
+                                  </div></MenuItem>
+                                  
+                                  
+
+      </Menu>
+        <div container spacing={5} alignitems="center" component="div" style={{ top:'20vh', height: '100vh' }}>   
+        <Grid container spacing={5} alignitems="center">
           {
             filesInFolder.map( (filedata) => {
               return (
-                <Grid item key={filedata["_id"]} xs={12} md={3}>
+                <Grid item onClick={(event)=>handleMenuOpen(event, filedata)}key={filedata["_id"]} xs={12} md={2}>
                   <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={filedata["s3_key"]}> 
                   <CardHeader 
                       
