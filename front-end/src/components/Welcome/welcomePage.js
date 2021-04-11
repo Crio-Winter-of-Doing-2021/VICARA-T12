@@ -221,7 +221,7 @@ export default function MiniDrawer(props) {
       starredFiles: starredFiles,
       allFolderUpload: allFolders,
       recentFolderUpload: recentFolders,
-      starredFolder: starredFolders,
+      starredFolder: starredFolders
     })
     setSearchField("")
   };

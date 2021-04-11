@@ -23,7 +23,10 @@ let FolderSchema = new Schema(
           }
     ],
     parentFolder: {type:String, default:null},
-    isIndependant: {type:Boolean, default:true}
+    isIndependant: {type:Boolean, default:true},
+    creator: {
+      type: mongoose.Schema.Types.ObjectId
+    }
   },
   {
     timestamps: true

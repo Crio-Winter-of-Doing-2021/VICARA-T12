@@ -132,6 +132,7 @@ export default function Dropzone(props){
 
   const [foldersinDB, setfoldersinDB]=useState([]);
   const [filesinDB, setfilesinDB]=useState([]);
+  const [sharedFilesinDB, setSharedFilesinDB]=useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [userDetails, setUserDetails] = useState({});
   const [userName, setUserName] = useState({});
@@ -151,6 +152,8 @@ export default function Dropzone(props){
  const [folderDataOfMenu, setFolderDataOfMenu] = useState({ });
 const [openFileToView, setOpenFileToView] = useState(false);
  const [linkToView, setLinkToView] = useState("");
+const [typeToBeShared, setTypeToBeShared] = useState("");
+const [folderToBeShared, setFolderToBeShared] = useState("");
 
   const handleRenameOpen = (typeProperty, id, name) => {
     setoldName(name);
@@ -242,8 +245,18 @@ const [openFileToView, setOpenFileToView] = useState(false);
 
  }
 
-  const handleShareOpen = (id) => {
-    setfileToBeShared(id);
+  const handleShareOpen = (type,id) => {
+
+    if(type=="file")
+    {
+      setTypeToBeShared("file")
+      setfileToBeShared(id);
+    }
+    if(type=="folder")
+    {
+      setTypeToBeShared("folder")
+      setFolderToBeShared(id);
+    }
     setOpenShareForm(true)
   };
 
@@ -252,9 +265,9 @@ const [openFileToView, setOpenFileToView] = useState(false);
   };
 
   const handleShare=()=>{
-    alert(access);
+    
     const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    if(re.test(mailshared))
+    if(re.test(mailshared)&&typeToBeShared=="file")
     {
       FileService.shareFile(access, fileToBeShared, mailshared, props.id).then((returnObject)=>{
         console.log(returnObject);
@@ -276,6 +289,32 @@ const [openFileToView, setOpenFileToView] = useState(false);
         toastErrorContainerFunction("Couldn't add the user mentioned");
            setmailshared("");
            setfileToBeShared("");
+           setOpenShareForm(false);
+           
+         
+      })
+    }
+    else if(re.test(mailshared)&&typeToBeShared=="folder"){
+      FileService.shareFolder(access, folderToBeShared, mailshared, props.id).then((returnObject)=>{
+        console.log(returnObject);
+      
+
+        if(returnObject.status === 200)
+         {
+          toastContainerFunction("User Added Successfully")
+          setmailshared("");
+          setFolderToBeShared("");
+          setOpenShareForm(false);
+
+         }
+         
+
+      }).catch((error)=>{
+        
+           
+        toastErrorContainerFunction("Couldn't add the user mentioned");
+           setmailshared("");
+           setFolderToBeShared("");
            setOpenShareForm(false);
            
          
@@ -504,6 +543,22 @@ const handleMenuOpen=(event, filedata)=>
     }
   }
 
+  const getSharedFiles=(id)=>{
+    console.log(id);
+    if(id)
+    {
+      FileService.getSharedFiles(id).then((response)=>{
+        setSharedFilesinDB(response.data);  
+        console.log("----------incoming shared files----------------")
+        console.log(sharedFilesinDB);
+      }).catch((err)=>{
+        console.log(err);
+      }).finally(()=>{
+
+      });
+    }
+  }
+
   const fetchData = () =>{
     setLoading(true);
   }
@@ -525,10 +580,11 @@ const handleMenuOpen=(event, filedata)=>
 
   useEffect(()=>{
     getFiles(props.id);
+    getSharedFiles(props.id);
     getFolders(props.id);  
   },[props.id])
 const handleMenuClose=(()=>{
-  console.log(openMenu)
+  
   
   setOpenMenu((openMenu)=>{
     return null
@@ -571,37 +627,37 @@ const handleFolderMenuClose=(()=>{
           <div className={classes.encapculate}>
             {
               props.allFileUpload &&
-                <Typography variant="h2" component="h5" className={classes.heading}>
+                <Typography variant="h4" component="h5" className={classes.heading}>
                   All Files
                 </Typography>
             }
             {
               props.recentFileUpload &&
-                <Typography variant="h2" component="h5" className={classes.heading}>
+                <Typography variant="h4" component="h5" className={classes.heading}>
                   Recent Files
                 </Typography>
             }
             {
               props.starredFiles &&
-                <Typography variant="h2" component="h5" className={classes.heading}>
+                <Typography variant="h4" component="h5" className={classes.heading}>
                   Starred Files
                 </Typography>
             }
             {
               props.allFolderUpload &&
-                <Typography variant="h2" component="h5" className={classes.heading}>
+                <Typography variant="h4" component="h5" className={classes.heading}>
                   All Folders
                 </Typography>
             }
             {
               props.recentFolderUpload &&
-                <Typography variant="h2" component="h5" className={classes.heading}>
+                <Typography variant="h4" component="h5" className={classes.heading}>
                   Recent Folders
                 </Typography>
             }
             {
               props.starredFolder &&
-                <Typography variant="h2" component="h5" className={classes.heading}>
+                <Typography variant="h4" component="h5" className={classes.heading}>
                   Starred Folders
                 </Typography>
             }
@@ -735,7 +791,7 @@ const handleFolderMenuClose=(()=>{
                                     </IconButton>
                                     Rename folder
                                   </div></MenuItem>
-                                  <MenuItem onClick={handleFolderMenuClose}> <div onClick={()=>handleShareOpen(folderDataOfMenu["_id"])}>
+                                  <MenuItem onClick={handleFolderMenuClose}> <div onClick={()=>handleShareOpen("folder",folderDataOfMenu["_id"])}>
                                     <IconButton aria-label="share" title="share">
                                       <ShareIcon/>
                                     </IconButton> Share Folder
@@ -784,7 +840,7 @@ const handleFolderMenuClose=(()=>{
                                     </IconButton>
                                     Rename file
                                   </div></MenuItem>
-                                  <MenuItem onClick={handleMenuClose}> <div onClick={()=>handleShareOpen(fileDataOfMenu["_id"])}>
+                                  <MenuItem onClick={handleMenuClose}> <div onClick={()=>handleShareOpen("file",fileDataOfMenu["_id"])}>
                                     <IconButton aria-label="share" title="share">
                                       <ShareIcon/>
                                     </IconButton> Share File
