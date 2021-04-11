@@ -18,6 +18,7 @@ root: {
     boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
     padding: 50,
     flex: '1 1 0',
+    overflowY: 'auto', 
 },
   details: {
     display: 'flex',
@@ -46,7 +47,7 @@ export default function MediaControlCard({checked}) {
         <Card className={classes.root}>
         <div className={classes.details}>
             <CardContent className={classes.content}>
-              <Typography component="h5" variant="h5">
+              <Typography component="h4" variant="h4">
                   Video Walkthrough
               </Typography>
               <Typography variant="subtitle1" color="textSecondary">

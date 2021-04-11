@@ -17,14 +17,12 @@ let FilesSchema = new Schema(
         ref: "User"
       }
 
-    ],
-  
+    ], 
     users: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
       }
-
     ],
     parentFolder: {type:String, default:null},
     isIndependant: {type:Boolean, default:true}

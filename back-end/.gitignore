@@ -1,6 +1,3 @@
 node_modules/
 rootkey.csv
-aws.env
-mongo.env
-.env
 build

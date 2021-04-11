@@ -280,7 +280,7 @@ export default function MiniDrawer(props) {
    const handleProfileUpdate = (e) => {
     e.preventDefault();
     axiosInstance
-    .patch(`api/users/update/${id}` ,{
+    .patch(`api/user/update/${id}` ,{
       name: userSettingUpdate.name,
       password: userSettingUpdate.password,
       email: loc.state.detail.email,

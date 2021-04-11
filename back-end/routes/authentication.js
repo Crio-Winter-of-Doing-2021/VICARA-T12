@@ -6,11 +6,11 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-
-let users={};
-
-
 router.post('/', async (req,res) => {
+    
+    // #swagger.tags = ['User']
+    // #swagger.description = 'Endpoint used for user login.'
+
     const {error} = validate(req.body);
     if ( error )
         return res.status(400).send(error.details[0].message);
@@ -34,13 +34,7 @@ router.post('/', async (req,res) => {
     res.status(200).send({id:user._id,
         name: user.name,
         email: user.email,
-       })
-      
-      
-  
-  
-        
-    
+       })     
 });
 
 function validate(req){

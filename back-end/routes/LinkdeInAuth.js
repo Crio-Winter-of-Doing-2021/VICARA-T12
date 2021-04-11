@@ -3,6 +3,7 @@ const router = express.Router();
 const axios = require('axios')
 
 router.get("/", (req,res) => {
+    //#swagger.ignore = true
     AuthorizationKey = process.env.LINKEDIN_AUTH_KEY
     return axios.get('https://api.linkedin.com/v2/me?projection=(id,firstName,lastName,profilePicture(displayImage~:playableStreams))', { headers: { Authorization: `Bearer ${AuthorizationKey}` } } )
         .then(response => {

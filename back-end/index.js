@@ -15,6 +15,11 @@ const LinkedInProfileInfo = require('./routes/LinkdeInAuth')
 const loginPage = require('./routes/loginPage');
 const path = require('path');
 const app = express();
+const swaggerUi = require('swagger-ui-express')
+const swaggerFile = require('./swagger_output.json')
+
+
+app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile))
 
 const cookieParser = require('cookie-parser')
 const {login, refresh} = require('./routes/authentication');
@@ -39,12 +44,13 @@ var corsOptions = {
    }
 
 app.options('*', cors(corsOptions));
-app.use('/api/users', users);
-app.use('/api/auth',auth);
+//app.use(cors())
+app.use('/api/user', users);
+app.use('/api/user/login',auth);
 app.use('/api/upload',[authentication.auth],uploadController);
 app.use('/welcome',welcomePage);
 app.use('/api/LinkedInProfileInfo', LinkedInProfileInfo);
-app.use(cors())
+
 
 
 
