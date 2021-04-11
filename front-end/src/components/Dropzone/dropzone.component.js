@@ -37,12 +37,15 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import EditIcon from '@material-ui/icons/Edit';
 import 'react-toastify/dist/ReactToastify.css';
 import { FormLabel, RadioGroup, FormControlLabel, Radio } from '@material-ui/core';
+import VisibilityIcon from '@material-ui/icons/Visibility';
 import './dropzone.component.css'
 import { Link} from "react-router-dom"
+import CancelIcon from '@material-ui/icons/Cancel';
+
 
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
-		paddingTop: '56.25%', // 16:9,
+		paddingTop: '50%', // 16:9,
 	},
 	link: {
 		margin: theme.spacing(1, 1.5),
@@ -63,12 +66,9 @@ const useStyles = makeStyles((theme) => ({
 		alignItems: 'baseline',
 		fontSize: '12px',
 		textAlign: 'left',
-		marginBottom: theme.spacing(2),
+		
 	},
-  download: {
-    display: 'flex',
-    marginLeft : "auto",
-  },
+  
   encapculate:{
     display: 'flex',
   },
@@ -111,7 +111,7 @@ export default function Dropzone(props){
   fileImageMap.set("jpg","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
   fileImageMap.set("presso","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
   fileImageMap.set("mp4", "https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
-  
+  fileImageMap.set("jpeg","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
   const dragOver=(e)=>{
     e.preventDefault();
   }
@@ -145,6 +145,11 @@ export default function Dropzone(props){
   const [mailshared, setmailshared]= useState("");
   const [fileToBeShared, setfileToBeShared] = useState("");
   const [access, setAccess] = useState("View");
+ const [openMenu, setOpenMenu] =  useState(null);
+ const [fileDataOfMenu, setFileDataOfMenu] = useState({ });
+const [openFileToView, setOpenFileToView] = useState(false);
+ const [linkToView, setLinkToView] = useState("");
+
   const handleRenameOpen = (typeProperty, id, name) => {
     setoldName(name);
     setFileToBeRenamed(id);
@@ -312,6 +317,17 @@ export default function Dropzone(props){
         
    })
   }
+  const openFile=(fileName)=>{
+    FileService.downloadFile( fileName, userDetails).then((link)=>{
+      setOpenFileToView(true);
+      setLinkToView(link["data"])
+      
+    })
+   }
+
+   const closeFile =()=>{
+    setOpenFileToView(false);
+   }
   const makefavouriteFolder= (fileID)=>{
     FileService.updateFavouriteFolders(fileID, userDetails).then(()=>{
       let foundIndex = foldersinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
@@ -451,6 +467,10 @@ export default function Dropzone(props){
      
     })
   }
+
+  const handleViewClose=()=>{
+    
+  }
   
   useEffect(()=>{ 
       setUserDetails(props.id);
@@ -458,7 +478,10 @@ export default function Dropzone(props){
       //console.log(fileImageMap.get("pdf"));
   },[props]);
  
-
+const handleMenuOpen=(event, filedata)=>
+  {setOpenMenu(event.currentTarget);
+    setFileDataOfMenu(filedata);
+  }
   
   const getFiles=(id)=>{
     if(id)
@@ -497,7 +520,16 @@ export default function Dropzone(props){
     getFiles(props.id);
     getFolders(props.id);  
   },[props.id])
+const handleMenuClose=(()=>{
+  console.log(openMenu)
+  
+  setOpenMenu((openMenu)=>{
+    return null
+  });
+  console.log(openMenu);
+  
 
+})
   const fileSize = (size) => {
       if (size === 0) return '0 Bytes';
       const k = 1024;
@@ -567,6 +599,7 @@ export default function Dropzone(props){
               { isloading && <LoadCircularProgress /> }
             </Button>
           </div>
+  
           <Menu
             id="lock-menu"
             anchorEl={anchorEl}
@@ -627,7 +660,10 @@ export default function Dropzone(props){
           </Button>
         </DialogActions>
       </Dialog>
-
+      <Dialog style={{height:"100%", width:"100%"}} open={openFileToView} onClose={()=>{setLinkToView("");setOpenFileToView(false);}}>
+            <DialogActions><CancelIcon onClick={()=>{setLinkToView("");setOpenFileToView(false);}}/></DialogActions>
+            <DialogContent><iframe src={linkToView} allowfullscreen style={{height:"600px", width:"1000px"}}></iframe></DialogContent>
+            </Dialog>
       <Dialog open={openShareForm} onClose={handleShareClose} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title"></DialogTitle>
         <DialogContentText style={{'text-align': 'center'}}>
@@ -659,6 +695,52 @@ export default function Dropzone(props){
          </Button>
         </DialogActions>
       </Dialog>
+      <Menu
+        id="file-menu"
+        anchorEl={openMenu}
+        
+        open={Boolean(openMenu)}
+       
+        onClick = {handleMenuClose}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={handleMenuClose}>
+       
+                                    <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFile( fileDataOfMenu["_id"] )}} >
+                                      { fileDataOfMenu["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+                                    </IconButton>
+                                    <label>Add to favourites</label>
+                               
+        </MenuItem>
+        <MenuItem onClick={handleMenuClose}>
+      
+                                    <IconButton aria-label="share" onClick={()=>{downloadFile(fileDataOfMenu["_id"])}}>
+                                      <OpenInNewIcon/> 
+                                    </IconButton>
+                                    Open file
+                                  
+        </MenuItem>
+        <MenuItem onClick={handleMenuClose}>  <div onClick={()=>{handleRenameOpen('file',fileDataOfMenu["_id"], fileDataOfMenu["s3_key"])}}>
+                                    <IconButton aria-label="rename" title="edit name">
+                                   <EditIcon/>
+                                    </IconButton>
+                                    Rename file
+                                  </div></MenuItem>
+                                  <MenuItem onClick={handleMenuClose}> <div onClick={()=>handleShareOpen(fileDataOfMenu["_id"])}>
+                                    <IconButton aria-label="share" title="share">
+                                      <ShareIcon/>
+                                    </IconButton> Share File
+                                  </div> </MenuItem>
+                                  <MenuItem  onClick ={()=>{openFile(fileDataOfMenu["_id"])}}>
+                                  <div >
+                                    <IconButton >
+                                   <VisibilityIcon />
+                                    </IconButton>
+                                    View file
+                                  </div>
+                                  </MenuItem>
+
+      </Menu>
           <div className="file-display-container">
             {
               props.allFileUpload &&
@@ -667,11 +749,14 @@ export default function Dropzone(props){
                     {
                       filesinDB.filter( (filedata) => filedata.s3_key.includes(props.searchFiled)).slice(0).reverse().map((filedata, i) => {
                         return (
-                          <Grid item key={filedata["_id"]} xs={12} md={3}>
+                          <Grid onClick={(event)=>handleMenuOpen(event, filedata)} item key={filedata["_id"]} xs={12} md={3}>
+       
+                
                             <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={filedata["s3_key"]}> 
+                            
                             <CardHeader 
                                 avatar={
-                                  <Avatar aria-label="recipe" className={classes.avatar}>
+                                  <Avatar aria-label="name" className={classes.avatar}>
                                     {userName.charAt(0)}
                                   </Avatar>
                                 }
@@ -689,34 +774,15 @@ export default function Dropzone(props){
                                   // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
                                   image = {fileImageMap.get( filedata["s3_key"].split('.').pop() )?fileImageMap.get( filedata["s3_key"].split('.').pop() ) : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAb1BMVEX////0myXzlQD0miD1pT/++O/zkwD86dTzlgn0nCX72br0nij0mRP85dH2rVf1qEb97t33unj61Kz++/X1ojn+9Or85Mv4vn/60qj2sF/869j5y5v738P4xIv3tmz5z6L5yJX2r131qU762bX3t3AjskLOAAAE00lEQVR4nO2d7XaiMBRFIdGYSmpt0Wm1Sh067/+MM+UjVgG1yxMSmLN/qguzBa7k5sKNIkIIIYQQQgghhBBCCCFumLog9W31HaOECyavn1PfahWJjF0gjRbZ1rdcgSPDwlJlIRyuDg3j2Jhfvv0cG/7bjS++BR0bxrF/xcTg0Upp+8OpAA5UPOnybSFqRxHK3waaWWJKQ7PxPRRnbHR1nO58j8QZm3Ivytz3QNwxKc9FtfQ9EGdsVWGo330PxB1ZsRPlwvc43LErg430PQ53pKWhCuEK3BGjDzXRqlBUYcwUnVD+X6iZ73G4w7vhu1EQzOS5/dLMt+FGoaaB0qikbSbo1zCdGJRgISmemvMkr4ZLiZ7eS9mImT4NdwKfv5BiHY7hB+wUPFFMgjF8PRMUdwbTOi+j94EY/tb1j14JztK7WM9XVdRSp8epJ8NpPZzYTFbluO6/cFyU2zSnO9GP4dbUMUb/ri8cAZfG5Zbk6uRFL4ZzG0TVa50RRhjuRMth6sPw3cYY9RYhDau5oDjJAHswfK4FZTkUnGFUHfnz76/1bpgu6iBqkvJoAho+BGC4rvPQsc6rxMK4DGc2iKrn+rVRGX4qK3hMYI7J8GBjzPeFhBEZZqIWjL/rjMYwzesgqicnycuxGK4f7HpldvrOSAx/2UVndTh7axyGL8cY83n+3igM91bQNHPPYzC0QdSsWmoGhm94TBnq1oqBwRsubRD9mgy2MHTD3fFCraM2aeCGbzbG6K7KpGEb2pRhPRlsYdCGG3uhtuheZR6w4TFleJwMtjBgw8wKflz62IANq8JReaWqbMiGpeDDlbEP3jC5VskydEM5ufoxGt4ODdH8v4bZ6eItsPAsFMPnthITGt4EDdHQcLyGf5RuMipDd9AQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfEEY/iSLe5n0/LImVAMMyURiKdQDXeoO5xFo9QqEMODvjDqnyCz800HYviBMjSNesBADNe2avhO1GOghtFOQJ46W9xiG6ZhlD4iaLmxIRhDZ9AQDQ3x0BANDfHQEA0N8dAQDQ3xhGOYOupCEorhOr/z0Wwlk+ZNqYEYpgYzx5fNottADF9geZr9+aYDMTygnugZbK5tjsqX6kOghlGuISeikY1wGophtJctxfo/xfxppqKCMXQGDdHQEA8N0dAQDw3R0BAPDdHQEE+bYVLmPEZsuC2YOemG1Gn4sXi6n/zQHHSboUu6DBeYqi993uchGENY1VezXVwghj1Xfbmkw/ANlk1sPGkyEMMpqL2MbHYaC8Qw2iaIqi9lmo+BC8Uwipaz+2lrFReOoStoiIaGeGiIhoZ4aIiGhnhoiIaGeGiIhoZ4aIiGhnh6N/zKqZ31PXWL9GEYy76+LoqmVR/Sy70YgOSFoejqL4OnqlztryNn+bzg/k7EtCpcFU5W0tqYl626zKafb1yvqo4heS9f90VaNSMz8v0RkAK+zG5vW49f7PmCZW9bBQGy+FfQtrZa9ycYpRJ05/1P6GoN5oYZajH0dvSlxksOmKOen3Cz4KJfwSjaatR66C3IjvZ8Tkn3AlOaf13PqLzXHvGW6edG9BBMxerQtqTYF4ib1X5+KxshhBBCCCGEEEIIIYSQe/gLEeV5y4CZvuUAAAAASUVORK5CYII="}
                                   title="Image title"
-                              />
+                              >
+                                
+                                </CardMedia>
                               
                               <CardContent className={classes.cardContent}>
                                 <Typography variant="subtitle1" color="textSecondary" >
                                   {filedata["createdAt"].slice(0,10)}
                                 </Typography>
-                                <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                                  <div onClick={()=>{makefavouriteFile( filedata["_id"] )}}>
-                                    <IconButton aria-label="add to favorites" >
-                                      { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                                    </IconButton>
-                                  </div>
-                                  <div onClick={()=>{downloadFile(filedata["_id"])}}> 
-                                    <IconButton aria-label="share" className={classes.download}>
-                                      <OpenInNewIcon/>
-                                    </IconButton>
-                                  </div>
-                                  <div onClick={()=>{handleRenameOpen('file',filedata["_id"], filedata["s3_key"])}}>
-                                    <IconButton aria-label="rename" title="edit name">
-                                   <EditIcon/>
-                                    </IconButton>
-                                  </div>
-                                  <div onClick={()=>handleShareOpen(filedata["_id"])}>
-                                    <IconButton aria-label="share" title="share">
-                                      <ShareIcon/>
-                                    </IconButton>
-                                  </div>
-                                </CardActions>
+                               
                               </CardContent>
                             </Card>
                           </Grid>
@@ -732,7 +798,7 @@ export default function Dropzone(props){
                   <Grid container spacing={5} alignItems="center">
                     {filesinDB.filter( (filedata) => filedata.s3_key.includes(props.searchFiled)).slice(0,10).reverse().map((filedata, i) => {
                       return (
-                        <Grid item key={filedata["_id"]} xs={12} md={3}>
+                        <Grid item onClick={(event)=>handleMenuOpen(event, filedata)} key={filedata["_id"]} xs={12} md={3}>
                         <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={filedata["s3_key"]}> 
                         <CardHeader 
                             avatar={
@@ -758,33 +824,12 @@ export default function Dropzone(props){
                           
                           <CardContent className={classes.cardContent}>
                             <div className={classes.formText}></div>
-                              <Typography variant="h6" color="textSecondary" >
+                              <Typography variant="subtitle1" color="textSecondary">
                               {filedata["createdAt"].slice(0,10)}
                               </Typography>
                             
                           
-                          <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                            <div onClick={()=>{makefavouriteFile( filedata["_id"] )}}>
-                              <IconButton aria-label="add to favorites" >
-                                { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                              </IconButton>
-                            </div>
-                            <div onClick={()=>{downloadFile(filedata["_id"])}}> 
-                              <IconButton aria-label="share" className={classes.download}>
-                                <OpenInNewIcon />
-                              </IconButton>
-                            </div>
-                            <div onClick={()=>{handleRenameOpen("file",filedata["_id"], filedata["s3_key"])}}>
-                                    <IconButton aria-label="rename">
-                                   <EditIcon />
-                                    </IconButton>
-                             </div>
-                             <div onClick={()=>handleShareOpen(filedata["_id"])}>
-                                    <IconButton aria-label="share" title="share">
-                                      <ShareIcon/>
-                                    </IconButton>
-                                  </div>
-                          </CardActions>
+                         
                           </CardContent>
                         </Card>
                       </Grid>
@@ -799,7 +844,7 @@ export default function Dropzone(props){
               <Grid container spacing={5} alignItems="center">
                 {filesinDB.filter( (filedata) =>  filedata["favourite"] && filedata.s3_key.includes(props.searchFiled)).map((filedata, i) => {
                   return (
-                    <Grid item key={filedata["_id"]} xs={12} md={3}>
+                    <Grid item onClick={(event)=>handleMenuOpen(event, filedata)} key={filedata["_id"]} xs={12} md={3}>
                     <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={filedata["s3_key"]}> 
                     <CardHeader 
                         avatar={
@@ -825,33 +870,12 @@ export default function Dropzone(props){
                       
                       <CardContent className={classes.cardContent}>
                         <div className={classes.formText}></div>
-                          <Typography variant="h6" color="textSecondary" >
+                          <Typography variant="subtitle1" color="textSecondary" >
                           {filedata["createdAt"].slice(0,10)}
                           </Typography>
                         
                       
-                      <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                      <div onClick={()=>{makefavouriteFile( filedata["_id"] )}}>
-                        <IconButton aria-label="add to favorites">
-                          { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                        </IconButton>
-                      </div>
-                      <div onClick={()=>{downloadFile(filedata["_id"])}} >
-                        <IconButton aria-label="share" className={classes.download}>
-                          <OpenInNewIcon />
-                        </IconButton>
-                      </div>
-                      <div onClick={()=>{handleRenameOpen("file",filedata["_id"], filedata["s3_key"])}}>
-                                    <IconButton aria-label="rename">
-                                   <EditIcon/>
-                                    </IconButton>
-                       </div>
-                       <div onClick={()=>handleShareOpen(filedata["_id"])}>
-                                    <IconButton aria-label="share" title="share">
-                                      <ShareIcon/>
-                                    </IconButton>
-                      </div>
-                      </CardActions>
+                      
                       </CardContent>
                     </Card>
                   </Grid>

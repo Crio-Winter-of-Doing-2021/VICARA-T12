@@ -19,6 +19,10 @@ const userSchema = new mongoose.Schema({
         minlength: 5,
         maxlength: 1024,
     },
+    storage:{
+        type: String,
+        default: "2GB"
+    }
 });
 
 //class

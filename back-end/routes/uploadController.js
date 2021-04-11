@@ -107,7 +107,9 @@ router.get('/url/:fileNameUserID', async(req,res, next)=>{
   userID = req.params.fileNameUserID.split(',')[1].toString();
   console.log(fileName);
   console.log(userID);
-   FILE.findOne({"_id":ObjectId(fileName),
+  if(fileName)
+   {
+     FILE.findOne({"_id":ObjectId(fileName),
     $or:[ 
     {'users':ObjectId(userID)},
      {'viewers':ObjectId(userID)} 
@@ -147,7 +149,11 @@ router.get('/url/:fileNameUserID', async(req,res, next)=>{
       }
    })
 
-
+  }
+  else
+  {
+    res.status(500).send("no file");
+  }
  
 });
 
