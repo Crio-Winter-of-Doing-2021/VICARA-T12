@@ -60,6 +60,23 @@ shareFile(access, fileToBeShared, mailshared, id){
     }
   })
 }
+
+shareFolder(access, folderToBeShared, mailshared, id){
+  let accessFolderIDmailAddedUserID = [access,folderToBeShared, mailshared, id];
+  return axiosInstance.patch(`api/upload/addUserToFolder/${accessFolderIDmailAddedUserID}`,{ },{
+    headers:{
+      "Content-Type": "multipart/form-data; charset=utf-8;",
+    }
+  })
+}
+
+getSharedFiles(userID){
+  return axiosInstance.get(`api/upload/sharedFiles/${userID}`,{
+    headers:{
+      "Content-Type": "multipart/form-data; charset=utf-8;",
+    }
+  })
+}
   uploadFolder(folderName, users){
     console.log(users);
     let formData = new FormData();

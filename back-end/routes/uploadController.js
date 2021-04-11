@@ -85,7 +85,7 @@ let userId = req.params.dets.split(',')[1];
 
 FILE.find(       
   {
-    'users':ObjectId(userId),
+    'creator':ObjectId(userId),
     'parentFolder': folderId
   },
   null,
@@ -107,7 +107,9 @@ router.get('/url/:fileNameUserID', async(req,res, next)=>{
   userID = req.params.fileNameUserID.split(',')[1].toString();
   console.log(fileName);
   console.log(userID);
-   FILE.findOne({"_id":ObjectId(fileName),
+  if(fileName)
+   {
+     FILE.findOne({"_id":ObjectId(fileName),
     $or:[ 
     {'users':ObjectId(userID)},
      {'viewers':ObjectId(userID)} 
@@ -147,7 +149,11 @@ router.get('/url/:fileNameUserID', async(req,res, next)=>{
       }
    })
 
-
+  }
+  else
+  {
+    res.status(500).send("no file");
+  }
  
 });
 
@@ -155,7 +161,7 @@ router.get('/folder/:id', async(req,res,next)=>{
   console.log(req.params.id);
     FOLDER.find(
       {
-        'users':ObjectId(req.params.id),
+        'creator':ObjectId(req.params.id),
         'isIndependant':true 
       },
       null,
@@ -212,7 +218,81 @@ router.patch('/renameFile/:fileIDnewNameUserID', async(req,res, next)=>{
   })
 })
 
+router.patch('/addUserToFolder/:accessFolderIDmailAddedUserID',async(req,res,next)=>{
+  access = req.params.accessFolderIDmailAddedUserID.split(',')[0]
+  folderID = req.params.accessFolderIDmailAddedUserID.split(',')[1];
+  mailAdded = req.params.accessFolderIDmailAddedUserID.split(',')[2];
+  userID = req.params.accessFolderIDmailAddedUserID.split(',')[3];
 
+  await User.findOne({'email':mailAdded}, async(errorInUser, foundDoc)=>{
+    if(errorInUser)
+    next(res.status(400).send(errorInUser));
+    else if(!foundDoc)
+    next(res.status(400).send("can't find user"))
+    
+    else
+    {
+      if(access=="All")
+      {  
+        
+          await FOLDER.findOneAndUpdate({'_id':ObjectId(folderID),'users':userID,'users': { $ne: ObjectId(foundDoc["_id"]) }}, {$push: {viewers: foundDoc["_id"] }}, async(errorInUpdatingUser, userDocs)=>{
+          if(userDocs==null)
+          next(res.status(500)).send("The user can't be added by you");
+          else if(!errorInUpdatingUser)
+          {
+           await FILE.find({'parentFolder': userDocs["_id"], 'users':userID, 'users': { $ne: ObjectId(foundDoc["_id"]) }},(errorInUpdatingFilesWithinFolder, filesWithinFolder)=>{
+             if(errorInUpdatingFilesWithinFolder)
+                 next(res.status(500).send("Couldn't update files within folder"))
+              else if(filesWithinFolder.length)
+              {
+                  filesWithinFolder.forEach((fileWithinFolder)=>{
+                    fileWithinFolder["users"].push(foundDoc["_id"]);
+                    fileWithinFolder.save();
+                   
+                  })
+                  next(res.status(200).send(filesWithinFolder));
+              }
+              else{
+                next(res.status(400).send("No files within folder"))
+              }
+           });
+          }
+          else
+          next(res.status(500).send(errorInUpdatingUser))
+          });
+      }
+        
+
+  if(access=="View"){
+    await FOLDER.findOneAndUpdate({'_id':ObjectId(folderID),'users':userID,'viewers': { $ne: ObjectId(foundDoc["_id"]) }}, {$push: {viewers: foundDoc["_id"] }}, async(errorInUpdatingViewer, viewerDocs)=>{
+      if(viewerDocs==null)
+      next(res.status(400).send("The user can't be added by you"))
+      else if(!errorInUpdatingViewer)
+      {
+        await FILE.find({'parentFolder': viewerDocs["_id"], 'users':userID, 'viewers': { $ne: ObjectId(foundDoc["_id"]) }},async(errorInUpdatingFilesWithinFolder, filesWithinFolder)=>{
+          if(errorInUpdatingFilesWithinFolder)
+              next(res.status(500).send("Couldn't update files within folder"))
+           else if(filesWithinFolder.length)
+           {
+               filesWithinFolder.forEach((fileWithinFolder)=>{
+                 fileWithinFolder["viewers"].push(foundDoc["_id"]);
+                 fileWithinFolder.save();
+                
+               })
+               next(res.status(200).send(filesWithinFolder));
+           }
+           else{
+             next(res.status(400).send("No files within folder"))
+           }
+        });
+      }
+      else
+      next(res.status(500).send(errorInUpdatingViewer))
+    } )
+  }
+  }
+  })
+});
 router.patch('/addUserToFile/:accessFileIDmailAddedUserID', async(req,res,next)=>{
   access = req.params.accessFileIDmailAddedUserID.split(',')[0]
   fileID = req.params.accessFileIDmailAddedUserID.split(',')[1];
@@ -257,9 +337,9 @@ router.get('/:id', async(req,res,next)=>{
   console.log(req.params.id);
     FILE.find(       
       {
-        $or:[ 
-         {'users':ObjectId(req.params.id)}, {'viewers':ObjectId(req.params.id)} 
-        ]
+       
+         'creator':ObjectId(req.params.id)
+        
         ,
         'isIndependant':true
       },
@@ -387,7 +467,8 @@ router.post('/folder', upload.single('folder'),async(req, res, next)=>{
   var newFolderUploaded = {
     Name: req.body.folderName,
     users: [req.body.users], 
-    viewers:[req.body.users]
+    viewers:[req.body.users],
+    creator: req.body.users
     }
 
   var document = new FOLDER(newFolderUploaded);
@@ -402,6 +483,22 @@ router.post('/folder', upload.single('folder'),async(req, res, next)=>{
     res.status(200).send(docs);
   });
 });
+router.get('/sharedFiles/:id', async(req,res,next)=>{
+  const userID = req.params.id.toString();
+  console.log(userID);
+  FILE.find({'users':ObjectId(userID)},(errorInFindingFiles, files)=>{
+       if(!errorInFindingFiles){
+         console.log("Incoming shared files");
+         console.log(files);
+         next(res.status(200).send(files));
+       }
+       else
+       {
+         next(res.status(500).send("Couldn't retrieve shared files"))
+       }
+     }
+)})
+
 
 router.post('/fileinfolder', upload.single('file'), async(req,res,next)=>{
 
@@ -414,6 +511,7 @@ var newFileUploaded = {
   s3_key: file.originalname,
   users: [req.body.users],
   viewers: [req.body.users],
+  creator: req.body.users,
   parentFolder: folderID,
   isIndependant: false
 }
@@ -487,7 +585,8 @@ router.post('/', upload.single("file"), async(req,res,next)=>{
       description: req.body.description,
       s3_key: file.originalname,
       users: [req.body.users],
-      viewers: [req.body.users]
+      viewers: [req.body.users],
+      creator: req.body.users
     }
 
    await fs.readFile(file.path, async(error, fileContent)=>{

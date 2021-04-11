@@ -38,7 +38,7 @@ import EditIcon from '@material-ui/icons/Edit';
 import Header from '../Main/header'
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
-		paddingTop: '56.25%', // 16:9,
+		paddingTop: '50%', // 16:9,
 	},
 	link: {
 		margin: theme.spacing(1, 1.5),
@@ -48,10 +48,9 @@ const useStyles = makeStyles((theme) => ({
 			theme.palette.type === 'light'
 				? theme.palette.grey[200]
 				: theme.palette.grey[700],
-                fontSize: `8px`
 	},
 	formTitle: {
-		fontSize: '8px',
+		fontSize: '16px',
 		textAlign: 'left',
 	},
 	formText: {
@@ -60,12 +59,9 @@ const useStyles = makeStyles((theme) => ({
 		alignItems: 'baseline',
 		fontSize: '12px',
 		textAlign: 'left',
-		marginBottom: theme.spacing(2),
+		
 	},
-  download: {
-    display: 'flex',
-    marginLeft : "auto",
-  },
+  
   encapculate:{
     display: 'flex',
   },
@@ -81,6 +77,8 @@ const useStyles = makeStyles((theme) => ({
     justifyContent: 'center',
   },
 }));
+
+
 toast.configure();
   function toastContainerFunction(message) {
     toast.success(message, {
@@ -119,19 +117,74 @@ export default function Folderview(){
     const [oldname,setoldName] = useState("");
     const [filetobeRenamed, setFileToBeRenamed]=useState("");
     const [type, setType] = useState("")
+    const [openMenu, setOpenMenu] =  useState(null);
+    const [fileDataOfMenu, setFileDataOfMenu] = useState({ });
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [isloading, setLoading] = useState(false);
+    const [foldersinFolder, setfoldersinFolder] = useState([])
     const handleRenameOpen = (typeProperty, id, name) => {
       setoldName(name);
       setFileToBeRenamed(id);
       setopenRenameForm(true);
      setType(typeProperty)
     };
+    const fetchData = () =>{
+      setLoading(true);
+    }
+    const handleFolder=(e)=>{
+      var theFiles = e.target.files;
+      var relativePath = theFiles[0].webkitRelativePath;
+      var folder = relativePath.split("/");
+      folder = folder[0];
+      fetchData()
+      fileService.uploadFolder(folder, loc.state.id).then((res)=>{
+        console.log(res);
+        for(let i = 0; i < theFiles.length; i++){       
+          uploadFilesInFolder(res["data"]["_id"], theFiles[i]).then((docs)=>{
+            console.log(docs);  
+            if(i===(theFiles.length-1)){
+              
+              setfoldersinFolder((prevArray)=>[...prevArray, docs["data"]]);
+              toastContainerFunction(`Uploading ${folder} was successful`)
+            } 
   
+          })
+        }
+  
+      }).catch((err)=>{toastErrorContainerFunction("The folder couldn't be uploaded")}).finally(()=>{
+        setLoading(false)
+      });
+    }
+    
+    const option = [
+      'Choose File',
+      'Choose Folder'
+    ];
+    const handleClose = () => {
+      setAnchorEl(null);
+    };
     const handleRenameClose = () => {
       setopenRenameForm(false);
       setoldName("");
       setNewName("");
     };
   
+    const uploadFilesInFolder = (folderID, file)=>{
+      return FileService.uploadFilesInFolder( folderID, file, [loc.state.id]);
+    }
+
+    function toastErrorContainerFunction(message) {
+      toast.error(message, {
+        position: "bottom-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+      });
+    }
+
     const handleRename =()=>{
       alert(newName);
       alert(filetobeRenamed);
@@ -157,6 +210,20 @@ export default function Folderview(){
   
     }
     
+    const handleMenuOpen=(event, filedata)=>
+  {setOpenMenu(event.currentTarget);
+    setFileDataOfMenu(filedata);
+  }
+
+  const handleMenuClose=(()=>{
+    
+    setOpenMenu((openMenu)=>{
+      return null
+    });
+   
+  
+    
+  })
       
     
       
@@ -181,6 +248,10 @@ export default function Folderview(){
     fileImageMap.set("wmv","https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/317b3233-97e7-4abe-b365-6d02b5862313/d277ol1-84f41fa1-3deb-4297-957d-5457456b32bb.png")
 
 
+    const handleFiles=(file)=>{
+      alert(file);
+    }
+
     useEffect(()=>{
         setUserID(loc.state.id);
         setFolderID(loc.state.folderID);
@@ -198,12 +269,16 @@ export default function Folderview(){
             setFilesInFolder(docs.data)  
         })
     }
-    const downloadFile=(fileName, userID)=>{
+    const downloadFile=(fileName)=>{
         FileService.downloadFile(fileName, loc.state.id).then((link)=>{
           console.log(link["data"]);
            window.open(link["data"],"_blank")
         })
        }
+
+       const handleClickListItem = (event) => {
+        setAnchorEl(event.currentTarget);
+      };
 
     const removeFile = (fileID)=>{
         FileService.removeFileInAFolder(fileID, userID, folderID).then(()=>{
@@ -221,7 +296,10 @@ export default function Folderview(){
       };
 
     return(
+      
+         
         <div>
+          
           <div>
             <Dialog open={openRenameForm} onClose={handleRenameClose} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title"></DialogTitle>
@@ -250,12 +328,97 @@ export default function Folderview(){
       </Dialog>
       </div>
             <Header/>
-        <div container spacing={2} alignitems="center" component="div" style={{ top:'20vh', height: '100vh' }}>   
-        <Grid container spacing={2} alignitems="center">
+      <Menu
+        id="file-menu"
+        anchorEl={openMenu}
+        
+        open={Boolean(openMenu)}
+       
+        onClick = {handleMenuClose}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={handleMenuClose}>
+       
+                                    <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFile( fileDataOfMenu["_id"] )}} >
+                                      { fileDataOfMenu["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+                                    </IconButton>
+                                    <label>Add to favourites</label>
+                               
+        </MenuItem>
+        <MenuItem>
+      
+                                    <IconButton aria-label="open" onClick={()=>{downloadFile(fileDataOfMenu["_id"])}}>
+                                      <OpenInNewIcon/> 
+                                    </IconButton>
+                                    Open file
+                                  
+        </MenuItem>
+        <MenuItem onClick={handleMenuClose}>  <div onClick={()=>{handleRenameOpen('file',fileDataOfMenu["_id"], fileDataOfMenu["s3_key"])}}>
+                                    <IconButton aria-label="rename" title="edit name">
+                                   <EditIcon/>
+                                    </IconButton>
+                                    Rename file
+                                  </div></MenuItem>
+                                  
+                                  
+
+      </Menu>
+      <Button
+              variant="contained"
+              className={classes.button}
+              onClick={handleClickListItem} 
+              startIcon={<CloudUploadIcon />}
+            >
+              Upload
+              <input
+                  type="file"
+                  className="file-input"
+                  hidden
+                  multiple
+                  onChange={(e) => handleFiles(e.target.files)}
+                />
+            </Button>
+
+            <Menu
+            id="lock-menu"
+            anchorEl={anchorEl}
+            keepMounted
+            open={Boolean(anchorEl)}
+            onClose={handleClose}
+          >
+            <MenuItem key={option} selected={option === 'Choose File'} onClick={handleClose}>
+              <Button
+                variant="contained"
+                component="label"
+              >
+                Choose File
+                <input
+                  type="file"
+                  className="file-input"
+                  hidden
+                  multiple
+                  onChange={(e) => handleFiles(e.target.files)}
+                />
+              </Button>
+              <Button
+                variant="contained"
+                component="label"
+              >
+                Choose Folder
+                < input  directory="" webkitdirectory="" type="file"
+                  hidden
+                  onChange={(e) => handleFolder(e)}
+                />
+              </Button>
+            </MenuItem>        
+          </Menu>   
+            
+        <div container spacing={5} alignitems="center" component="div" style={{ top:'20vh', height: '100vh' }}>   
+        <Grid container spacing={5} alignitems="center">
           {
             filesInFolder.map( (filedata) => {
               return (
-                <Grid item key={filedata["_id"]} xs={12} md={3}>
+                <Grid item onClick={(event)=>handleMenuOpen(event, filedata)}key={filedata["_id"]} xs={12} md={2}>
                   <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={filedata["s3_key"]}> 
                   <CardHeader 
                       

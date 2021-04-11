@@ -37,12 +37,15 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import EditIcon from '@material-ui/icons/Edit';
 import 'react-toastify/dist/ReactToastify.css';
 import { FormLabel, RadioGroup, FormControlLabel, Radio } from '@material-ui/core';
+import VisibilityIcon from '@material-ui/icons/Visibility';
 import './dropzone.component.css'
 import { Link} from "react-router-dom"
+import CancelIcon from '@material-ui/icons/Cancel';
+
 
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
-		paddingTop: '56.25%', // 16:9,
+		paddingTop: '50%', // 16:9,
 	},
 	link: {
 		margin: theme.spacing(1, 1.5),
@@ -63,12 +66,9 @@ const useStyles = makeStyles((theme) => ({
 		alignItems: 'baseline',
 		fontSize: '12px',
 		textAlign: 'left',
-		marginBottom: theme.spacing(2),
+		
 	},
-  download: {
-    display: 'flex',
-    marginLeft : "auto",
-  },
+  
   encapculate:{
     display: 'flex',
   },
@@ -111,7 +111,7 @@ export default function Dropzone(props){
   fileImageMap.set("jpg","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
   fileImageMap.set("presso","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
   fileImageMap.set("mp4", "https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
-  
+  fileImageMap.set("jpeg","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
   const dragOver=(e)=>{
     e.preventDefault();
   }
@@ -132,6 +132,7 @@ export default function Dropzone(props){
 
   const [foldersinDB, setfoldersinDB]=useState([]);
   const [filesinDB, setfilesinDB]=useState([]);
+  const [sharedFilesinDB, setSharedFilesinDB]=useState([]);
   const [anchorEl, setAnchorEl] = useState(null);
   const [userDetails, setUserDetails] = useState({});
   const [userName, setUserName] = useState({});
@@ -145,6 +146,15 @@ export default function Dropzone(props){
   const [mailshared, setmailshared]= useState("");
   const [fileToBeShared, setfileToBeShared] = useState("");
   const [access, setAccess] = useState("View");
+ const [openMenu, setOpenMenu] =  useState(null);
+ const [fileDataOfMenu, setFileDataOfMenu] = useState({ });
+ const [openFolderMenu, setOpenFolderMenu] = useState(null);
+ const [folderDataOfMenu, setFolderDataOfMenu] = useState({ });
+const [openFileToView, setOpenFileToView] = useState(false);
+ const [linkToView, setLinkToView] = useState("");
+const [typeToBeShared, setTypeToBeShared] = useState("");
+const [folderToBeShared, setFolderToBeShared] = useState("");
+
   const handleRenameOpen = (typeProperty, id, name) => {
     setoldName(name);
     setFileToBeRenamed(id);
@@ -235,8 +245,18 @@ export default function Dropzone(props){
 
  }
 
-  const handleShareOpen = (id) => {
-    setfileToBeShared(id);
+  const handleShareOpen = (type,id) => {
+
+    if(type=="file")
+    {
+      setTypeToBeShared("file")
+      setfileToBeShared(id);
+    }
+    if(type=="folder")
+    {
+      setTypeToBeShared("folder")
+      setFolderToBeShared(id);
+    }
     setOpenShareForm(true)
   };
 
@@ -245,9 +265,9 @@ export default function Dropzone(props){
   };
 
   const handleShare=()=>{
-    alert(access);
+    
     const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    if(re.test(mailshared))
+    if(re.test(mailshared)&&typeToBeShared=="file")
     {
       FileService.shareFile(access, fileToBeShared, mailshared, props.id).then((returnObject)=>{
         console.log(returnObject);
@@ -269,6 +289,32 @@ export default function Dropzone(props){
         toastErrorContainerFunction("Couldn't add the user mentioned");
            setmailshared("");
            setfileToBeShared("");
+           setOpenShareForm(false);
+           
+         
+      })
+    }
+    else if(re.test(mailshared)&&typeToBeShared=="folder"){
+      FileService.shareFolder(access, folderToBeShared, mailshared, props.id).then((returnObject)=>{
+        console.log(returnObject);
+      
+
+        if(returnObject.status === 200)
+         {
+          toastContainerFunction("User Added Successfully")
+          setmailshared("");
+          setFolderToBeShared("");
+          setOpenShareForm(false);
+
+         }
+         
+
+      }).catch((error)=>{
+        
+           
+        toastErrorContainerFunction("Couldn't add the user mentioned");
+           setmailshared("");
+           setFolderToBeShared("");
            setOpenShareForm(false);
            
          
@@ -312,6 +358,17 @@ export default function Dropzone(props){
         
    })
   }
+  const openFile=(fileName)=>{
+    FileService.downloadFile( fileName, userDetails).then((link)=>{
+      setOpenFileToView(true);
+      setLinkToView(link["data"])
+      
+    })
+   }
+
+   const closeFile =()=>{
+    setOpenFileToView(false);
+   }
   const makefavouriteFolder= (fileID)=>{
     FileService.updateFavouriteFolders(fileID, userDetails).then(()=>{
       let foundIndex = foldersinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
@@ -451,6 +508,10 @@ export default function Dropzone(props){
      
     })
   }
+
+  const handleViewClose=()=>{
+    
+  }
   
   useEffect(()=>{ 
       setUserDetails(props.id);
@@ -458,7 +519,15 @@ export default function Dropzone(props){
       //console.log(fileImageMap.get("pdf"));
   },[props]);
  
+const handleMenuOpen=(event, filedata)=>
+  {setOpenMenu(event.currentTarget);
+    setFileDataOfMenu(filedata);
+  }
 
+  const handleFolderMenuOpen=(event, folderData)=>{
+    setOpenFolderMenu(event.currentTarget);
+    setFolderDataOfMenu(folderData)
+  }
   
   const getFiles=(id)=>{
     if(id)
@@ -466,6 +535,22 @@ export default function Dropzone(props){
       FileService.getFiles({id}).then((response)=>{
         setfilesinDB(response.data);  
         console.log(filesinDB);
+      }).catch((err)=>{
+        console.log(err);
+      }).finally(()=>{
+
+      });
+    }
+  }
+
+  const getSharedFiles=(id)=>{
+    console.log(id);
+    if(id)
+    {
+      FileService.getSharedFiles(id).then((response)=>{
+        setSharedFilesinDB(response.data);  
+        console.log("----------incoming shared files----------------")
+        console.log(sharedFilesinDB);
       }).catch((err)=>{
         console.log(err);
       }).finally(()=>{
@@ -495,9 +580,26 @@ export default function Dropzone(props){
 
   useEffect(()=>{
     getFiles(props.id);
+    getSharedFiles(props.id);
     getFolders(props.id);  
   },[props.id])
+const handleMenuClose=(()=>{
+    
+  setOpenMenu((openMenu)=>{
+    return null
+  });
+ 
 
+  
+})
+
+const handleFolderMenuClose=(()=>{
+  setOpenFolderMenu((openFolderMenu)=>{
+    return null
+  });
+
+  
+})
   const fileSize = (size) => {
       if (size === 0) return '0 Bytes';
       const k = 1024;
@@ -523,37 +625,37 @@ export default function Dropzone(props){
           <div className={classes.encapculate}>
             {
               props.allFileUpload &&
-                <Typography variant="h2" component="h5" className={classes.heading}>
+                <Typography variant="h4" component="h5" className={classes.heading}>
                   All Files
                 </Typography>
             }
             {
               props.recentFileUpload &&
-                <Typography variant="h2" component="h5" className={classes.heading}>
+                <Typography variant="h4" component="h5" className={classes.heading}>
                   Recent Files
                 </Typography>
             }
             {
               props.starredFiles &&
-                <Typography variant="h2" component="h5" className={classes.heading}>
+                <Typography variant="h4" component="h5" className={classes.heading}>
                   Starred Files
                 </Typography>
             }
             {
               props.allFolderUpload &&
-                <Typography variant="h2" component="h5" className={classes.heading}>
+                <Typography variant="h4" component="h5" className={classes.heading}>
                   All Folders
                 </Typography>
             }
             {
               props.recentFolderUpload &&
-                <Typography variant="h2" component="h5" className={classes.heading}>
+                <Typography variant="h4" component="h5" className={classes.heading}>
                   Recent Folders
                 </Typography>
             }
             {
               props.starredFolder &&
-                <Typography variant="h2" component="h5" className={classes.heading}>
+                <Typography variant="h4" component="h5" className={classes.heading}>
                   Starred Folders
                 </Typography>
             }
@@ -567,6 +669,7 @@ export default function Dropzone(props){
               { isloading && <LoadCircularProgress /> }
             </Button>
           </div>
+  
           <Menu
             id="lock-menu"
             anchorEl={anchorEl}
@@ -627,7 +730,10 @@ export default function Dropzone(props){
           </Button>
         </DialogActions>
       </Dialog>
-
+      <Dialog style={{height:"100%", width:"100%"}} open={openFileToView} onClose={()=>{setLinkToView("");setOpenFileToView(false);}}>
+            <DialogActions><CancelIcon onClick={()=>{setLinkToView("");setOpenFileToView(false);}}/></DialogActions>
+            <DialogContent><iframe src={linkToView} allowfullscreen style={{height:"600px", width:"1000px"}}></iframe></DialogContent>
+            </Dialog>
       <Dialog open={openShareForm} onClose={handleShareClose} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title"></DialogTitle>
         <DialogContentText style={{'text-align': 'center'}}>
@@ -659,6 +765,89 @@ export default function Dropzone(props){
          </Button>
         </DialogActions>
       </Dialog>
+      <Menu
+        id="folder-menu"
+        anchorEl={openFolderMenu}
+        
+        open={Boolean(openFolderMenu)}
+       
+        onClick = {handleFolderMenuClose}
+        onClose={handleFolderMenuClose}
+      >
+       
+       
+                                    <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFolder( folderDataOfMenu["_id"] )}} >
+                                      { folderDataOfMenu["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+                                    </IconButton>
+                                  
+                               
+    
+        
+        
+                                    <IconButton  onClick={()=>{handleRenameOpen('folder',folderDataOfMenu["_id"], folderDataOfMenu["Name"])}}aria-label="rename" title="edit name">
+                                   <EditIcon/>
+                                    </IconButton>
+                                 
+                                  
+                                  
+                                    <IconButton onClick={()=>handleShareOpen("folder",folderDataOfMenu["_id"])}aria-label="share" title="share">
+                                      <ShareIcon/>
+                                    </IconButton>
+                                 
+                                  
+                                    <Link to={{pathname: "/folderview",
+                          state: { folderID: folderDataOfMenu["_id"], id:userDetails}}}  >
+                              <IconButton >
+                                   <VisibilityIcon />
+                                    </IconButton>
+                                   
+                            </Link>
+                          
+
+                                  
+
+      </Menu>
+      <Menu
+        id="file-menu"
+        anchorEl={openMenu}
+        
+        open={Boolean(openMenu)}
+       
+        onClick = {handleMenuClose}
+        onClose={handleMenuClose}
+      >
+       
+       
+                                    <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFile( fileDataOfMenu["_id"] )}} >
+                                      { fileDataOfMenu["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+                                    </IconButton>
+                                 
+                               
+      
+        
+        
+                                    <IconButton onClick={()=>{handleRenameOpen('file',fileDataOfMenu["_id"], fileDataOfMenu["s3_key"])}}aria-label="rename" title="edit name">
+                                   <EditIcon/>
+                                    </IconButton>
+                                  
+                                  
+                                    <IconButton  onClick={()=>handleShareOpen("file",fileDataOfMenu["_id"])}aria-label="share" title="share">
+                                      <ShareIcon/>
+                                    </IconButton> 
+                              
+                                 
+                                 
+                                    <IconButton onClick ={()=>{openFile(fileDataOfMenu["_id"])}}>
+                                   <VisibilityIcon />
+                                    </IconButton>
+                                   
+                                    <IconButton aria-label="share" onClick={()=>{downloadFile(fileDataOfMenu["_id"])}}>
+                                  <OpenInNewIcon/> 
+                                </IconButton>
+                             
+                              
+
+      </Menu>
           <div className="file-display-container">
             {
               props.allFileUpload &&
@@ -667,56 +856,45 @@ export default function Dropzone(props){
                     {
                       filesinDB.filter( (filedata) => filedata.s3_key.includes(props.searchFiled)).slice(0).reverse().map((filedata, i) => {
                         return (
-                          <Grid item key={filedata["_id"]} xs={12} md={3}>
+                          <Grid onClick={(event)=>handleMenuOpen(event, filedata)} item key={filedata["_id"]} xs={12} md={3}>
+       
+                
                             <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={filedata["s3_key"]}> 
+                            
                             <CardHeader 
                                 avatar={
-                                  <Avatar aria-label="recipe" className={classes.avatar}>
+                                  <Avatar aria-label="name" className={classes.avatar}>
                                     {userName.charAt(0)}
                                   </Avatar>
                                 }
                                 action={
-                                  <div onClick={()=>removeFile(filedata["_id"])}>
+                                  <div >
                                     <IconButton aria-label="add to favorites" >
-                                      <DeleteIcon/>
+                                      <DeleteIcon onClick={()=>removeFile(filedata["_id"])}/>
                                     </IconButton>
+                                  
                                   </div>
+                                 
                                 }
-                                title={filedata["s3_key"].slice(0,10)}
+                                title={filedata["createdAt"].slice(0,10)}
+                               
+                                
                               />
                               <CardMedia
                                   className={classes.cardMedia} 
                                   // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
                                   image = {fileImageMap.get( filedata["s3_key"].split('.').pop() )?fileImageMap.get( filedata["s3_key"].split('.').pop() ) : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAb1BMVEX////0myXzlQD0miD1pT/++O/zkwD86dTzlgn0nCX72br0nij0mRP85dH2rVf1qEb97t33unj61Kz++/X1ojn+9Or85Mv4vn/60qj2sF/869j5y5v738P4xIv3tmz5z6L5yJX2r131qU762bX3t3AjskLOAAAE00lEQVR4nO2d7XaiMBRFIdGYSmpt0Wm1Sh067/+MM+UjVgG1yxMSmLN/qguzBa7k5sKNIkIIIYQQQgghhBBCCCFumLog9W31HaOECyavn1PfahWJjF0gjRbZ1rdcgSPDwlJlIRyuDg3j2Jhfvv0cG/7bjS++BR0bxrF/xcTg0Upp+8OpAA5UPOnybSFqRxHK3waaWWJKQ7PxPRRnbHR1nO58j8QZm3Ivytz3QNwxKc9FtfQ9EGdsVWGo330PxB1ZsRPlwvc43LErg430PQ53pKWhCuEK3BGjDzXRqlBUYcwUnVD+X6iZ73G4w7vhu1EQzOS5/dLMt+FGoaaB0qikbSbo1zCdGJRgISmemvMkr4ZLiZ7eS9mImT4NdwKfv5BiHY7hB+wUPFFMgjF8PRMUdwbTOi+j94EY/tb1j14JztK7WM9XVdRSp8epJ8NpPZzYTFbluO6/cFyU2zSnO9GP4dbUMUb/ri8cAZfG5Zbk6uRFL4ZzG0TVa50RRhjuRMth6sPw3cYY9RYhDau5oDjJAHswfK4FZTkUnGFUHfnz76/1bpgu6iBqkvJoAho+BGC4rvPQsc6rxMK4DGc2iKrn+rVRGX4qK3hMYI7J8GBjzPeFhBEZZqIWjL/rjMYwzesgqicnycuxGK4f7HpldvrOSAx/2UVndTh7axyGL8cY83n+3igM91bQNHPPYzC0QdSsWmoGhm94TBnq1oqBwRsubRD9mgy2MHTD3fFCraM2aeCGbzbG6K7KpGEb2pRhPRlsYdCGG3uhtuheZR6w4TFleJwMtjBgw8wKflz62IANq8JReaWqbMiGpeDDlbEP3jC5VskydEM5ufoxGt4ODdH8v4bZ6eItsPAsFMPnthITGt4EDdHQcLyGf5RuMipDd9AQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfEEY/iSLe5n0/LImVAMMyURiKdQDXeoO5xFo9QqEMODvjDqnyCz800HYviBMjSNesBADNe2avhO1GOghtFOQJ46W9xiG6ZhlD4iaLmxIRhDZ9AQDQ3x0BANDfHQEA0N8dAQDQ3xhGOYOupCEorhOr/z0Wwlk+ZNqYEYpgYzx5fNottADF9geZr9+aYDMTygnugZbK5tjsqX6kOghlGuISeikY1wGophtJctxfo/xfxppqKCMXQGDdHQEA8N0dAQDw3R0BAPDdHQEE+bYVLmPEZsuC2YOemG1Gn4sXi6n/zQHHSboUu6DBeYqi993uchGENY1VezXVwghj1Xfbmkw/ANlk1sPGkyEMMpqL2MbHYaC8Qw2iaIqi9lmo+BC8Uwipaz+2lrFReOoStoiIaGeGiIhoZ4aIiGhnhoiIaGeGiIhoZ4aIiGhnh6N/zKqZ31PXWL9GEYy76+LoqmVR/Sy70YgOSFoejqL4OnqlztryNn+bzg/k7EtCpcFU5W0tqYl626zKafb1yvqo4heS9f90VaNSMz8v0RkAK+zG5vW49f7PmCZW9bBQGy+FfQtrZa9ycYpRJ05/1P6GoN5oYZajH0dvSlxksOmKOen3Cz4KJfwSjaatR66C3IjvZ8Tkn3AlOaf13PqLzXHvGW6edG9BBMxerQtqTYF4ib1X5+KxshhBBCCCGEEEIIIYSQe/gLEeV5y4CZvuUAAAAASUVORK5CYII="}
                                   title="Image title"
-                              />
+                              >
+                                
+                                </CardMedia>
                               
                               <CardContent className={classes.cardContent}>
                                 <Typography variant="subtitle1" color="textSecondary" >
-                                  {filedata["createdAt"].slice(0,10)}
+                                {filedata["s3_key"].slice(0,20)}<br/>
+                              
                                 </Typography>
-                                <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                                  <div onClick={()=>{makefavouriteFile( filedata["_id"] )}}>
-                                    <IconButton aria-label="add to favorites" >
-                                      { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                                    </IconButton>
-                                  </div>
-                                  <div onClick={()=>{downloadFile(filedata["_id"])}}> 
-                                    <IconButton aria-label="share" className={classes.download}>
-                                      <OpenInNewIcon/>
-                                    </IconButton>
-                                  </div>
-                                  <div onClick={()=>{handleRenameOpen('file',filedata["_id"], filedata["s3_key"])}}>
-                                    <IconButton aria-label="rename" title="edit name">
-                                   <EditIcon/>
-                                    </IconButton>
-                                  </div>
-                                  <div onClick={()=>handleShareOpen(filedata["_id"])}>
-                                    <IconButton aria-label="share" title="share">
-                                      <ShareIcon/>
-                                    </IconButton>
-                                  </div>
-                                </CardActions>
+                               
                               </CardContent>
                             </Card>
                           </Grid>
@@ -730,9 +908,11 @@ export default function Dropzone(props){
               props.recentFileUpload && 
                 <div container spacing={5} alignItems="center">   
                   <Grid container spacing={5} alignItems="center">
-                    {filesinDB.filter( (filedata) => filedata.s3_key.includes(props.searchFiled)).slice(0,10).reverse().map((filedata, i) => {
+                    {filesinDB.filter( (filedata) => filedata.s3_key.includes(props.searchFiled)).sort(function(a,b){
+                     return a["updatedAt"]>b["updatedAt"]                   
+                    }).slice(0,10).reverse().map((filedata, i) => {
                       return (
-                        <Grid item key={filedata["_id"]} xs={12} md={3}>
+                        <Grid item onClick={(event)=>handleMenuOpen(event, filedata)} key={filedata["_id"]} xs={12} md={3}>
                         <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={filedata["s3_key"]}> 
                         <CardHeader 
                             avatar={
@@ -745,9 +925,11 @@ export default function Dropzone(props){
                                 <IconButton aria-label="add to favorites" >
                                   <DeleteIcon />
                                 </IconButton>
+                                
                               </div>
                             }
-                            title={filedata["s3_key"].slice(0,10)}
+                            title={filedata["createdAt"].slice(0,10)}
+                            
                           />
                           <CardMedia
                               className={classes.cardMedia} 
@@ -758,33 +940,12 @@ export default function Dropzone(props){
                           
                           <CardContent className={classes.cardContent}>
                             <div className={classes.formText}></div>
-                              <Typography variant="h6" color="textSecondary" >
-                              {filedata["createdAt"].slice(0,10)}
+                              <Typography variant="subtitle1" color="textSecondary">
+                              {filedata["s3_key"].slice(0,20)}
                               </Typography>
                             
                           
-                          <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                            <div onClick={()=>{makefavouriteFile( filedata["_id"] )}}>
-                              <IconButton aria-label="add to favorites" >
-                                { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                              </IconButton>
-                            </div>
-                            <div onClick={()=>{downloadFile(filedata["_id"])}}> 
-                              <IconButton aria-label="share" className={classes.download}>
-                                <OpenInNewIcon />
-                              </IconButton>
-                            </div>
-                            <div onClick={()=>{handleRenameOpen("file",filedata["_id"], filedata["s3_key"])}}>
-                                    <IconButton aria-label="rename">
-                                   <EditIcon />
-                                    </IconButton>
-                             </div>
-                             <div onClick={()=>handleShareOpen(filedata["_id"])}>
-                                    <IconButton aria-label="share" title="share">
-                                      <ShareIcon/>
-                                    </IconButton>
-                                  </div>
-                          </CardActions>
+                         
                           </CardContent>
                         </Card>
                       </Grid>
@@ -799,7 +960,7 @@ export default function Dropzone(props){
               <Grid container spacing={5} alignItems="center">
                 {filesinDB.filter( (filedata) =>  filedata["favourite"] && filedata.s3_key.includes(props.searchFiled)).map((filedata, i) => {
                   return (
-                    <Grid item key={filedata["_id"]} xs={12} md={3}>
+                    <Grid item onClick={(event)=>handleMenuOpen(event, filedata)} key={filedata["_id"]} xs={12} md={3}>
                     <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={filedata["s3_key"]}> 
                     <CardHeader 
                         avatar={
@@ -812,9 +973,12 @@ export default function Dropzone(props){
                             <IconButton aria-label="add to favorites" >
                               <DeleteIcon/>
                             </IconButton>
+                            
                           </div>
+                         
                         }
-                        title={filedata["s3_key"].slice(0,10)}
+                        title={filedata["createdAt"].slice(0,10)}
+                       
                       />
                       <CardMedia
                           className={classes.cardMedia} 
@@ -825,33 +989,12 @@ export default function Dropzone(props){
                       
                       <CardContent className={classes.cardContent}>
                         <div className={classes.formText}></div>
-                          <Typography variant="h6" color="textSecondary" >
-                          {filedata["createdAt"].slice(0,10)}
+                          <Typography variant="subtitle1" color="textSecondary" >
+                          {filedata["s3_key"].slice(0,20)}
                           </Typography>
                         
                       
-                      <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                      <div onClick={()=>{makefavouriteFile( filedata["_id"] )}}>
-                        <IconButton aria-label="add to favorites">
-                          { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                        </IconButton>
-                      </div>
-                      <div onClick={()=>{downloadFile(filedata["_id"])}} >
-                        <IconButton aria-label="share" className={classes.download}>
-                          <OpenInNewIcon />
-                        </IconButton>
-                      </div>
-                      <div onClick={()=>{handleRenameOpen("file",filedata["_id"], filedata["s3_key"])}}>
-                                    <IconButton aria-label="rename">
-                                   <EditIcon/>
-                                    </IconButton>
-                       </div>
-                       <div onClick={()=>handleShareOpen(filedata["_id"])}>
-                                    <IconButton aria-label="share" title="share">
-                                      <ShareIcon/>
-                                    </IconButton>
-                      </div>
-                      </CardActions>
+                      
                       </CardContent>
                     </Card>
                   </Grid>
@@ -867,7 +1010,7 @@ export default function Dropzone(props){
                 <Grid container spacing={5} alignItems="center">
                 {foldersinDB.filter( (folderData) => folderData.Name.includes(props.searchFiled)).slice(0).reverse().map((folderData, i) => {
                   return (
-                    <Grid item key={folderData["_id"]} xs={12} md={3} style={{cursor: 'pointer'}} >
+                    <Grid onClick={(event)=>handleFolderMenuOpen(event, folderData)} item key={folderData["_id"]} xs={12} md={3} style={{cursor: 'pointer'}} >
                       <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={folderData.Name}> 
                       <CardHeader 
                           avatar={
@@ -884,8 +1027,7 @@ export default function Dropzone(props){
                           }
                           title={folderData["Name"].slice(0,10)}
                         />
-                        <Link to={{pathname: "/folderview",
-                          state: { folderID: folderData["_id"], id:userDetails}}}  >
+                       
                           <CardMedia
                               className={classes.cardMedia} 
                               // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
@@ -893,28 +1035,12 @@ export default function Dropzone(props){
                               title="Image title"
                               clickable 
                           />
-                        </Link>
+                        
                         <CardContent className={classes.cardContent}>
                             <Typography variant="subtitle1" color="textSecondary" >
                               {folderData["createdAt"].slice(0,10)}
                             </Typography>
-                          <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                            <div onClick={()=>{makefavouriteFolder( folderData["_id"] )}} >
-                              <IconButton aria-label="add to favorites" >
-                                { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                              </IconButton>
-                            </div>
-                            <div>
-                            <IconButton aria-label="share" className={classes.download}>
-                              <OpenInNewIcon/>
-                            </IconButton>
-                            </div>
-                            <div onClick={()=>{handleRenameOpen('folder',folderData["_id"], folderData["Name"])}}>
-                                    <IconButton aria-label="rename">
-                                   <EditIcon/>
-                                    </IconButton>
-                                  </div>
-                          </CardActions>
+                          
                         </CardContent>
                       </Card>
                     </Grid>
@@ -960,23 +1086,7 @@ export default function Dropzone(props){
                             <Typography variant="subtitle1" color="textSecondary" >
                               {folderData["createdAt"].slice(0,10)}
                             </Typography>
-                          <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                            <div  onClick={()=>{makefavouriteFolder( folderData["_id"] )}} >
-                              <IconButton aria-label="add to favorites">
-                                { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                              </IconButton>
-                            </div>
-                            <div>
-                            <IconButton aria-label="share" className={classes.download}>
-                              <OpenInNewIcon/>
-                            </IconButton>
-                            </div>
-                            <div onClick={()=>{handleRenameOpen('folder',folderData["_id"], folderData["Name"])}}>
-                                    <IconButton aria-label="rename">
-                                   <EditIcon/>
-                                    </IconButton>
-                                  </div>
-                          </CardActions>
+                          
                         </CardContent>
                       </Card>
                     </Grid>
@@ -1022,23 +1132,7 @@ export default function Dropzone(props){
                             <Typography variant="subtitle1" color="textSecondary" >
                               {folderData["createdAt"].slice(0,10)}
                             </Typography>
-                          <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                            <div onClick={()=>{makefavouriteFolder( folderData["_id"] )}}>
-                              <IconButton aria-label="add to favorites" >
-                                { folderData["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                              </IconButton>
-                            </div>
-                            <div>
-                              <IconButton aria-label="share" className={classes.download}>
-                              <OpenInNewIcon/>
-                            </IconButton>
-                            </div>
-                            <div onClick={()=>{handleRenameOpen('folder',folderData["_id"], folderData["Name"])}}>
-                                    <IconButton aria-label="rename">
-                                   <EditIcon/>
-                                    </IconButton>
-                                  </div>
-                          </CardActions>
+                        
                         </CardContent>
                       </Card>
                     </Grid>
