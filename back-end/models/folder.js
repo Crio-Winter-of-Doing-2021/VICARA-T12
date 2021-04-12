@@ -16,6 +16,11 @@ let FolderSchema = new Schema(
     files:[
        
     ],
+    size:{
+      type:String,
+      default:'0'
+    },
+    
     folders:[  
           {
             type: mongoose.Schema.Types.ObjectId,

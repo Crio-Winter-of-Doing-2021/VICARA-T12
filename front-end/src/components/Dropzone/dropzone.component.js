@@ -157,6 +157,7 @@ const [folderToBeShared, setFolderToBeShared] = useState("");
 const [setSharedRows, sharedRows] = useState([]);
 const [openSharedFileMenu, setOpenSharedFileMenu] = useState(null);
 const [sharedFileDataOfMenu, setSharedFileDataOfMenu] = useState({});
+const [sizeOccupied, setSizeOccupied] =  useState(0)
   const handleRenameOpen = (typeProperty, id, name) => {
     setoldName(name);
     setFileToBeRenamed(id);
@@ -183,9 +184,14 @@ const [sharedFileDataOfMenu, setSharedFileDataOfMenu] = useState({});
     {
       field: 'createdAt',
       headerName: 'Created At',
-      width: 200,
+      width: 200
       
    
+    },
+    {
+      field:'size',
+      headerName: 'File Size',
+
     },
     
     {
@@ -509,7 +515,7 @@ const [sharedFileDataOfMenu, setSharedFileDataOfMenu] = useState({});
       toastContainerFunction(`Uploading ${file.name} was successful`)
       FileService.downloadFile(docs["data"]["_id"], props.id ).then((link)=>{
         docs["data"]["returnFileLink"] = link["data"];
-    
+        setSizeOccupied((sizeOccupied)=>sizeOccupied+parseInt(file["size"]))
           setfilesinDB(prevArray=>[...prevArray,docs["data"]]);
      
         })
@@ -535,9 +541,10 @@ const [sharedFileDataOfMenu, setSharedFileDataOfMenu] = useState({});
       console.log(res);
       for(let i = 0; i < theFiles.length; i++){       
         uploadFilesInFolder(res["data"]["_id"], theFiles[i]).then((docs)=>{
+          setSizeOccupied((sizeOccupied)=>sizeOccupied+parseInt(theFiles[i]["size"]))
           console.log(docs);  
           if(i===(theFiles.length-1)){
-            
+           
             setfoldersinDB((prevArray)=>[...prevArray, docs["data"]]);
             toastContainerFunction(`Uploading ${folder} was successful`)
           } 
@@ -621,6 +628,7 @@ const handleMenuOpen=(event, filedata)=>
         {
           FileService.downloadFile(file["_id"], props.id ).then((link)=>{
           file["returnFileLink"] = link["data"];
+           setSizeOccupied((sizeOccupied)=>sizeOccupied+parseInt(file["size"]))
           console.log("This is the file")
           console.log(response.data)
        if(i>=[...response.data].length-1)
@@ -646,16 +654,18 @@ let rows =[]
     if(id)
     {
       FileService.getSharedFiles(id).then((response)=>{
-        setSharedFilesinDB(response.data);
+        
         console.log("shared files")
         console.log(response.data)
-        const parent = response.data;
+       
 
-Array.prototype.forEach.call(parent.children, file => {
-  setSharedRows((sharedRow)=>[...sharedRow,{
-    id: file["_id"], name:file["s3_key"], owner:file["creator"], date:file["createdAt"]
-  }])
-});
+        for(let [i,file] of [...response.data].entries()){
+          file["size"] = fileSize(file["size"])
+          if(i==[...response.data].length-1)
+           {
+             setSharedFilesinDB(response.data);
+           }
+        }
       
        
         console.log(sharedFilesinDB);
@@ -675,6 +685,11 @@ Array.prototype.forEach.call(parent.children, file => {
     if(id)
     {
       FileService.getFolders({id}).then((response)=>{
+
+        for(let folder of [...response.data])
+        {
+          setSizeOccupied((sizeOccupied)=>{sizeOccupied+=folder["size"]})
+        }
         setfoldersinDB(response.data);  
         console.log(foldersinDB);
       }).catch((err)=>{
@@ -748,7 +763,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
       <Container 
         maxWidth="lg" className="dropContainer"
       >
-
+        <Typography>{fileSize(sizeOccupied)}</Typography>
         <Typography 
           onDragOver={dragOver}
           onDragEnter={dragEnter}

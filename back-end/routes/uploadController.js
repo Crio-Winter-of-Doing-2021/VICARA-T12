@@ -548,7 +548,8 @@ var newFileUploaded = {
   creator: req.body.users,
   parentFolder: folderID,
   isIndependant: false,
-  type: file.originalname.split('.').pop()
+  type: file.originalname.split('.').pop(),
+  size:file.size
 }
 fs.readFile(file.path, (error, fileContent)=>{
   if(error)
@@ -574,7 +575,8 @@ document.save(function(filesaveerror, newFile) {
       FOLDER.findByIdAndUpdate(folderID,{  $push: { files: newFile._id }}, function(errorinfolder, docs){
         if(!errorinfolder)
         {
-
+               docs["size"]+= newFile["size"]
+              docs.save();
           params.Key = newFile["_id"].toString();
 
 
