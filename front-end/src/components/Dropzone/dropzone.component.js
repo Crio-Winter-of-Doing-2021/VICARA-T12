@@ -1323,7 +1323,7 @@ const imageFormats =["jpg","jpeg","png","gif","bmp"];
     ...column,
     disableClickEventBubbling: true,
   
-  }))} onRowClick={(file, event)=>{handleSharedFilesMenuOpen(event,file["row"])}} rows={sharedFilesinDB} columns={columns} pageSize={5} checkboxSelection />
+  }))} onRowClick={(file, event)=>{handleSharedFilesMenuOpen(event,file["row"])}} rows={sharedFilesinDB} columns={columns} pageSize={5}  />
                  </div>
              
 }
