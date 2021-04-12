@@ -107,7 +107,7 @@ router.get('/url/:fileNameUserID', async(req,res, next)=>{
   userID = req.params.fileNameUserID.split(',')[1].toString();
   console.log(fileName);
   console.log(userID);
-  if(fileName)
+  if(fileName.length>0)
    {
      FILE.findOne({"_id":ObjectId(fileName),
     $or:[ 
@@ -486,7 +486,7 @@ router.post('/folder', upload.single('folder'),async(req, res, next)=>{
 router.get('/sharedFiles/:id', async(req,res,next)=>{
   const userID = req.params.id.toString();
   console.log(userID);
-  FILE.find({'users':ObjectId(userID)},(errorInFindingFiles, files)=>{
+  FILE.find({$or:[{'users':ObjectId(userID)},{'viewers':ObjectId(userID)}], 'creator': { $ne: ObjectId(userID) } },(errorInFindingFiles, files)=>{
        if(!errorInFindingFiles){
          console.log("Incoming shared files");
          console.log(files);
@@ -513,7 +513,8 @@ var newFileUploaded = {
   viewers: [req.body.users],
   creator: req.body.users,
   parentFolder: folderID,
-  isIndependant: false
+  isIndependant: false,
+  type: file.originalname.split('.').pop()
 }
 fs.readFile(file.path, (error, fileContent)=>{
   if(error)
@@ -586,7 +587,8 @@ router.post('/', upload.single("file"), async(req,res,next)=>{
       s3_key: file.originalname,
       users: [req.body.users],
       viewers: [req.body.users],
-      creator: req.body.users
+      creator: req.body.users,
+      type: file.originalname.split('.').pop()
     }
 
    await fs.readFile(file.path, async(error, fileContent)=>{

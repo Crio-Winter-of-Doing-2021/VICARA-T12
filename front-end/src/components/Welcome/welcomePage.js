@@ -25,6 +25,7 @@ import SearchIcon from '@material-ui/icons/Search';
 import AccountCircle from '@material-ui/icons/AccountCircle';
 import axiosInstance from '../../axios';
 //import { faFolder, faFolderOpen,  faStar, faFile, faCopy } from "@fortawesome/free-solid-svg-icons";
+import FolderSharedIcon from '@material-ui/icons/FolderShared';
 import { faFolder, faFolderOpen,  faStar, faFile, faCopy } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Dialog from '@material-ui/core/Dialog';
@@ -174,6 +175,7 @@ export default function MiniDrawer(props) {
     allFolderUpload: false,
 		recentFolderUpload: false,
 		starredFolder: false,
+    sharedFilesAndFolders: false
 	});
 
   const [fileUpdate, setFileUpdate] = useState(initalfileUpdate);
@@ -214,14 +216,15 @@ export default function MiniDrawer(props) {
     setSearchField(event.target.value);
   };
   
-  const showFilesFolders = (allFiles, recentFiles, starredFiles, allFolders, recentFolders, starredFolders) =>{ 
+  const showFilesFolders = (allFiles, recentFiles, starredFiles, allFolders, recentFolders, starredFolders, sharedFilesAndFolders) =>{ 
     setFileUpdate({
       allFileUpload: allFiles,
       recentFileUpload: recentFiles,
       starredFiles: starredFiles,
       allFolderUpload: allFolders,
       recentFolderUpload: recentFolders,
-      starredFolder: starredFolders
+      starredFolder: starredFolders,
+      sharedFile: sharedFilesAndFolders
     })
     setSearchField("")
   };
@@ -519,14 +522,40 @@ export default function MiniDrawer(props) {
             </ListItemIcon>
             <ListItemText> Starred Folders</ListItemText>
           </ListItem>
-        </List>
+          </List>
+          
+          <Divider/>
+            <List>
+              <br/>
+              <br/>
+          <ListItem button onClick={ () => showFilesFolders(false, false, false, false, false, false, true)} >
+           
+
+            <ListItemIcon>
+            {
+              fileUpdate.sharedFile&&
+                
+                <IconButton style={ {color:"orange" } } size="2x">
+                  <FolderSharedIcon/>
+                </IconButton>
+            } 
+            {
+              !fileUpdate.sharedFile &&
+              <IconButton size="2x">
+              <FolderSharedIcon/>
+            </IconButton>
+            } 
+            </ListItemIcon>
+            <ListItemText> Shared </ ListItemText>
+          </ListItem>
+      </List>
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
         <Route 
         render={()=>{
           
-          return <Dropzone id={id} name={name} searchFiled = {searchFiled} allFileUpload = {fileUpdate.allFileUpload} recentFileUpload = {fileUpdate.recentFileUpload} starredFiles = {fileUpdate.starredFiles}  allFolderUpload = {fileUpdate.allFolderUpload} recentFolderUpload = {fileUpdate.recentFolderUpload} starredFolder={fileUpdate.starredFolder} />
+          return <Dropzone id={id} name={name} searchFiled = {searchFiled} allFileUpload = {fileUpdate.allFileUpload} recentFileUpload = {fileUpdate.recentFileUpload} starredFiles = {fileUpdate.starredFiles}  allFolderUpload = {fileUpdate.allFolderUpload} recentFolderUpload = {fileUpdate.recentFolderUpload} starredFolder={fileUpdate.starredFolder} sharedFilesAndFolders={fileUpdate.sharedFile}/>
          
         }}
 
