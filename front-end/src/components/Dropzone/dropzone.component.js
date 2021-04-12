@@ -501,7 +501,7 @@ const [sharedFileDataOfMenu, setSharedFileDataOfMenu] = useState({});
   }
 
   const uploadFiles = (file) => {
-    console.log(file);
+    
     fetchData()
     FileService.upload(file, [userDetails])
    .then(
@@ -552,8 +552,10 @@ const [sharedFileDataOfMenu, setSharedFileDataOfMenu] = useState({});
   
 
   const removeFile = (fileID)=>{
-    handleMenuClose();
+    
+    
     FileService.removeFile(fileID, userDetails).then(()=>{
+      handleMenuClose();
       setfilesinDB(filesinDB.filter((file)=>file["_id"] !== fileID));
       toastContainerFunction(`removed File!`)
       
@@ -720,6 +722,17 @@ const handleFolderMenuClose=(()=>{
 })
 
 const imageFormats =["jpg","jpeg","png","gif","bmp"];
+
+const deleteAccessToSharedFile=(fileId)=>{
+FileService.removeAccess(fileId, userDetails).then((docs)=>{
+  setSharedFilesinDB(sharedFilesinDB.filter((file)=>file["_id"] !== fileId));
+  toastContainerFunction(`removed access`)
+}).catch((err)=>{
+  toastErrorContainerFunction("Could not remove the file from the shared List")
+})
+
+}
+
 
   const fileSize = (size) => {
       if (size === 0) return '0 Bytes';
@@ -1002,11 +1015,15 @@ const imageFormats =["jpg","jpeg","png","gif","bmp"];
                                    <VisibilityIcon />
                                     </IconButton>
                                    
-                                    <IconButton aria-label="share" onClick={()=>{downloadFile(["_id"])}}>
+                                    <IconButton aria-label="share" onClick={()=>{downloadFile(sharedFileDataOfMenu["_id"])}}>
                                   <OpenInNewIcon/> 
                                 </IconButton>
                              
-                              
+                              <IconButton>
+                                <DeleteIcon aria-label="Delete Access" onClick={()=>{deleteAccessToSharedFile(sharedFileDataOfMenu["_id"])}}/>
+
+                               
+                              </IconButton>
 
       </Menu>
 
@@ -1058,7 +1075,7 @@ const imageFormats =["jpg","jpeg","png","gif","bmp"];
                               <CardContent className={classes.cardContent}>
                                 <Typography variant="subtitle1" color="textSecondary" >
                                 {filedata["s3_key"].slice(0,20)}<br/>
-                              
+                                {fileSize(filedata["size"])}
                                 </Typography>
                                
                               </CardContent>
@@ -1315,15 +1332,12 @@ const imageFormats =["jpg","jpeg","png","gif","bmp"];
                <div style={{ height: 300, width: '100%' }}>
 
                     
-            <Typography>
-              
-              </Typography>  
+           
 
-                    <DataGrid  columns={columns.map((column) => ({
-    ...column,
-    disableClickEventBubbling: true,
-  
-  }))} onRowClick={(file, event)=>{handleSharedFilesMenuOpen(event,file["row"])}} rows={sharedFilesinDB} columns={columns} pageSize={5}  />
+                    {sharedFilesinDB.length?
+                    <DataGrid  hideFooterSelectedRowCount={false} columns={columns.map((column) => ({...column,disableClickEventBubbling: true,}))} onRowClick={(file, event)=>{handleSharedFilesMenuOpen(event,file["row"])}} rows={sharedFilesinDB} columns={columns} pageSize={5}  />:
+                    <Typography>Nothing is shared with you at present</Typography>
+                    }
                  </div>
              
 }

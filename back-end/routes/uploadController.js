@@ -484,6 +484,20 @@ router.post('/folder', upload.single('folder'),async(req, res, next)=>{
     res.status(200).send(docs);
   });
 });
+router.patch('/removeUsersAccess/:fileIDuserID', async(req, res, next)=>{
+let fileID = req.params.fileIDuserID.split(',')[0];
+let userID = req.params.fileIDuserID.split(',')[1];
+
+FILE.findOneAndUpdate({"_id":fileID, $or:[{'viewers': userID},{'users':userID}]},{ $pullAll: {users:[ObjectId(userID)]}, $pullAll: {viewers:[ObjectId(userID)]} }, async(errorInUpdatingAccess, docs)=>{
+  if(!errorInUpdatingAccess){
+    next(res.status(200).send(docs))
+  }
+  else
+  {
+    next(res.status(500).send("Could not update Access"))
+  }
+})
+});
 router.get('/sharedFiles/:id', async(req,res,next)=>{
   const userID = req.params.id.toString();
   console.log(userID);
@@ -496,8 +510,7 @@ router.get('/sharedFiles/:id', async(req,res,next)=>{
                if(!errorInFindingCreator)
                {
                  file.creator= creatorDets["name"]
-                 console.log("#######3")
-                 console.log(file);
+                
                  filesToBeSent.push(file)
                }
                
@@ -609,6 +622,7 @@ router.post('/', upload.single("file"), async(req,res,next)=>{
       users: [req.body.users],
       viewers: [req.body.users],
       creator: req.body.users,
+      size: file.size,
       type: file.originalname.split('.').pop()
     }
 

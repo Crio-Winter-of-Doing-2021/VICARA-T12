@@ -60,7 +60,14 @@ shareFile(access, fileToBeShared, mailshared, id){
     }
   })
 }
-
+removeAccess(fileId, userDetails){
+  let fileIDuserID =[fileId, userDetails];
+  return axiosInstance.patch(`api/upload/removeUsersAccess/${fileIDuserID}`,{},{
+    headers:{
+      "Content-Type": "multipart/form-data; charset=utf-8;",
+    }
+  })
+}
 shareFolder(access, folderToBeShared, mailshared, id){
   let accessFolderIDmailAddedUserID = [access,folderToBeShared, mailshared, id];
   return axiosInstance.patch(`api/upload/addUserToFolder/${accessFolderIDmailAddedUserID}`,{ },{
