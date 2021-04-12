@@ -171,7 +171,7 @@ const [sharedFileDataOfMenu, setSharedFileDataOfMenu] = useState({});
   };
 
   const columns = [
-    { field: 'id', headerName: 'ID'},
+    
     { field: 's3_key', headerName: 'Name', width: 200 },
    
     {
@@ -196,9 +196,7 @@ const [sharedFileDataOfMenu, setSharedFileDataOfMenu] = useState({});
   ]
 
   const handleRename =()=>{
-    alert(newName);
-    alert(filetobeRenamed);
-    alert(type);
+  
     
     if(type === "file"&&newName.length&&newName.length<=20)
     {FileService.renameFile(filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), props.id).then((docs)=>{
@@ -222,8 +220,31 @@ const [sharedFileDataOfMenu, setSharedFileDataOfMenu] = useState({});
 
   }
 
+  else if(type === "sharedFile"&&newName.length&&newName.length<=20)
+    {FileService.renameFile(filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), props.id).then((docs)=>{
+      if(docs!=null)
+      {
+      let foundIndex = sharedFilesinDB.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
+      let newfilesinDB = [...sharedFilesinDB];
+      newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], s3_key: docs["data"]["s3_key"]}
+      setSharedFilesinDB(newfilesinDB); 
+      }
+      
+    }).catch((err)=>{
+    
+      toastErrorContainerFunction(err.toString().split(':')[1]);
+
+    }).finally(()=>{
+      handleRenameClose();
+      setoldName("");
+      setNewName("");
+    })
+
+  }
+
+
   
-    if(type === "folder"&&newName.length&&newName.length<=20){
+   else if(type === "folder"&&newName.length&&newName.length<=20){
       FileService.renameFolder(filetobeRenamed, newName, props.id).then((docs)=>{
         let foundIndex = foldersinDB.findIndex((folderinDB)=>folderinDB["_id"] === filetobeRenamed);
         let newfoldersinDB = [...foldersinDB];
@@ -966,12 +987,12 @@ const imageFormats =["jpg","jpeg","png","gif","bmp"];
       
         
         
-                                    <IconButton onClick={()=>{handleRenameOpen('file',fileDataOfMenu["_id"], fileDataOfMenu["s3_key"])}}aria-label="rename" title="edit name">
+                                    <IconButton onClick={()=>{handleRenameOpen('sharedFile',sharedFileDataOfMenu["_id"], sharedFileDataOfMenu["s3_key"])}}aria-label="rename" title="edit name">
                                    <EditIcon/>
                                     </IconButton>
                                   
                                   
-                                    <IconButton  onClick={()=>handleShareOpen("file",fileDataOfMenu["_id"])}aria-label="share" title="share">
+                                    <IconButton  onClick={()=>handleShareOpen("file",sharedFileDataOfMenu["_id"])}aria-label="share" title="share">
                                       <ShareIcon/>
                                     </IconButton> 
                               
@@ -1289,10 +1310,15 @@ const imageFormats =["jpg","jpeg","png","gif","bmp"];
 
 {props.sharedFilesAndFolders &&  
                
-              
-                
+             
                    
                <div style={{ height: 300, width: '100%' }}>
+
+                    
+            <Typography>
+              
+              </Typography>  
+
                     <DataGrid  columns={columns.map((column) => ({
     ...column,
     disableClickEventBubbling: true,
