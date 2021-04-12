@@ -6,7 +6,7 @@ const AutoIncrement = require("mongoose-sequence")(mongoose);
 
 let FilesSchema = new Schema(
   {
-    document_id: { type: Number, default: 0 },
+   id: { type: Number, default: 0 },
     description: { type: String },
     fileLink: { type: String },
     s3_key: { type: String },
@@ -26,13 +26,15 @@ let FilesSchema = new Schema(
     ],
     creator: {type: mongoose.Schema.Types.ObjectId},
     parentFolder: {type:String, default:null},
-    isIndependant: {type:Boolean, default:true}
+    isIndependant: {type:Boolean, default:true},
+    type: {type:String},
+    size:{type:String}
   },
   {
     timestamps: true
   }
 );
 
-FilesSchema.plugin(AutoIncrement, { inc_field: "document_id" });
+FilesSchema.plugin(AutoIncrement, { inc_field: "id" });
 
 module.exports = mongoose.model("Files", FilesSchema);

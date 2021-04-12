@@ -24,6 +24,7 @@ var storage = multer.diskStorage({
 var upload = multer({storage:storage});
 
 const { ObjectID } = require("bson");
+const file = require("../models/file");
 const s3bucket = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -248,7 +249,9 @@ router.post('/folder/uploadFile', upload.single('file'), async(req,res,next)=>{
     viewers: [req.body.users],
     creator: req.body.users,
     parentFolder: folderID,
-    isIndependant: false
+    isIndependant: false,
+    type: file.originalname.split('.').pop(),
+    size:file.size
   }
   // Reading and checking if file is present in fs.
   fs.readFile(file.path, (error, fileContent)=>{
@@ -270,6 +273,8 @@ router.post('/folder/uploadFile', upload.single('file'), async(req,res,next)=>{
           // Function to save file in folder in AWS
           FOLDER.findByIdAndUpdate(folderID,{  $push: { files: newFile._id }}, function(errorinfolder, docs){
             if(!errorinfolder){
+              docs["size"]+= newFile["size"]
+              docs.save();
               params.Key = newFile["_id"].toString();
               s3bucket.putObject(params, async function(s3err, data) {
                 if (s3err) {
@@ -375,7 +380,9 @@ router.post('/file/upload', upload.single("file"), async(req,res,next)=>{
     s3_key: file.originalname,
     users: [req.body.users],
     viewers: [req.body.users],
-    creator: req.body.users
+    creator: req.body.users,
+    size: file.size,
+    type: file.originalname.split('.').pop()
   }
 
   await fs.readFile(file.path, async(error, fileContent)=>{
@@ -447,10 +454,9 @@ router.get('/file/getPresignedUrl/:fileNameUserID', async(req,res, next)=>{
   userID = req.params.fileNameUserID.split(',')[1].toString();
   console.log(fileName);
   console.log(userID);
-  if(fileName){
-    // Mongodb function to find file.
-    FILE.findOne({"_id":ObjectId(fileName),
-    // Second argument -> User can be a viewer or a creator. 
+  if(fileName.length>0)
+   {
+     FILE.findOne({"_id":ObjectId(fileName),
     $or:[ 
       {'users':ObjectId(userID)},
       {'viewers':ObjectId(userID)} 
@@ -596,13 +602,22 @@ router.get('/file/shareView/:id', async(req,res,next)=>{
   // #swagger.tags = ['File']
   // #swagger.description = 'Endpoint used for viewing a shared file.'
   const userID = req.params.id.toString();
-  console.log(userID);
   // MongoDb function to retrieve the shared files.
-  FILE.find({'users':ObjectId(userID)},(errorInFindingFiles, files)=>{
+  FILE.find({$or:[{'users':ObjectId(userID)},{'viewers':ObjectId(userID)}], 'creator': { $ne: ObjectId(userID) } }).lean().exec((errorInFindingFiles, files)=>{
     if(!errorInFindingFiles){
-      console.log("Incoming shared files");
-      console.log(files);
-      next(res.status(200).send(files));
+      filesToBeSent =[];
+      for(var [i,file] of files.entries()){ 
+           User.findById(file["creator"],async(errorInFindingCreator,creatorDets)=>{
+               if(!errorInFindingCreator){
+                 file.creator= creatorDets["name"]
+                 filesToBeSent.push(file)
+               } 
+           }).then(()=>{
+            if(i==(files.length-1)){
+              res.status(200).send(filesToBeSent);
+            }
+           })  
+          }
     }
     else{
       next(res.status(500).send("Couldn't retrieve shared files"))
@@ -638,6 +653,24 @@ router.delete('/file/delete/:fileIDuserID', async(req,res,next)=>{
     }
   });
 });
+
+// API to remove access to a file.
+router.patch('/file/removeUser/:fileIDuserID', async(req, res, next)=>{
+  // #swagger.tags = ['File']
+  // #swagger.description = 'Endpoint removing access to a file.'
+  let fileID = req.params.fileIDuserID.split(',')[0];
+  let userID = req.params.fileIDuserID.split(',')[1];
+
+  FILE.findOneAndUpdate({"_id":fileID, $or:[{'viewers': userID},{'users':userID}]},{ $pullAll: {users:[ObjectId(userID)]}, $pullAll: {viewers:[ObjectId(userID)]} }, async(errorInUpdatingAccess, docs)=>{
+    if(!errorInUpdatingAccess){
+      next(res.status(200).send(docs))
+    }
+    else{
+      next(res.status(500).send("Could not update Access"))
+    }
+  })
+});
+
 
 module.exports = router;
 

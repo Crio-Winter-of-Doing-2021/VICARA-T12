@@ -23,11 +23,12 @@ router.post('/', async (req,res) => {
     transporter.sendMail(mailOptions, function(error, info){
     if (error) {
         console.log(error);
+        res.send(error)
     } else {
         console.log('Email sent: ' + info.response);
+        res.status(200).send("Success")
     }
     })
-    res.send("test")
 });
 
 module.exports = router;

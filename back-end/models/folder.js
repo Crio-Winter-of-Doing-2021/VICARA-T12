@@ -4,7 +4,7 @@ const AutoIncrement = require("mongoose-sequence")(mongoose);
 
 let FolderSchema = new Schema(
   {
-    folder_id: { type: Number, default: 0 },
+    id: { type: Number, default: 0 },
     Name: { type: String },
     favourite: {type: Boolean, default:false},
     users: [
@@ -16,6 +16,11 @@ let FolderSchema = new Schema(
     files:[
        
     ],
+    size:{
+      type:String,
+      default:'0'
+    },
+    
     folders:[  
           {
             type: mongoose.Schema.Types.ObjectId,
