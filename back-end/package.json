@@ -36,6 +36,7 @@
     "mongoose-sequence": "^5.3.1",
     "morgan": "^1.10.0",
     "multer": "^1.4.2",
+    "nodemailer": "^6.5.0",
     "pug": "^3.0.2",
     "swagger-autogen": "^2.7.9",
     "swagger-ui-express": "^4.1.6"

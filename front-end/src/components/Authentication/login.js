@@ -15,6 +15,11 @@ import Divider from '@material-ui/core/Divider';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Cookies from 'js-cookie';
+import Dialog from '@material-ui/core/Dialog';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
 
 const useStyles = makeStyles((theme) => ({
 	paper: {
@@ -47,6 +52,8 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Login(props) {
 	const history = useHistory();
+	const [openSetting, setOpenSetting] = useState(false);
+	const [forgotEmail, setForgotEmail] = useState("");
 	function handleChangeInForm(event) {
 		props.onChange("register");
 	}
@@ -64,6 +71,37 @@ export default function Login(props) {
             [e.target.name]: e.target.value.trim(),
         });
 	};
+
+	const handleChangeForgotEmail = (e) => {
+        setForgotEmail(e.target.value.trim());
+	};
+
+	const handleForgotPassword = () => {
+		setOpenSetting(true)
+	}
+
+	const handleCloseSetting = () =>{
+		setOpenSetting(false)
+		setForgotEmail("")
+	}
+
+	const submitForgotPassword = (e) =>{
+		e.preventDefault();
+		axiosInstance
+			.post('http://localhost:3000/api/user/sendMail/',{
+				email: forgotEmail
+			})
+			.then(response => { 
+				Cookies.set('jwt', response.headers['Set-Cookie'])
+				setOpenSetting(false)
+			})
+			.catch(error => {
+				// If invalid data is given, reset the state so data is cleared. 
+				toastContainerFunction(error.response.data)
+				setOpenSetting(false)
+			});
+			setOpenSetting(false)
+	}
 
 	toast.configure();
 	function toastContainerFunction(errorMessage) {
@@ -180,6 +218,42 @@ export default function Login(props) {
 						Sign Up
 					</Button>
 				</Typography>
+				<div onClick={handleForgotPassword}>
+					<Typography component="h6" variant="h6" color="textSecondary" style={{cursor: 'pointer'}}>
+						Forgot Password?
+					</Typography>
+				</div>
+				<div>
+					<Dialog open={openSetting} onClose={handleCloseSetting} aria-labelledby="form-dialog-title">
+						<DialogTitle id="form-dialog-title">
+						<Typography> Enter Email for Password Reset Link</Typography>
+						</DialogTitle>  
+						<DialogContent>
+						<Grid container spacing={2}>
+							<Grid item xs={12}>
+							<TextField
+								variant="outlined"
+								required
+								fullWidth
+								id="forgotEmail"
+								label="Enter Email"
+								name="forgotEmail"
+								autoComplete="Enter Email ID"
+								onChange={handleChangeForgotEmail}
+							/>
+							</Grid>
+						</Grid>
+						</DialogContent>
+						<DialogActions>
+							<Button onClick={handleCloseSetting} color="primary">
+								Cancel
+							</Button>
+							<Button onClick={submitForgotPassword} color="primary">
+								Submit
+							</Button>
+						</DialogActions>
+					</Dialog>
+				</div>
 			</div>
 		</Container>
 	);

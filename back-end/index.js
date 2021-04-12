@@ -12,6 +12,7 @@ const debug = require('debug')('app:startup');
 const welcomePage = require('./routes/welcomePage');
 const users = require('./routes/users');
 const LinkedInProfileInfo = require('./routes/LinkdeInAuth')
+const sendMail = require('./routes/sendMail')
 const loginPage = require('./routes/loginPage');
 const path = require('path');
 const app = express();
@@ -33,13 +34,13 @@ app.use(cookieParser())
 app.use(helmet());
 app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Headers', '*');
-    res.setHeader('Access-Control-Allow-Origin', 'https://vicara-storage-drive.netlify.app');
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001');
     res.setHeader('Access-Control-Allow-Methods', 'PATCH, DELETE, GET, POST, OPTIONS,PUT');
     res.setHeader('Access-Control-Allow-Credentials', true);
     next();
 });
 var corsOptions = {
-    origin: 'https://vicara-storage-drive.netlify.app',
+    origin: 'http://localhost:3001',
     credentials : true
    }
 
@@ -47,9 +48,11 @@ app.options('*', cors(corsOptions));
 //app.use(cors())
 app.use('/api/user', users);
 app.use('/api/user/login',auth);
+app.use('/api/user/sendMail', sendMail);
 app.use('/api',[authentication.auth],uploadController);
 app.use('/welcome',welcomePage);
 app.use('/api/LinkedInProfileInfo', LinkedInProfileInfo);
+
 
 
 
