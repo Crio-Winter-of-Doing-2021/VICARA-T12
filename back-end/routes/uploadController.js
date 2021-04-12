@@ -24,6 +24,7 @@ var storage = multer.diskStorage({
 var upload = multer({storage:storage});
 
 const { ObjectID } = require("bson");
+const file = require("../models/file");
 const s3bucket = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -486,11 +487,31 @@ router.post('/folder', upload.single('folder'),async(req, res, next)=>{
 router.get('/sharedFiles/:id', async(req,res,next)=>{
   const userID = req.params.id.toString();
   console.log(userID);
-  FILE.find({$or:[{'users':ObjectId(userID)},{'viewers':ObjectId(userID)}], 'creator': { $ne: ObjectId(userID) } },(errorInFindingFiles, files)=>{
+  FILE.find({$or:[{'users':ObjectId(userID)},{'viewers':ObjectId(userID)}], 'creator': { $ne: ObjectId(userID) } }).lean().exec((errorInFindingFiles, files)=>{
        if(!errorInFindingFiles){
-         console.log("Incoming shared files");
-         console.log(files);
-         next(res.status(200).send(files));
+        filesToBeSent =[];
+         for(var [i,file] of files.entries())
+         { 
+           User.findById(file["creator"],async(errorInFindingCreator,creatorDets)=>{
+               if(!errorInFindingCreator)
+               {
+                 file.creator= creatorDets["name"]
+                 console.log("#######3")
+                 console.log(file);
+                 filesToBeSent.push(file)
+               }
+               
+           }).then(()=>{
+            if(i==(files.length-1))
+            {
+            
+             res.status(200).send(filesToBeSent);
+            }
+           })
+             
+             
+          }
+        
        }
        else
        {
