@@ -80,14 +80,13 @@ router.delete(`/fileInFolder/:dets`, async(req,res,next)=>{
 // API to display the files within folders. 
 router.get(`/displayfileswithinfolder/:dets`, async(req,res,next)=>{
   // #swagger.tags = ['Folder']
-  // #swagger.description = 'Endpoint used for displaying files in folders.'
+  // #swagger.description = 'Endpoint used for viewing files inside Folder.'
   let folderId = req.params.dets.split(',')[0]
   let userId = req.params.dets.split(',')[1];
-  // Mongodb function to find file inside folder.
-  FILE.find(       
-    {
-      'users':ObjectId(userId),
-      'parentFolder': folderId
+  //Mongodb function to find the FileID.
+  FILE.find({
+    'creator':ObjectId(userId),
+    'parentFolder': folderId
     },
     null,
     {
@@ -107,11 +106,14 @@ router.get(`/displayfileswithinfolder/:dets`, async(req,res,next)=>{
 router.get('/url/:fileNameUserID', async(req,res, next)=>{
   // #swagger.tags = ['File']
   // #swagger.description = 'Endpoint used for viewing files.'
-
   fileName = req.params.fileNameUserID.split(',')[0].toString();
   userID = req.params.fileNameUserID.split(',')[1].toString();
-  // Mongodb function to find a file using id.
-  FILE.findOne({"_id":ObjectId(fileName),
+  console.log(fileName);
+  console.log(userID);
+  if(fileName){
+    // Mongodb function to find file.
+    FILE.findOne({"_id":ObjectId(fileName),
+    // Second argument -> User can be a viewer or a creator. 
     $or:[ 
       {'users':ObjectId(userID)},
       {'viewers':ObjectId(userID)} 
@@ -130,30 +132,33 @@ router.get('/url/:fileNameUserID', async(req,res, next)=>{
           Key: doc["_id"].toString(),
           Expires: 60 * 5
         };
-      try{
-        const url = await new Promise(async (resolve, reject) => {
-          await s3bucket.getSignedUrl('getObject', params, async(err, url) => {
-            await err ? reject(err) : resolve(url);
+        try{
+          const url = await new Promise(async (resolve, reject) => {
+            await s3bucket.getSignedUrl('getObject', params, async(err, url) => {
+              await err ? reject(err) : resolve(url);
+            });
           });
-        });
-        await next(res.status(200).send(url));
-      }catch (err) {
-        if (err) {
-          await next(res.status(500).send(err));
+          await next(res.status(200).send(url));
+        }catch (err) {
+          if (err) {
+            await next(res.status(500).send(err));
+          }
         }
       }
-    }
-  }) 
+    })
+  }
+  else{
+    res.status(500).send("no file");
+  }
 });
 
 // API to get the folders.
 router.get('/folder/:id', async(req,res,next)=>{
   // #swagger.tags = ['Folder']
-  // #swagger.description = 'Endpoint used for getting folder id.'
-  // mongodb function to find folders using id's.
+  // #swagger.description = 'Endpoint used for viewing folders.'
   FOLDER.find(
     {
-      'users':ObjectId(req.params.id),
+      'creator':ObjectId(req.params.id),
       'isIndependant':true 
     },
     null,
@@ -213,7 +218,81 @@ router.patch('/renameFile/:fileIDnewNameUserID', async(req,res, next)=>{
   })
 })
 
-// API to give file access to shared users. 
+router.patch('/addUserToFolder/:accessFolderIDmailAddedUserID',async(req,res,next)=>{
+  access = req.params.accessFolderIDmailAddedUserID.split(',')[0]
+  folderID = req.params.accessFolderIDmailAddedUserID.split(',')[1];
+  mailAdded = req.params.accessFolderIDmailAddedUserID.split(',')[2];
+  userID = req.params.accessFolderIDmailAddedUserID.split(',')[3];
+
+  await User.findOne({'email':mailAdded}, async(errorInUser, foundDoc)=>{
+    if(errorInUser)
+    next(res.status(400).send(errorInUser));
+    else if(!foundDoc)
+    next(res.status(400).send("can't find user"))
+    
+    else
+    {
+      if(access=="All")
+      {  
+        
+          await FOLDER.findOneAndUpdate({'_id':ObjectId(folderID),'users':userID,'users': { $ne: ObjectId(foundDoc["_id"]) }}, {$push: {viewers: foundDoc["_id"] }}, async(errorInUpdatingUser, userDocs)=>{
+          if(userDocs==null)
+          next(res.status(500)).send("The user can't be added by you");
+          else if(!errorInUpdatingUser)
+          {
+           await FILE.find({'parentFolder': userDocs["_id"], 'users':userID, 'users': { $ne: ObjectId(foundDoc["_id"]) }},(errorInUpdatingFilesWithinFolder, filesWithinFolder)=>{
+             if(errorInUpdatingFilesWithinFolder)
+                 next(res.status(500).send("Couldn't update files within folder"))
+              else if(filesWithinFolder.length)
+              {
+                  filesWithinFolder.forEach((fileWithinFolder)=>{
+                    fileWithinFolder["users"].push(foundDoc["_id"]);
+                    fileWithinFolder.save();
+                   
+                  })
+                  next(res.status(200).send(filesWithinFolder));
+              }
+              else{
+                next(res.status(400).send("No files within folder"))
+              }
+           });
+          }
+          else
+          next(res.status(500).send(errorInUpdatingUser))
+          });
+      }
+        
+
+  if(access=="View"){
+    await FOLDER.findOneAndUpdate({'_id':ObjectId(folderID),'users':userID,'viewers': { $ne: ObjectId(foundDoc["_id"]) }}, {$push: {viewers: foundDoc["_id"] }}, async(errorInUpdatingViewer, viewerDocs)=>{
+      if(viewerDocs==null)
+      next(res.status(400).send("The user can't be added by you"))
+      else if(!errorInUpdatingViewer)
+      {
+        await FILE.find({'parentFolder': viewerDocs["_id"], 'users':userID, 'viewers': { $ne: ObjectId(foundDoc["_id"]) }},async(errorInUpdatingFilesWithinFolder, filesWithinFolder)=>{
+          if(errorInUpdatingFilesWithinFolder)
+              next(res.status(500).send("Couldn't update files within folder"))
+           else if(filesWithinFolder.length)
+           {
+               filesWithinFolder.forEach((fileWithinFolder)=>{
+                 fileWithinFolder["viewers"].push(foundDoc["_id"]);
+                 fileWithinFolder.save();
+                
+               })
+               next(res.status(200).send(filesWithinFolder));
+           }
+           else{
+             next(res.status(400).send("No files within folder"))
+           }
+        });
+      }
+      else
+      next(res.status(500).send(errorInUpdatingViewer))
+    } )
+  }
+  }
+  })
+});
 router.patch('/addUserToFile/:accessFileIDmailAddedUserID', async(req,res,next)=>{
   // #swagger.tags = ['File']
   // #swagger.description = 'Endpoint used for sharing files.'
@@ -270,9 +349,7 @@ router.get('/:id', async(req,res,next)=>{
   // Mongodb function to find file.
   FILE.find({
       // Checking if file is uploaded by user or shared to user.
-      $or:[ 
-        {'users':ObjectId(req.params.id)}, {'viewers':ObjectId(req.params.id)} 
-      ],
+      'creator':ObjectId(req.params.id),
       'isIndependant':true
     },
     null,
@@ -290,60 +367,57 @@ router.get('/:id', async(req,res,next)=>{
   );
 });
 
-
+// API to delete folder.
 router.delete('/folder/:folderIDuserID', async(req,res,next)=>{
-
-// #swagger.tags = ['Folder']
-// #swagger.description = 'Endpoint used for deleting a folder.'
-
-let folderID = req.params.folderIDuserID.split(',')[0];
-let userID = req.params.folderIDuserID.split(',')[1];
-console.log(`-----------${folderID}-----`);
-console.log(userID)
+  // #swagger.tags = ['Folder']
+  // #swagger.description = 'Endpoint used for deleting a folder.'
+  let folderID = req.params.folderIDuserID.split(',')[0];
+  let userID = req.params.folderIDuserID.split(',')[1];
+  // Mongodb function to find folder
   FILE.find({parentFolder: ObjectId(folderID), users: ObjectId(userID)},(err,docs)=>{
-   if(!err){console.log("Going to delete them from s3 bucket");
-   docs.forEach((doc)=>{
-    var params = {  Bucket: process.env.AWS_BUCKET_NAME, Key: doc["_id"].toString() };
-    s3bucket.deleteObject(params, function(err, data) {
-      if (err) {
-        console.log(err, err.stack);  
-        next(res.status(500).send(err));
-      }// error
-                     // deleted
-    })
-   })
-  
-  }
-   else
-   throw err;
+    if(!err){
+      console.log("Going to delete them from s3 bucket");
+      docs.forEach((doc)=>{
+        var params = {  Bucket: process.env.AWS_BUCKET_NAME, Key: doc["_id"].toString() };
+        // Deleting from the AWS s3 bucket.
+        s3bucket.deleteObject(params, function(err, data) {
+          if (err) {
+            console.log(err, err.stack);  
+            next(res.status(500).send(err));
+          }
+        })
+      })
+    }
+    else{
+      throw err;
+    }
   });
+  // Mongodb function to delete metadata of folder.
   FILE.deleteMany({ parentFolder: ObjectId(folderID), users: ObjectId(userID)}, (err, docs)=>{
     if(!err)
     {
-      console.log("These are the files");
-      console.log(docs);
       FOLDER.findByIdAndDelete(ObjectId(folderID), (error, deleteddoc)=>{
-        if(!err)
-        {
+        if(!err){
           next(res.status(200).send(deleteddoc));
         }
-        else
-         next(res.status(500).send(error));
+        else{
+          next(res.status(500).send(error));
+        }
       })
     }
-    else
+    else{
       next(res.status(500).send(err));
+    }
   }); 
 });
 
+// API to delete file.
 router.delete('/:fileIDuserID', async(req,res,next)=>{
-
   // #swagger.tags = ['File']
   // #swagger.description = 'Endpoint used for deleting a File.'
-
   let fileID = req.params.fileIDuserID.split(',')[0].toString();
   let userID = req.params.fileIDuserID.split(',')[1].toString();
-  
+  // Mongodbd function to find  and delete file.
   FILE.findOneAndDelete({ _id: ObjectId(fileID), users: ObjectId(userID)}, (err,docs)=>{
     if(err){
       return next(err);
@@ -366,35 +440,38 @@ router.delete('/:fileIDuserID', async(req,res,next)=>{
   });
 });
 
+// API to favourite a file.
 router.patch('/files/:fileIDuserID', async(req,res,next)=>{
-  
   // #swagger.tags = ['File']
   // #swagger.description = 'Endpoint used for adding file to favourites.'
-
   let fileID = req.params.fileIDuserID.split(',')[0];
   let userID = req.params.fileIDuserID.split(',')[1];
+
   FILE.findOne({ _id:ObjectId(fileID.toString()),users:ObjectId(userID.toString())}, function(err, docs) {
-    if(err)
-    res.status(500).send("I can't find the file");
-    else if(docs!=null)
-     { docs.favourite = !(docs.favourite);
-    docs.save(function(err, updatedDoc) {
-      if(!err)res.status(200).send(updatedDoc)
-      else res.status(500).send(err);
-    }); 
-  }
-  else
-  res.status(400).send("The file cannot be made a favourite for you")
-
+    if(err){
+      res.status(500).send("I can't find the file");
+    }
+    else if(docs!=null){ 
+      docs.favourite = !(docs.favourite);
+      docs.save(function(err, updatedDoc) {
+        if(!err){
+          res.status(200).send(updatedDoc)
+        }
+        else{
+          res.status(500).send(err);
+        }
+      }); 
+    }
+    else{
+      res.status(400).send("The file cannot be made a favourite for you")
+    }
   });
-
 });
 
+// API to favourite a folder.
 router.patch('/folder/:folderIDuserID', async(req,res,next)=>{
-
   // #swagger.tags = ['Folder']
   // #swagger.description = 'Endpoint used for adding folder to favourites.'
-
   let folderID = req.params.folderIDuserID.split(',')[0];
   let userID = req.params.folderIDuserID.split(',')[1];
   FOLDER.findOne({ _id:folderID, users: userID}, function(err, docs) {
@@ -406,173 +483,155 @@ router.patch('/folder/:folderIDuserID', async(req,res,next)=>{
   });
 });
 
+// API to upload a folder.
 router.post('/folder', upload.single('folder'),async(req, res, next)=>{
-
   // #swagger.tags = ['Folder']
   // #swagger.description = 'Endpoint used for uploading a folder.'
-
   var newFolderUploaded = {
     Name: req.body.folderName,
     users: [req.body.users], 
-    viewers:[req.body.users]
-    }
-
+    viewers:[req.body.users],
+    creator: req.body.users
+  }
+  // creating instance of folder with params.
   var document = new FOLDER(newFolderUploaded);
   document.save((err, docs)=>{
-    if(err)
-    {
+    if(err){
       console.log(err);
       res.status(500).send(err);
-    
     }
-    else
-    res.status(200).send(docs);
+    else{
+      res.status(200).send(docs);
+    }
   });
 });
 
-router.post('/fileinfolder', upload.single('file'), async(req,res,next)=>{
+// API to get a shared File.
+router.get('/sharedFiles/:id', async(req,res,next)=>{
+  // #swagger.tags = ['File']
+  // #swagger.description = 'Endpoint used for viewing a shared file.'
+  const userID = req.params.id.toString();
+  console.log(userID);
+  // MongoDb function to retrieve the shared files.
+  FILE.find({'users':ObjectId(userID)},(errorInFindingFiles, files)=>{
+    if(!errorInFindingFiles){
+      console.log("Incoming shared files");
+      console.log(files);
+      next(res.status(200).send(files));
+    }
+    else{
+      next(res.status(500).send("Couldn't retrieve shared files"))
+    }
+  })
+})
 
+// API to post file in folder.
+router.post('/fileinfolder', upload.single('file'), async(req,res,next)=>{
   // #swagger.tags = ['Folder']
   // #swagger.description = 'Endpoint used for uploading a file in folder.'
-
-const file = req.file;
-const folderID = req.body.folderID;
-console.log(file);
-
-var newFileUploaded = {
-  description: req.body.description,
-  s3_key: file.originalname,
-  users: [req.body.users],
-  viewers: [req.body.users],
-  parentFolder: folderID,
-  isIndependant: false
-}
-fs.readFile(file.path, (error, fileContent)=>{
-  if(error)
-   {
-     console.log("error in fs");
-     res.status(500).send("Hmm, looks like there is something wrong with the code");
-   }
-  else if(!error)
-  {var params = {
-    Bucket: process.env.AWS_BUCKET_NAME,
-    
-    Body: fileContent,
-    ContentType: file.mimetype,
-    
-  };
-  
-var document = new FILE(newFileUploaded);
-document.save(function(filesaveerror, newFile) {
-  
-  if(!filesaveerror){
-      console.log(newFile);
-     
-      FOLDER.findByIdAndUpdate(folderID,{  $push: { files: newFile._id }}, function(errorinfolder, docs){
-        if(!errorinfolder)
-        {
-
-          params.Key = newFile["_id"].toString();
-
-
-          s3bucket.putObject(params, async function(s3err, data) {
-            if (s3err) {
-              await console.log(err);
-              await next(res.status(500).json({ error: true, Message: s3err }));
-            } else {
-              await unlinkAsync(req.file.path)
-              await next(res.status(200).send(docs));
-              
-            }});
-           
-          
-
+  const file = req.file;
+  const folderID = req.body.folderID;
+  console.log(file);
+  // Storing the params data in a var.
+  var newFileUploaded = {
+    description: req.body.description,
+    s3_key: file.originalname,
+    users: [req.body.users],
+    viewers: [req.body.users],
+    creator: req.body.users,
+    parentFolder: folderID,
+    isIndependant: false
+  }
+  // Reading and checking if file is present in fs.
+  fs.readFile(file.path, (error, fileContent)=>{
+    if(error){
+      console.log("error in fs");
+      res.status(500).send("Hmm, looks like there is something wrong with the code");
+    }
+    else if(!error){
+      var params = {
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Body: fileContent,
+        ContentType: file.mimetype,
+      };
+      // Creating an instance of file.
+      var document = new FILE(newFileUploaded);
+      document.save(function(filesaveerror, newFile) {
+        if(!filesaveerror){
+          console.log(newFile); 
+          // Function to save file in folder in AWS
+          FOLDER.findByIdAndUpdate(folderID,{  $push: { files: newFile._id }}, function(errorinfolder, docs){
+            if(!errorinfolder){
+              params.Key = newFile["_id"].toString();
+              s3bucket.putObject(params, async function(s3err, data) {
+                if (s3err) {
+                  await next(res.status(500).json({ error: true, Message: s3err }));
+                } 
+                else{
+                  await unlinkAsync(req.file.path)
+                  await next(res.status(200).send(docs));
+                }});
+            }
+            else
+            next(res.status(500).send(errorinfolder));
+          });
         }
-        else
-        next(res.status(500).send(errorinfolder));
+        if (filesaveerror) {
+          next(res.status(500).send(filesaveerror))
+        }
       });
-  }
-  if (filesaveerror) {
-   next(res.status(500).send(filesaveerror))
-  }
-});
-}
-
-});
-
- 
-
- 
-
-
-
-
-
-
+    }
+  });
 })
-router.post('/', upload.single("file"), async(req,res,next)=>{
 
+// API to post file in S3.
+router.post('/', upload.single("file"), async(req,res,next)=>{
   // #swagger.tags = ['File']
   // #swagger.description = 'Endpoint used for uploading a file.'
+  const file = req.file;
+  // Saving params as instance var.       
+  var newFileUploaded = {
+    description: req.body.description,
+    s3_key: file.originalname,
+    users: [req.body.users],
+    viewers: [req.body.users],
+    creator: req.body.users
+  }
 
-    const file = req.file;
-       
-    var newFileUploaded = {
-      description: req.body.description,
-      s3_key: file.originalname,
-      users: [req.body.users],
-      viewers: [req.body.users]
+  await fs.readFile(file.path, async(error, fileContent)=>{
+    if(error){
+      await next(res.status(500).send("The file can't be uploaded"))
     }
-
-   await fs.readFile(file.path, async(error, fileContent)=>{
-     if(error)
-     {
-       await next(res.status(500).send("The file can't be uploaded"))
-     }
-    if(!error)
-    {
+    if(!error){
       var params = {
       Bucket: process.env.AWS_BUCKET_NAME,
       Body: fileContent,
       ContentType: file.mimetype,
-      
-    }
-    
-    var document = new FILE(newFileUploaded);
-    await document.save(async function(error, newFile) {
-      
-      if(!error){
+      }
+      // Saving instance.
+      var document = new FILE(newFileUploaded);
+      await document.save(async function(error, newFile){
+        if(!error){
           await console.log(newFile);
-         
           params.Key=newFile["_id"].toString();
+          // Saving in s3.
           await s3bucket.putObject(params, async function(err, data) {
-
-        
             if (err) {
               await console.log(err);
               await next(res.status(500).json({ error: true, Message: err }));
-            } else {
+            } 
+            else{
               await unlinkAsync(req.file.path) 
               await next(res.status(200).send(newFile)) 
-              
-               
-             
             }
           });
-
-      }
-      if (error) {
-        res.status(500).send("File couldn't be saved")
-      }
-    });
-  }
-   });
-
-    
-      
-    
-     
-
+        }
+        if (error) {
+          res.status(500).send("File couldn't be saved")
+        }
+      });
+    }
+  });
 })
 
 module.exports = router;

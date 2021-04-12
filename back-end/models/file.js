@@ -22,8 +22,9 @@ let FilesSchema = new Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
-      }
+      },
     ],
+    creator: {type: mongoose.Schema.Types.ObjectId},
     parentFolder: {type:String, default:null},
     isIndependant: {type:Boolean, default:true}
   },
