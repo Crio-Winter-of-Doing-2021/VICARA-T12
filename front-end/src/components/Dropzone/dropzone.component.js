@@ -155,6 +155,8 @@ const [openFileToView, setOpenFileToView] = useState(false);
 const [typeToBeShared, setTypeToBeShared] = useState("");
 const [folderToBeShared, setFolderToBeShared] = useState("");
 const [setSharedRows, sharedRows] = useState([]);
+const [openSharedFileMenu, setOpenSharedFileMenu] = useState(null);
+const [sharedFileDataOfMenu, setSharedFileDataOfMenu] = useState({});
   const handleRenameOpen = (typeProperty, id, name) => {
     setoldName(name);
     setFileToBeRenamed(id);
@@ -169,7 +171,7 @@ const [setSharedRows, sharedRows] = useState([]);
   };
 
   const columns = [
-    { field: 'id', headerName: 'ID', width: 200 },
+    { field: 'id', headerName: 'ID'},
     { field: 's3_key', headerName: 'Name', width: 200 },
    
     {
@@ -185,10 +187,12 @@ const [setSharedRows, sharedRows] = useState([]);
       
    
     },
+    
     {
       field:'type'
       
     }
+    
   ]
 
   const handleRename =()=>{
@@ -575,6 +579,11 @@ const handleMenuOpen=(event, filedata)=>
     setFileDataOfMenu(filedata);
   }
 
+  const handleSharedFilesMenuOpen = (event, filedata)=>{
+    setOpenSharedFileMenu(event.currentTarget);
+    setSharedFileDataOfMenu(filedata);
+  }
+
   const handleFolderMenuOpen=(event, folderData)=>{
     setOpenFolderMenu(event.currentTarget);
     setFolderDataOfMenu(folderData)
@@ -659,9 +668,21 @@ Array.prototype.forEach.call(parent.children, file => {
     getSharedFiles(props.id);
     getFolders(props.id);  
   },[props.id])
+
+
 const handleMenuClose=(()=>{
     
   setOpenMenu((openMenu)=>{
+    return null
+  });
+ 
+
+  
+})
+
+const handleShareMenuClose=(()=>{
+    
+  setOpenSharedFileMenu((openMenu)=>{
     return null
   });
  
@@ -928,6 +949,49 @@ const imageFormats =["jpg","jpeg","png","gif","bmp"];
                               
 
       </Menu>
+      <Menu
+        id="shared-file-menu"
+        anchorEl={openSharedFileMenu}
+        
+        open={Boolean(openSharedFileMenu)}
+       
+        onClick = {handleShareMenuClose}
+        onClose={handleShareMenuClose}
+      >
+       
+       
+                                
+                                 
+                               
+      
+        
+        
+                                    <IconButton onClick={()=>{handleRenameOpen('file',fileDataOfMenu["_id"], fileDataOfMenu["s3_key"])}}aria-label="rename" title="edit name">
+                                   <EditIcon/>
+                                    </IconButton>
+                                  
+                                  
+                                    <IconButton  onClick={()=>handleShareOpen("file",fileDataOfMenu["_id"])}aria-label="share" title="share">
+                                      <ShareIcon/>
+                                    </IconButton> 
+                              
+                                 
+                                 
+                                    <IconButton onClick ={()=>{openFile(sharedFileDataOfMenu["_id"])}}>
+                                   <VisibilityIcon />
+                                    </IconButton>
+                                   
+                                    <IconButton aria-label="share" onClick={()=>{downloadFile(["_id"])}}>
+                                  <OpenInNewIcon/> 
+                                </IconButton>
+                             
+                              
+
+      </Menu>
+
+
+
+
           <div className="file-display-container">
             {
               props.allFileUpload &&
@@ -1229,7 +1293,11 @@ const imageFormats =["jpg","jpeg","png","gif","bmp"];
                 
                    
                <div style={{ height: 300, width: '100%' }}>
-                    <DataGrid rows={sharedFilesinDB} columns={columns} pageSize={5} checkboxSelection />
+                    <DataGrid  columns={columns.map((column) => ({
+    ...column,
+    disableClickEventBubbling: true,
+  
+  }))} onRowClick={(file, event)=>{handleSharedFilesMenuOpen(event,file["row"])}} rows={sharedFilesinDB} columns={columns} pageSize={5} checkboxSelection />
                  </div>
              
 }
