@@ -41,7 +41,7 @@ import VisibilityIcon from '@material-ui/icons/Visibility';
 import './dropzone.component.css'
 import { Link} from "react-router-dom"
 import CancelIcon from '@material-ui/icons/Cancel';
-
+import { DataGrid } from '@material-ui/data-grid';
 
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
@@ -154,7 +154,10 @@ const [openFileToView, setOpenFileToView] = useState(false);
  const [linkToView, setLinkToView] = useState("");
 const [typeToBeShared, setTypeToBeShared] = useState("");
 const [folderToBeShared, setFolderToBeShared] = useState("");
-
+const [setSharedRows, sharedRows] = useState([]);
+const [openSharedFileMenu, setOpenSharedFileMenu] = useState(null);
+const [sharedFileDataOfMenu, setSharedFileDataOfMenu] = useState({});
+const [sizeOccupied, setSizeOccupied] =  useState(0)
   const handleRenameOpen = (typeProperty, id, name) => {
     setoldName(name);
     setFileToBeRenamed(id);
@@ -168,10 +171,38 @@ const [folderToBeShared, setFolderToBeShared] = useState("");
     setNewName("");
   };
 
+  const columns = [
+    
+    { field: 's3_key', headerName: 'Name', width: 200 },
+   
+    {
+      field: 'creator',
+      headerName: 'Owner',
+     
+      width: 200,
+    },
+    {
+      field: 'createdAt',
+      headerName: 'Created At',
+      width: 200
+      
+   
+    },
+    {
+      field:'size',
+      headerName: 'File Size',
+
+    },
+    
+    {
+      field:'type'
+      
+    }
+    
+  ]
+
   const handleRename =()=>{
-    alert(newName);
-    alert(filetobeRenamed);
-    alert(type);
+  
     
     if(type === "file"&&newName.length&&newName.length<=20)
     {FileService.renameFile(filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), props.id).then((docs)=>{
@@ -195,8 +226,31 @@ const [folderToBeShared, setFolderToBeShared] = useState("");
 
   }
 
+  else if(type === "sharedFile"&&newName.length&&newName.length<=20)
+    {FileService.renameFile(filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), props.id).then((docs)=>{
+      if(docs!=null)
+      {
+      let foundIndex = sharedFilesinDB.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
+      let newfilesinDB = [...sharedFilesinDB];
+      newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], s3_key: docs["data"]["s3_key"]}
+      setSharedFilesinDB(newfilesinDB); 
+      }
+      
+    }).catch((err)=>{
+    
+      toastErrorContainerFunction(err.toString().split(':')[1]);
+
+    }).finally(()=>{
+      handleRenameClose();
+      setoldName("");
+      setNewName("");
+    })
+
+  }
+
+
   
-    if(type === "folder"&&newName.length&&newName.length<=20){
+   else if(type === "folder"&&newName.length&&newName.length<=20){
       FileService.renameFolder(filetobeRenamed, newName, props.id).then((docs)=>{
         let foundIndex = foldersinDB.findIndex((folderinDB)=>folderinDB["_id"] === filetobeRenamed);
         let newfoldersinDB = [...foldersinDB];
@@ -342,6 +396,7 @@ const [folderToBeShared, setFolderToBeShared] = useState("");
       let newfilesinDB = [...filesinDB];
       newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], favourite:!(newfilesinDB[foundIndex]["favourite"])}
       setfilesinDB(newfilesinDB); 
+     
       
     }).catch((error)=>{
       toastErrorContainerFunction("Error in marking as favourite");
@@ -349,6 +404,7 @@ const [folderToBeShared, setFolderToBeShared] = useState("");
       
     })
   };
+  
   
 
   const downloadFile=(fileName)=>{
@@ -362,6 +418,12 @@ const [folderToBeShared, setFolderToBeShared] = useState("");
     FileService.downloadFile( fileName, userDetails).then((link)=>{
       setOpenFileToView(true);
       setLinkToView(link["data"])
+      
+    })
+   }
+   const returnFileLink=(fileName)=>{
+    FileService.downloadFile( fileName, props.id ).then((link)=>{
+      return(link["data"])
       
     })
    }
@@ -445,14 +507,19 @@ const [folderToBeShared, setFolderToBeShared] = useState("");
   }
 
   const uploadFiles = (file) => {
-    console.log(file);
+    
     fetchData()
     FileService.upload(file, [userDetails])
    .then(
     (docs)=>{
       toastContainerFunction(`Uploading ${file.name} was successful`)
-      
-      setfilesinDB(prevArray=>[...prevArray, docs["data"]]);
+      FileService.downloadFile(docs["data"]["_id"], props.id ).then((link)=>{
+        docs["data"]["returnFileLink"] = link["data"];
+        setSizeOccupied((sizeOccupied)=>sizeOccupied+parseInt(file["size"]))
+          setfilesinDB(prevArray=>[...prevArray,docs["data"]]);
+     
+        })
+     
     }).catch((err)=>{
       toastErrorContainerFunction("Couldn't upload the file to the drive")
     }).finally(()=>{
@@ -474,9 +541,10 @@ const [folderToBeShared, setFolderToBeShared] = useState("");
       console.log(res);
       for(let i = 0; i < theFiles.length; i++){       
         uploadFilesInFolder(res["data"]["_id"], theFiles[i]).then((docs)=>{
+          setSizeOccupied((sizeOccupied)=>sizeOccupied+parseInt(theFiles[i]["size"]))
           console.log(docs);  
           if(i===(theFiles.length-1)){
-            
+           
             setfoldersinDB((prevArray)=>[...prevArray, docs["data"]]);
             toastContainerFunction(`Uploading ${folder} was successful`)
           } 
@@ -491,7 +559,10 @@ const [folderToBeShared, setFolderToBeShared] = useState("");
   
 
   const removeFile = (fileID)=>{
+    
+    
     FileService.removeFile(fileID, userDetails).then(()=>{
+      handleMenuClose();
       setfilesinDB(filesinDB.filter((file)=>file["_id"] !== fileID));
       toastContainerFunction(`removed File!`)
       
@@ -501,6 +572,7 @@ const [folderToBeShared, setFolderToBeShared] = useState("");
   }
 
   const removeFolder = (folderID)=>{
+    handleFolderMenuClose();
     FileService.removeFolder(folderID,userDetails).then(()=>{
       setfoldersinDB(foldersinDB.filter((folder)=>folder["_id"] !== folderID));
       toastContainerFunction(`removed Folder!`);
@@ -516,12 +588,30 @@ const [folderToBeShared, setFolderToBeShared] = useState("");
   useEffect(()=>{ 
       setUserDetails(props.id);
       setUserName(props.name);
+    
+      
+
+
       //console.log(fileImageMap.get("pdf"));
   },[props]);
+  useEffect(()=>{ 
+    setUserDetails(props.id);
+    setUserName(props.name);
+     
+    
+    getFiles(props.id);
+
+    //console.log(fileImageMap.get("pdf"));
+},[]);
  
 const handleMenuOpen=(event, filedata)=>
   {setOpenMenu(event.currentTarget);
     setFileDataOfMenu(filedata);
+  }
+
+  const handleSharedFilesMenuOpen = (event, filedata)=>{
+    setOpenSharedFileMenu(event.currentTarget);
+    setSharedFileDataOfMenu(filedata);
   }
 
   const handleFolderMenuOpen=(event, folderData)=>{
@@ -533,7 +623,23 @@ const handleMenuOpen=(event, filedata)=>
     if(id)
     {
       FileService.getFiles({id}).then((response)=>{
-        setfilesinDB(response.data);  
+        
+        for(let [i,file] of [...response.data].entries())
+        {
+          FileService.downloadFile(file["_id"], props.id ).then((link)=>{
+          file["returnFileLink"] = link["data"];
+           setSizeOccupied((sizeOccupied)=>sizeOccupied+parseInt(file["size"]))
+          console.log("This is the file")
+          console.log(response.data)
+       if(i>=[...response.data].length-1)
+       {
+         setfilesinDB(response.data); 
+       } 
+          })
+
+            
+        }
+
         console.log(filesinDB);
       }).catch((err)=>{
         console.log(err);
@@ -542,14 +648,26 @@ const handleMenuOpen=(event, filedata)=>
       });
     }
   }
-
+let rows =[]
   const getSharedFiles=(id)=>{
     console.log(id);
     if(id)
     {
       FileService.getSharedFiles(id).then((response)=>{
-        setSharedFilesinDB(response.data);  
-        console.log("----------incoming shared files----------------")
+        
+        console.log("shared files")
+        console.log(response.data)
+       
+
+        for(let [i,file] of [...response.data].entries()){
+          file["size"] = fileSize(file["size"])
+          if(i==[...response.data].length-1)
+           {
+             setSharedFilesinDB(response.data);
+           }
+        }
+      
+       
         console.log(sharedFilesinDB);
       }).catch((err)=>{
         console.log(err);
@@ -567,6 +685,11 @@ const handleMenuOpen=(event, filedata)=>
     if(id)
     {
       FileService.getFolders({id}).then((response)=>{
+
+        for(let folder of [...response.data])
+        {
+          setSizeOccupied((sizeOccupied)=>{sizeOccupied+=folder["size"]})
+        }
         setfoldersinDB(response.data);  
         console.log(foldersinDB);
       }).catch((err)=>{
@@ -583,9 +706,21 @@ const handleMenuOpen=(event, filedata)=>
     getSharedFiles(props.id);
     getFolders(props.id);  
   },[props.id])
+
+
 const handleMenuClose=(()=>{
     
   setOpenMenu((openMenu)=>{
+    return null
+  });
+ 
+
+  
+})
+
+const handleShareMenuClose=(()=>{
+    
+  setOpenSharedFileMenu((openMenu)=>{
     return null
   });
  
@@ -600,6 +735,20 @@ const handleFolderMenuClose=(()=>{
 
   
 })
+
+const imageFormats =["jpg","jpeg","png","gif","bmp"];
+
+const deleteAccessToSharedFile=(fileId)=>{
+FileService.removeAccess(fileId, userDetails).then((docs)=>{
+  setSharedFilesinDB(sharedFilesinDB.filter((file)=>file["_id"] !== fileId));
+  toastContainerFunction(`removed access`)
+}).catch((err)=>{
+  toastErrorContainerFunction("Could not remove the file from the shared List")
+})
+
+}
+
+
   const fileSize = (size) => {
       if (size === 0) return '0 Bytes';
       const k = 1024;
@@ -614,7 +763,7 @@ const handleFolderMenuClose=(()=>{
       <Container 
         maxWidth="lg" className="dropContainer"
       >
-
+        <Typography>{fileSize(sizeOccupied)}</Typography>
         <Typography 
           onDragOver={dragOver}
           onDragEnter={dragEnter}
@@ -807,6 +956,7 @@ const handleFolderMenuClose=(()=>{
                                   
 
       </Menu>
+      
       <Menu
         id="file-menu"
         anchorEl={openMenu}
@@ -848,6 +998,53 @@ const handleFolderMenuClose=(()=>{
                               
 
       </Menu>
+      <Menu
+        id="shared-file-menu"
+        anchorEl={openSharedFileMenu}
+        
+        open={Boolean(openSharedFileMenu)}
+       
+        onClick = {handleShareMenuClose}
+        onClose={handleShareMenuClose}
+      >
+       
+       
+                                
+                                 
+                               
+      
+        
+        
+                                    <IconButton onClick={()=>{handleRenameOpen('sharedFile',sharedFileDataOfMenu["_id"], sharedFileDataOfMenu["s3_key"])}}aria-label="rename" title="edit name">
+                                   <EditIcon/>
+                                    </IconButton>
+                                  
+                                  
+                                    <IconButton  onClick={()=>handleShareOpen("file",sharedFileDataOfMenu["_id"])}aria-label="share" title="share">
+                                      <ShareIcon/>
+                                    </IconButton> 
+                              
+                                 
+                                 
+                                    <IconButton onClick ={()=>{openFile(sharedFileDataOfMenu["_id"])}}>
+                                   <VisibilityIcon />
+                                    </IconButton>
+                                   
+                                    <IconButton aria-label="share" onClick={()=>{downloadFile(sharedFileDataOfMenu["_id"])}}>
+                                  <OpenInNewIcon/> 
+                                </IconButton>
+                             
+                              <IconButton>
+                                <DeleteIcon aria-label="Delete Access" onClick={()=>{deleteAccessToSharedFile(sharedFileDataOfMenu["_id"])}}/>
+
+                               
+                              </IconButton>
+
+      </Menu>
+
+
+
+
           <div className="file-display-container">
             {
               props.allFileUpload &&
@@ -882,9 +1079,10 @@ const handleFolderMenuClose=(()=>{
                               />
                               <CardMedia
                                   className={classes.cardMedia} 
-                                  // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
-                                  image = {fileImageMap.get( filedata["s3_key"].split('.').pop() )?fileImageMap.get( filedata["s3_key"].split('.').pop() ) : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAb1BMVEX////0myXzlQD0miD1pT/++O/zkwD86dTzlgn0nCX72br0nij0mRP85dH2rVf1qEb97t33unj61Kz++/X1ojn+9Or85Mv4vn/60qj2sF/869j5y5v738P4xIv3tmz5z6L5yJX2r131qU762bX3t3AjskLOAAAE00lEQVR4nO2d7XaiMBRFIdGYSmpt0Wm1Sh067/+MM+UjVgG1yxMSmLN/qguzBa7k5sKNIkIIIYQQQgghhBBCCCFumLog9W31HaOECyavn1PfahWJjF0gjRbZ1rdcgSPDwlJlIRyuDg3j2Jhfvv0cG/7bjS++BR0bxrF/xcTg0Upp+8OpAA5UPOnybSFqRxHK3waaWWJKQ7PxPRRnbHR1nO58j8QZm3Ivytz3QNwxKc9FtfQ9EGdsVWGo330PxB1ZsRPlwvc43LErg430PQ53pKWhCuEK3BGjDzXRqlBUYcwUnVD+X6iZ73G4w7vhu1EQzOS5/dLMt+FGoaaB0qikbSbo1zCdGJRgISmemvMkr4ZLiZ7eS9mImT4NdwKfv5BiHY7hB+wUPFFMgjF8PRMUdwbTOi+j94EY/tb1j14JztK7WM9XVdRSp8epJ8NpPZzYTFbluO6/cFyU2zSnO9GP4dbUMUb/ri8cAZfG5Zbk6uRFL4ZzG0TVa50RRhjuRMth6sPw3cYY9RYhDau5oDjJAHswfK4FZTkUnGFUHfnz76/1bpgu6iBqkvJoAho+BGC4rvPQsc6rxMK4DGc2iKrn+rVRGX4qK3hMYI7J8GBjzPeFhBEZZqIWjL/rjMYwzesgqicnycuxGK4f7HpldvrOSAx/2UVndTh7axyGL8cY83n+3igM91bQNHPPYzC0QdSsWmoGhm94TBnq1oqBwRsubRD9mgy2MHTD3fFCraM2aeCGbzbG6K7KpGEb2pRhPRlsYdCGG3uhtuheZR6w4TFleJwMtjBgw8wKflz62IANq8JReaWqbMiGpeDDlbEP3jC5VskydEM5ufoxGt4ODdH8v4bZ6eItsPAsFMPnthITGt4EDdHQcLyGf5RuMipDd9AQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfEEY/iSLe5n0/LImVAMMyURiKdQDXeoO5xFo9QqEMODvjDqnyCz800HYviBMjSNesBADNe2avhO1GOghtFOQJ46W9xiG6ZhlD4iaLmxIRhDZ9AQDQ3x0BANDfHQEA0N8dAQDQ3xhGOYOupCEorhOr/z0Wwlk+ZNqYEYpgYzx5fNottADF9geZr9+aYDMTygnugZbK5tjsqX6kOghlGuISeikY1wGophtJctxfo/xfxppqKCMXQGDdHQEA8N0dAQDw3R0BAPDdHQEE+bYVLmPEZsuC2YOemG1Gn4sXi6n/zQHHSboUu6DBeYqi993uchGENY1VezXVwghj1Xfbmkw/ANlk1sPGkyEMMpqL2MbHYaC8Qw2iaIqi9lmo+BC8Uwipaz+2lrFReOoStoiIaGeGiIhoZ4aIiGhnhoiIaGeGiIhoZ4aIiGhnh6N/zKqZ31PXWL9GEYy76+LoqmVR/Sy70YgOSFoejqL4OnqlztryNn+bzg/k7EtCpcFU5W0tqYl626zKafb1yvqo4heS9f90VaNSMz8v0RkAK+zG5vW49f7PmCZW9bBQGy+FfQtrZa9ycYpRJ05/1P6GoN5oYZajH0dvSlxksOmKOen3Cz4KJfwSjaatR66C3IjvZ8Tkn3AlOaf13PqLzXHvGW6edG9BBMxerQtqTYF4ib1X5+KxshhBBCCCGEEEIIIYSQe/gLEeV5y4CZvuUAAAAASUVORK5CYII="}
-                                  title="Image title"
+                                  
+                                  image ={imageFormats.includes(filedata["type"])?filedata["returnFileLink"]:fileImageMap.get( filedata["s3_key"].split('.').pop() )?fileImageMap.get( filedata["s3_key"].split('.').pop() ) : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAb1BMVEX////0myXzlQD0miD1pT/++O/zkwD86dTzlgn0nCX72br0nij0mRP85dH2rVf1qEb97t33unj61Kz++/X1ojn+9Or85Mv4vn/60qj2sF/869j5y5v738P4xIv3tmz5z6L5yJX2r131qU762bX3t3AjskLOAAAE00lEQVR4nO2d7XaiMBRFIdGYSmpt0Wm1Sh067/+MM+UjVgG1yxMSmLN/qguzBa7k5sKNIkIIIYQQQgghhBBCCCFumLog9W31HaOECyavn1PfahWJjF0gjRbZ1rdcgSPDwlJlIRyuDg3j2Jhfvv0cG/7bjS++BR0bxrF/xcTg0Upp+8OpAA5UPOnybSFqRxHK3waaWWJKQ7PxPRRnbHR1nO58j8QZm3Ivytz3QNwxKc9FtfQ9EGdsVWGo330PxB1ZsRPlwvc43LErg430PQ53pKWhCuEK3BGjDzXRqlBUYcwUnVD+X6iZ73G4w7vhu1EQzOS5/dLMt+FGoaaB0qikbSbo1zCdGJRgISmemvMkr4ZLiZ7eS9mImT4NdwKfv5BiHY7hB+wUPFFMgjF8PRMUdwbTOi+j94EY/tb1j14JztK7WM9XVdRSp8epJ8NpPZzYTFbluO6/cFyU2zSnO9GP4dbUMUb/ri8cAZfG5Zbk6uRFL4ZzG0TVa50RRhjuRMth6sPw3cYY9RYhDau5oDjJAHswfK4FZTkUnGFUHfnz76/1bpgu6iBqkvJoAho+BGC4rvPQsc6rxMK4DGc2iKrn+rVRGX4qK3hMYI7J8GBjzPeFhBEZZqIWjL/rjMYwzesgqicnycuxGK4f7HpldvrOSAx/2UVndTh7axyGL8cY83n+3igM91bQNHPPYzC0QdSsWmoGhm94TBnq1oqBwRsubRD9mgy2MHTD3fFCraM2aeCGbzbG6K7KpGEb2pRhPRlsYdCGG3uhtuheZR6w4TFleJwMtjBgw8wKflz62IANq8JReaWqbMiGpeDDlbEP3jC5VskydEM5ufoxGt4ODdH8v4bZ6eItsPAsFMPnthITGt4EDdHQcLyGf5RuMipDd9AQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfEEY/iSLe5n0/LImVAMMyURiKdQDXeoO5xFo9QqEMODvjDqnyCz800HYviBMjSNesBADNe2avhO1GOghtFOQJ46W9xiG6ZhlD4iaLmxIRhDZ9AQDQ3x0BANDfHQEA0N8dAQDQ3xhGOYOupCEorhOr/z0Wwlk+ZNqYEYpgYzx5fNottADF9geZr9+aYDMTygnugZbK5tjsqX6kOghlGuISeikY1wGophtJctxfo/xfxppqKCMXQGDdHQEA8N0dAQDw3R0BAPDdHQEE+bYVLmPEZsuC2YOemG1Gn4sXi6n/zQHHSboUu6DBeYqi993uchGENY1VezXVwghj1Xfbmkw/ANlk1sPGkyEMMpqL2MbHYaC8Qw2iaIqi9lmo+BC8Uwipaz+2lrFReOoStoiIaGeGiIhoZ4aIiGhnhoiIaGeGiIhoZ4aIiGhnh6N/zKqZ31PXWL9GEYy76+LoqmVR/Sy70YgOSFoejqL4OnqlztryNn+bzg/k7EtCpcFU5W0tqYl626zKafb1yvqo4heS9f90VaNSMz8v0RkAK+zG5vW49f7PmCZW9bBQGy+FfQtrZa9ycYpRJ05/1P6GoN5oYZajH0dvSlxksOmKOen3Cz4KJfwSjaatR66C3IjvZ8Tkn3AlOaf13PqLzXHvGW6edG9BBMxerQtqTYF4ib1X5+KxshhBBCCCGEEEIIIYSQe/gLEeV5y4CZvuUAAAAASUVORK5CYII="}
+                                   
+                                  title={filedata["s3_key"]}
                               >
                                 
                                 </CardMedia>
@@ -892,7 +1090,7 @@ const handleFolderMenuClose=(()=>{
                               <CardContent className={classes.cardContent}>
                                 <Typography variant="subtitle1" color="textSecondary" >
                                 {filedata["s3_key"].slice(0,20)}<br/>
-                              
+                                {fileSize(filedata["size"])}
                                 </Typography>
                                
                               </CardContent>
@@ -934,7 +1132,7 @@ const handleFolderMenuClose=(()=>{
                           <CardMedia
                               className={classes.cardMedia} 
                               // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
-                              image = {fileImageMap.get( filedata["s3_key"].split('.').pop() )?fileImageMap.get( filedata["s3_key"].split('.').pop() ) : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAb1BMVEX////0myXzlQD0miD1pT/++O/zkwD86dTzlgn0nCX72br0nij0mRP85dH2rVf1qEb97t33unj61Kz++/X1ojn+9Or85Mv4vn/60qj2sF/869j5y5v738P4xIv3tmz5z6L5yJX2r131qU762bX3t3AjskLOAAAE00lEQVR4nO2d7XaiMBRFIdGYSmpt0Wm1Sh067/+MM+UjVgG1yxMSmLN/qguzBa7k5sKNIkIIIYQQQgghhBBCCCFumLog9W31HaOECyavn1PfahWJjF0gjRbZ1rdcgSPDwlJlIRyuDg3j2Jhfvv0cG/7bjS++BR0bxrF/xcTg0Upp+8OpAA5UPOnybSFqRxHK3waaWWJKQ7PxPRRnbHR1nO58j8QZm3Ivytz3QNwxKc9FtfQ9EGdsVWGo330PxB1ZsRPlwvc43LErg430PQ53pKWhCuEK3BGjDzXRqlBUYcwUnVD+X6iZ73G4w7vhu1EQzOS5/dLMt+FGoaaB0qikbSbo1zCdGJRgISmemvMkr4ZLiZ7eS9mImT4NdwKfv5BiHY7hB+wUPFFMgjF8PRMUdwbTOi+j94EY/tb1j14JztK7WM9XVdRSp8epJ8NpPZzYTFbluO6/cFyU2zSnO9GP4dbUMUb/ri8cAZfG5Zbk6uRFL4ZzG0TVa50RRhjuRMth6sPw3cYY9RYhDau5oDjJAHswfK4FZTkUnGFUHfnz76/1bpgu6iBqkvJoAho+BGC4rvPQsc6rxMK4DGc2iKrn+rVRGX4qK3hMYI7J8GBjzPeFhBEZZqIWjL/rjMYwzesgqicnycuxGK4f7HpldvrOSAx/2UVndTh7axyGL8cY83n+3igM91bQNHPPYzC0QdSsWmoGhm94TBnq1oqBwRsubRD9mgy2MHTD3fFCraM2aeCGbzbG6K7KpGEb2pRhPRlsYdCGG3uhtuheZR6w4TFleJwMtjBgw8wKflz62IANq8JReaWqbMiGpeDDlbEP3jC5VskydEM5ufoxGt4ODdH8v4bZ6eItsPAsFMPnthITGt4EDdHQcLyGf5RuMipDd9AQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfEEY/iSLe5n0/LImVAMMyURiKdQDXeoO5xFo9QqEMODvjDqnyCz800HYviBMjSNesBADNe2avhO1GOghtFOQJ46W9xiG6ZhlD4iaLmxIRhDZ9AQDQ3x0BANDfHQEA0N8dAQDQ3xhGOYOupCEorhOr/z0Wwlk+ZNqYEYpgYzx5fNottADF9geZr9+aYDMTygnugZbK5tjsqX6kOghlGuISeikY1wGophtJctxfo/xfxppqKCMXQGDdHQEA8N0dAQDw3R0BAPDdHQEE+bYVLmPEZsuC2YOemG1Gn4sXi6n/zQHHSboUu6DBeYqi993uchGENY1VezXVwghj1Xfbmkw/ANlk1sPGkyEMMpqL2MbHYaC8Qw2iaIqi9lmo+BC8Uwipaz+2lrFReOoStoiIaGeGiIhoZ4aIiGhnhoiIaGeGiIhoZ4aIiGhnh6N/zKqZ31PXWL9GEYy76+LoqmVR/Sy70YgOSFoejqL4OnqlztryNn+bzg/k7EtCpcFU5W0tqYl626zKafb1yvqo4heS9f90VaNSMz8v0RkAK+zG5vW49f7PmCZW9bBQGy+FfQtrZa9ycYpRJ05/1P6GoN5oYZajH0dvSlxksOmKOen3Cz4KJfwSjaatR66C3IjvZ8Tkn3AlOaf13PqLzXHvGW6edG9BBMxerQtqTYF4ib1X5+KxshhBBCCCGEEEIIIYSQe/gLEeV5y4CZvuUAAAAASUVORK5CYII="}
+                              image={imageFormats.includes(filedata["type"])?filedata["returnFileLink"]:fileImageMap.get( filedata["s3_key"].split('.').pop() )?fileImageMap.get( filedata["s3_key"].split('.').pop() ) : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAb1BMVEX////0myXzlQD0miD1pT/++O/zkwD86dTzlgn0nCX72br0nij0mRP85dH2rVf1qEb97t33unj61Kz++/X1ojn+9Or85Mv4vn/60qj2sF/869j5y5v738P4xIv3tmz5z6L5yJX2r131qU762bX3t3AjskLOAAAE00lEQVR4nO2d7XaiMBRFIdGYSmpt0Wm1Sh067/+MM+UjVgG1yxMSmLN/qguzBa7k5sKNIkIIIYQQQgghhBBCCCFumLog9W31HaOECyavn1PfahWJjF0gjRbZ1rdcgSPDwlJlIRyuDg3j2Jhfvv0cG/7bjS++BR0bxrF/xcTg0Upp+8OpAA5UPOnybSFqRxHK3waaWWJKQ7PxPRRnbHR1nO58j8QZm3Ivytz3QNwxKc9FtfQ9EGdsVWGo330PxB1ZsRPlwvc43LErg430PQ53pKWhCuEK3BGjDzXRqlBUYcwUnVD+X6iZ73G4w7vhu1EQzOS5/dLMt+FGoaaB0qikbSbo1zCdGJRgISmemvMkr4ZLiZ7eS9mImT4NdwKfv5BiHY7hB+wUPFFMgjF8PRMUdwbTOi+j94EY/tb1j14JztK7WM9XVdRSp8epJ8NpPZzYTFbluO6/cFyU2zSnO9GP4dbUMUb/ri8cAZfG5Zbk6uRFL4ZzG0TVa50RRhjuRMth6sPw3cYY9RYhDau5oDjJAHswfK4FZTkUnGFUHfnz76/1bpgu6iBqkvJoAho+BGC4rvPQsc6rxMK4DGc2iKrn+rVRGX4qK3hMYI7J8GBjzPeFhBEZZqIWjL/rjMYwzesgqicnycuxGK4f7HpldvrOSAx/2UVndTh7axyGL8cY83n+3igM91bQNHPPYzC0QdSsWmoGhm94TBnq1oqBwRsubRD9mgy2MHTD3fFCraM2aeCGbzbG6K7KpGEb2pRhPRlsYdCGG3uhtuheZR6w4TFleJwMtjBgw8wKflz62IANq8JReaWqbMiGpeDDlbEP3jC5VskydEM5ufoxGt4ODdH8v4bZ6eItsPAsFMPnthITGt4EDdHQcLyGf5RuMipDd9AQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfEEY/iSLe5n0/LImVAMMyURiKdQDXeoO5xFo9QqEMODvjDqnyCz800HYviBMjSNesBADNe2avhO1GOghtFOQJ46W9xiG6ZhlD4iaLmxIRhDZ9AQDQ3x0BANDfHQEA0N8dAQDQ3xhGOYOupCEorhOr/z0Wwlk+ZNqYEYpgYzx5fNottADF9geZr9+aYDMTygnugZbK5tjsqX6kOghlGuISeikY1wGophtJctxfo/xfxppqKCMXQGDdHQEA8N0dAQDw3R0BAPDdHQEE+bYVLmPEZsuC2YOemG1Gn4sXi6n/zQHHSboUu6DBeYqi993uchGENY1VezXVwghj1Xfbmkw/ANlk1sPGkyEMMpqL2MbHYaC8Qw2iaIqi9lmo+BC8Uwipaz+2lrFReOoStoiIaGeGiIhoZ4aIiGhnhoiIaGeGiIhoZ4aIiGhnh6N/zKqZ31PXWL9GEYy76+LoqmVR/Sy70YgOSFoejqL4OnqlztryNn+bzg/k7EtCpcFU5W0tqYl626zKafb1yvqo4heS9f90VaNSMz8v0RkAK+zG5vW49f7PmCZW9bBQGy+FfQtrZa9ycYpRJ05/1P6GoN5oYZajH0dvSlxksOmKOen3Cz4KJfwSjaatR66C3IjvZ8Tkn3AlOaf13PqLzXHvGW6edG9BBMxerQtqTYF4ib1X5+KxshhBBCCCGEEEIIIYSQe/gLEeV5y4CZvuUAAAAASUVORK5CYII="}
                               title="Image title"
                           />
                           
@@ -983,7 +1181,7 @@ const handleFolderMenuClose=(()=>{
                       <CardMedia
                           className={classes.cardMedia} 
                           // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
-                          image = {fileImageMap.get( filedata["s3_key"].split('.').pop() )?fileImageMap.get( filedata["s3_key"].split('.').pop() ) : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAb1BMVEX////0myXzlQD0miD1pT/++O/zkwD86dTzlgn0nCX72br0nij0mRP85dH2rVf1qEb97t33unj61Kz++/X1ojn+9Or85Mv4vn/60qj2sF/869j5y5v738P4xIv3tmz5z6L5yJX2r131qU762bX3t3AjskLOAAAE00lEQVR4nO2d7XaiMBRFIdGYSmpt0Wm1Sh067/+MM+UjVgG1yxMSmLN/qguzBa7k5sKNIkIIIYQQQgghhBBCCCFumLog9W31HaOECyavn1PfahWJjF0gjRbZ1rdcgSPDwlJlIRyuDg3j2Jhfvv0cG/7bjS++BR0bxrF/xcTg0Upp+8OpAA5UPOnybSFqRxHK3waaWWJKQ7PxPRRnbHR1nO58j8QZm3Ivytz3QNwxKc9FtfQ9EGdsVWGo330PxB1ZsRPlwvc43LErg430PQ53pKWhCuEK3BGjDzXRqlBUYcwUnVD+X6iZ73G4w7vhu1EQzOS5/dLMt+FGoaaB0qikbSbo1zCdGJRgISmemvMkr4ZLiZ7eS9mImT4NdwKfv5BiHY7hB+wUPFFMgjF8PRMUdwbTOi+j94EY/tb1j14JztK7WM9XVdRSp8epJ8NpPZzYTFbluO6/cFyU2zSnO9GP4dbUMUb/ri8cAZfG5Zbk6uRFL4ZzG0TVa50RRhjuRMth6sPw3cYY9RYhDau5oDjJAHswfK4FZTkUnGFUHfnz76/1bpgu6iBqkvJoAho+BGC4rvPQsc6rxMK4DGc2iKrn+rVRGX4qK3hMYI7J8GBjzPeFhBEZZqIWjL/rjMYwzesgqicnycuxGK4f7HpldvrOSAx/2UVndTh7axyGL8cY83n+3igM91bQNHPPYzC0QdSsWmoGhm94TBnq1oqBwRsubRD9mgy2MHTD3fFCraM2aeCGbzbG6K7KpGEb2pRhPRlsYdCGG3uhtuheZR6w4TFleJwMtjBgw8wKflz62IANq8JReaWqbMiGpeDDlbEP3jC5VskydEM5ufoxGt4ODdH8v4bZ6eItsPAsFMPnthITGt4EDdHQcLyGf5RuMipDd9AQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfEEY/iSLe5n0/LImVAMMyURiKdQDXeoO5xFo9QqEMODvjDqnyCz800HYviBMjSNesBADNe2avhO1GOghtFOQJ46W9xiG6ZhlD4iaLmxIRhDZ9AQDQ3x0BANDfHQEA0N8dAQDQ3xhGOYOupCEorhOr/z0Wwlk+ZNqYEYpgYzx5fNottADF9geZr9+aYDMTygnugZbK5tjsqX6kOghlGuISeikY1wGophtJctxfo/xfxppqKCMXQGDdHQEA8N0dAQDw3R0BAPDdHQEE+bYVLmPEZsuC2YOemG1Gn4sXi6n/zQHHSboUu6DBeYqi993uchGENY1VezXVwghj1Xfbmkw/ANlk1sPGkyEMMpqL2MbHYaC8Qw2iaIqi9lmo+BC8Uwipaz+2lrFReOoStoiIaGeGiIhoZ4aIiGhnhoiIaGeGiIhoZ4aIiGhnh6N/zKqZ31PXWL9GEYy76+LoqmVR/Sy70YgOSFoejqL4OnqlztryNn+bzg/k7EtCpcFU5W0tqYl626zKafb1yvqo4heS9f90VaNSMz8v0RkAK+zG5vW49f7PmCZW9bBQGy+FfQtrZa9ycYpRJ05/1P6GoN5oYZajH0dvSlxksOmKOen3Cz4KJfwSjaatR66C3IjvZ8Tkn3AlOaf13PqLzXHvGW6edG9BBMxerQtqTYF4ib1X5+KxshhBBCCCGEEEIIIYSQe/gLEeV5y4CZvuUAAAAASUVORK5CYII="}
+                         image={imageFormats.includes(filedata["type"])?filedata["returnFileLink"]:fileImageMap.get( filedata["s3_key"].split('.').pop() )?fileImageMap.get( filedata["s3_key"].split('.').pop() ) : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAb1BMVEX////0myXzlQD0miD1pT/++O/zkwD86dTzlgn0nCX72br0nij0mRP85dH2rVf1qEb97t33unj61Kz++/X1ojn+9Or85Mv4vn/60qj2sF/869j5y5v738P4xIv3tmz5z6L5yJX2r131qU762bX3t3AjskLOAAAE00lEQVR4nO2d7XaiMBRFIdGYSmpt0Wm1Sh067/+MM+UjVgG1yxMSmLN/qguzBa7k5sKNIkIIIYQQQgghhBBCCCFumLog9W31HaOECyavn1PfahWJjF0gjRbZ1rdcgSPDwlJlIRyuDg3j2Jhfvv0cG/7bjS++BR0bxrF/xcTg0Upp+8OpAA5UPOnybSFqRxHK3waaWWJKQ7PxPRRnbHR1nO58j8QZm3Ivytz3QNwxKc9FtfQ9EGdsVWGo330PxB1ZsRPlwvc43LErg430PQ53pKWhCuEK3BGjDzXRqlBUYcwUnVD+X6iZ73G4w7vhu1EQzOS5/dLMt+FGoaaB0qikbSbo1zCdGJRgISmemvMkr4ZLiZ7eS9mImT4NdwKfv5BiHY7hB+wUPFFMgjF8PRMUdwbTOi+j94EY/tb1j14JztK7WM9XVdRSp8epJ8NpPZzYTFbluO6/cFyU2zSnO9GP4dbUMUb/ri8cAZfG5Zbk6uRFL4ZzG0TVa50RRhjuRMth6sPw3cYY9RYhDau5oDjJAHswfK4FZTkUnGFUHfnz76/1bpgu6iBqkvJoAho+BGC4rvPQsc6rxMK4DGc2iKrn+rVRGX4qK3hMYI7J8GBjzPeFhBEZZqIWjL/rjMYwzesgqicnycuxGK4f7HpldvrOSAx/2UVndTh7axyGL8cY83n+3igM91bQNHPPYzC0QdSsWmoGhm94TBnq1oqBwRsubRD9mgy2MHTD3fFCraM2aeCGbzbG6K7KpGEb2pRhPRlsYdCGG3uhtuheZR6w4TFleJwMtjBgw8wKflz62IANq8JReaWqbMiGpeDDlbEP3jC5VskydEM5ufoxGt4ODdH8v4bZ6eItsPAsFMPnthITGt4EDdHQcLyGf5RuMipDd9AQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfEEY/iSLe5n0/LImVAMMyURiKdQDXeoO5xFo9QqEMODvjDqnyCz800HYviBMjSNesBADNe2avhO1GOghtFOQJ46W9xiG6ZhlD4iaLmxIRhDZ9AQDQ3x0BANDfHQEA0N8dAQDQ3xhGOYOupCEorhOr/z0Wwlk+ZNqYEYpgYzx5fNottADF9geZr9+aYDMTygnugZbK5tjsqX6kOghlGuISeikY1wGophtJctxfo/xfxppqKCMXQGDdHQEA8N0dAQDw3R0BAPDdHQEE+bYVLmPEZsuC2YOemG1Gn4sXi6n/zQHHSboUu6DBeYqi993uchGENY1VezXVwghj1Xfbmkw/ANlk1sPGkyEMMpqL2MbHYaC8Qw2iaIqi9lmo+BC8Uwipaz+2lrFReOoStoiIaGeGiIhoZ4aIiGhnhoiIaGeGiIhoZ4aIiGhnh6N/zKqZ31PXWL9GEYy76+LoqmVR/Sy70YgOSFoejqL4OnqlztryNn+bzg/k7EtCpcFU5W0tqYl626zKafb1yvqo4heS9f90VaNSMz8v0RkAK+zG5vW49f7PmCZW9bBQGy+FfQtrZa9ycYpRJ05/1P6GoN5oYZajH0dvSlxksOmKOen3Cz4KJfwSjaatR66C3IjvZ8Tkn3AlOaf13PqLzXHvGW6edG9BBMxerQtqTYF4ib1X5+KxshhBBCCCGEEEIIIYSQe/gLEeV5y4CZvuUAAAAASUVORK5CYII="}
                           title="Image title"
                       />
                       
@@ -1141,6 +1339,23 @@ const handleFolderMenuClose=(()=>{
               </Grid>
             </div>
             }
+
+{props.sharedFilesAndFolders &&  
+               
+             
+                   
+               <div style={{ height: 300, width: '100%' }}>
+
+                    
+           
+
+                    {sharedFilesinDB.length?
+                    <DataGrid  hideFooterSelectedRowCount={false} columns={columns.map((column) => ({...column,disableClickEventBubbling: true,}))} onRowClick={(file, event)=>{handleSharedFilesMenuOpen(event,file["row"])}} rows={sharedFilesinDB} columns={columns} pageSize={5}  />:
+                    <Typography>Nothing is shared with you at present</Typography>
+                    }
+                 </div>
+             
+}
           </div>
        
         </Typography>

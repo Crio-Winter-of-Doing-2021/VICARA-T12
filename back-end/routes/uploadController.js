@@ -24,6 +24,7 @@ var storage = multer.diskStorage({
 var upload = multer({storage:storage});
 
 const { ObjectID } = require("bson");
+const file = require("../models/file");
 const s3bucket = new AWS.S3({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -107,7 +108,7 @@ router.get('/url/:fileNameUserID', async(req,res, next)=>{
   userID = req.params.fileNameUserID.split(',')[1].toString();
   console.log(fileName);
   console.log(userID);
-  if(fileName)
+  if(fileName.length>0)
    {
      FILE.findOne({"_id":ObjectId(fileName),
     $or:[ 
@@ -483,14 +484,47 @@ router.post('/folder', upload.single('folder'),async(req, res, next)=>{
     res.status(200).send(docs);
   });
 });
+router.patch('/removeUsersAccess/:fileIDuserID', async(req, res, next)=>{
+let fileID = req.params.fileIDuserID.split(',')[0];
+let userID = req.params.fileIDuserID.split(',')[1];
+
+FILE.findOneAndUpdate({"_id":fileID, $or:[{'viewers': userID},{'users':userID}]},{ $pullAll: {users:[ObjectId(userID)]}, $pullAll: {viewers:[ObjectId(userID)]} }, async(errorInUpdatingAccess, docs)=>{
+  if(!errorInUpdatingAccess){
+    next(res.status(200).send(docs))
+  }
+  else
+  {
+    next(res.status(500).send("Could not update Access"))
+  }
+})
+});
 router.get('/sharedFiles/:id', async(req,res,next)=>{
   const userID = req.params.id.toString();
   console.log(userID);
-  FILE.find({'users':ObjectId(userID)},(errorInFindingFiles, files)=>{
+  FILE.find({$or:[{'users':ObjectId(userID)},{'viewers':ObjectId(userID)}], 'creator': { $ne: ObjectId(userID) } }).lean().exec((errorInFindingFiles, files)=>{
        if(!errorInFindingFiles){
-         console.log("Incoming shared files");
-         console.log(files);
-         next(res.status(200).send(files));
+        filesToBeSent =[];
+         for(var [i,file] of files.entries())
+         { 
+           User.findById(file["creator"],async(errorInFindingCreator,creatorDets)=>{
+               if(!errorInFindingCreator)
+               {
+                 file.creator= creatorDets["name"]
+                
+                 filesToBeSent.push(file)
+               }
+               
+           }).then(()=>{
+            if(i==(files.length-1))
+            {
+            
+             res.status(200).send(filesToBeSent);
+            }
+           })
+             
+             
+          }
+        
        }
        else
        {
@@ -513,7 +547,9 @@ var newFileUploaded = {
   viewers: [req.body.users],
   creator: req.body.users,
   parentFolder: folderID,
-  isIndependant: false
+  isIndependant: false,
+  type: file.originalname.split('.').pop(),
+  size:file.size
 }
 fs.readFile(file.path, (error, fileContent)=>{
   if(error)
@@ -539,7 +575,8 @@ document.save(function(filesaveerror, newFile) {
       FOLDER.findByIdAndUpdate(folderID,{  $push: { files: newFile._id }}, function(errorinfolder, docs){
         if(!errorinfolder)
         {
-
+               docs["size"]+= newFile["size"]
+              docs.save();
           params.Key = newFile["_id"].toString();
 
 
@@ -586,7 +623,9 @@ router.post('/', upload.single("file"), async(req,res,next)=>{
       s3_key: file.originalname,
       users: [req.body.users],
       viewers: [req.body.users],
-      creator: req.body.users
+      creator: req.body.users,
+      size: file.size,
+      type: file.originalname.split('.').pop()
     }
 
    await fs.readFile(file.path, async(error, fileContent)=>{
