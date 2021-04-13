@@ -563,6 +563,7 @@ const [sizeOccupied, setSizeOccupied] =  useState(0)
     
     FileService.removeFile(fileID, userDetails).then(()=>{
       handleMenuClose();
+    
       setfilesinDB(filesinDB.filter((file)=>file["_id"] !== fileID));
       toastContainerFunction(`removed File!`)
       
@@ -763,7 +764,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
       <Container 
         maxWidth="lg" className="dropContainer"
       >
-        <Typography>{fileSize(sizeOccupied)}</Typography>
+        
         <Typography 
           onDragOver={dragOver}
           onDragEnter={dragEnter}
@@ -1034,7 +1035,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                                   <OpenInNewIcon/> 
                                 </IconButton>
                              
-                              <IconButton>
+                              <IconButton style={{color:'red'}}>
                                 <DeleteIcon aria-label="Delete Access" onClick={()=>{deleteAccessToSharedFile(sharedFileDataOfMenu["_id"])}}/>
 
                                
@@ -1067,7 +1068,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                                 action={
                                   <div >
                                     <IconButton aria-label="add to favorites" >
-                                      <DeleteIcon onClick={()=>removeFile(filedata["_id"])}/>
+                                      <DeleteIcon style={{color:'red'}} onClick={()=>removeFile(filedata["_id"])}/>
                                     </IconButton>
                                   
                                   </div>
@@ -1121,7 +1122,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                             action={
                               <div onClick={()=>removeFile(filedata["_id"])}> 
                                 <IconButton aria-label="add to favorites" >
-                                  <DeleteIcon />
+                                  <DeleteIcon style={{color:'red'}} />
                                 </IconButton>
                                 
                               </div>
@@ -1169,7 +1170,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                         action={
                           <div onClick={()=>removeFile(filedata["_id"])} >
                             <IconButton aria-label="add to favorites" >
-                              <DeleteIcon/>
+                              <DeleteIcon style={{color:'red'}}/>
                             </IconButton>
                             
                           </div>
@@ -1219,7 +1220,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                           action={
                             <div onClick={()=>removeFolder(folderData["_id"])} >
                               <IconButton aria-label="add to favorites" >
-                                <DeleteIcon />
+                                <DeleteIcon style={{color:'red'}}/>
                               </IconButton>
                             </div>
                           }
@@ -1264,7 +1265,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                           action={
                             <div onClick={()=>removeFolder(folderData["_id"])} >
                               <IconButton aria-label="add to favorites" >
-                                <DeleteIcon/>
+                                <DeleteIcon style={{color:'red'}}/>
                               </IconButton>
                             </div>
                           }
@@ -1310,7 +1311,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                           action={
                             <div  onClick={()=>removeFolder(folderData["_id"])}> 
                               <IconButton aria-label="add to favorites" >
-                                <DeleteIcon/>
+                                <DeleteIcon style={{color:'red'}}/>
                               </IconButton>
                             </div>
                           }

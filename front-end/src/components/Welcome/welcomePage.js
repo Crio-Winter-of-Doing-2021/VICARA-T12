@@ -184,7 +184,7 @@ export default function MiniDrawer(props) {
    useEffect(() => {
      
       setNames(loc.state.detail.name);
-      setUserDetails(loc.state.detail);
+      setUserDetails(loc.state.detail.size);
       setId(loc.state.detail.id);  
       console.log(loc.state.detail)
    }, [loc]);
@@ -555,7 +555,7 @@ export default function MiniDrawer(props) {
         <Route 
         render={()=>{
           
-          return <Dropzone id={id} name={name} searchFiled = {searchFiled} allFileUpload = {fileUpdate.allFileUpload} recentFileUpload = {fileUpdate.recentFileUpload} starredFiles = {fileUpdate.starredFiles}  allFolderUpload = {fileUpdate.allFolderUpload} recentFolderUpload = {fileUpdate.recentFolderUpload} starredFolder={fileUpdate.starredFolder} sharedFilesAndFolders={fileUpdate.sharedFile}/>
+          return <Dropzone size={userDetails} id={id} name={name} searchFiled = {searchFiled} allFileUpload = {fileUpdate.allFileUpload} recentFileUpload = {fileUpdate.recentFileUpload} starredFiles = {fileUpdate.starredFiles}  allFolderUpload = {fileUpdate.allFolderUpload} recentFolderUpload = {fileUpdate.recentFolderUpload} starredFolder={fileUpdate.starredFolder} sharedFilesAndFolders={fileUpdate.sharedFile}/>
          
         }}
 
