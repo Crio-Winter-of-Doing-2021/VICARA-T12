@@ -595,15 +595,7 @@ const [sizeOccupied, setSizeOccupied] =  useState(0)
 
       //console.log(fileImageMap.get("pdf"));
   },[props]);
-  useEffect(()=>{ 
-    setUserDetails(props.id);
-    setUserName(props.name);
-     
-    
-    getFiles(props.id);
-
-    //console.log(fileImageMap.get("pdf"));
-},[]);
+  
  
 const handleMenuOpen=(event, filedata)=>
   {setOpenMenu(event.currentTarget);

@@ -36,6 +36,7 @@ import EditIcon from '@material-ui/icons/Edit';
 
 
 import Header from '../Main/header'
+
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
 		paddingTop: '50%', // 16:9,
@@ -133,10 +134,31 @@ export default function Folderview(){
       setLoading(true);
     }
     const handleFolder=(e)=>{
+      
+      
       var theFiles = e.target.files;
-      var relativePath = theFiles[0].webkitRelativePath;
-      var folder = relativePath.split("/");
-      folder = folder[0];
+     
+      
+       for(let file of theFiles)
+       
+         {
+          var relativePath = file.webkitRelativePath; 
+          var folders = relativePath.split("/");
+          folders.pop();
+          let rootFolder = folders[0];  
+          let parentFolder =""    
+          folders.shift();
+          if(folders.length)
+          {
+            parentFolder = folders[folders.length-1];
+          }
+          else
+          {
+            parentFolder = rootFolder
+          }
+         
+    }
+      /*folder = folder[0];
       fetchData()
       fileService.uploadFolder(folder, loc.state.id).then((res)=>{
         console.log(res);
@@ -155,6 +177,7 @@ export default function Folderview(){
       }).catch((err)=>{toastErrorContainerFunction("The folder couldn't be uploaded")}).finally(()=>{
         setLoading(false)
       });
+      */
     }
     
     const option = [
@@ -249,8 +272,20 @@ export default function Folderview(){
     fileImageMap.set("wmv","https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/317b3233-97e7-4abe-b365-6d02b5862313/d277ol1-84f41fa1-3deb-4297-957d-5457456b32bb.png")
 
 
-    const handleFiles=(file)=>{
-      alert(file);
+    const handleFiles=(files)=>{
+      console.log(files);
+      fetchData();
+
+
+      for(let file of files)
+      {
+        fileService.uploadFilesInFolder(folderID, file,[loc.state.id]).then((doc)=>{
+          window.location.reload(false);
+
+      }).catch((err)=>{
+        toastErrorContainerFunction(`Couldn't upload ${file["name"]}`)
+      })
+    }
     }
 
     useEffect(()=>{

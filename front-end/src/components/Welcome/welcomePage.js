@@ -541,7 +541,7 @@ export default function MiniDrawer(props) {
             } 
             {
               !fileUpdate.sharedFile &&
-              <IconButton size="2x">
+              <IconButton size="medium">
               <FolderSharedIcon/>
             </IconButton>
             } 
