@@ -43,6 +43,7 @@ root: {
 export default function MediaControlCard({checked}) {
   const classes = useStyles();
   return (
+    // Collapse property used for animation 
     <Collapse in={checked} {...(checked ? { timeout: 1000 } : {})}>
         <Card className={classes.root}>
         <div className={classes.details}>

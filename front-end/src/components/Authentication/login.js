@@ -18,7 +18,6 @@ import Cookies from 'js-cookie';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
 const useStyles = makeStyles((theme) => ({
@@ -52,6 +51,7 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Login(props) {
 	const history = useHistory();
+	// Setting state hook for dialogue box actions.
 	const [openSetting, setOpenSetting] = useState(false);
 	const [forgotEmail, setForgotEmail] = useState("");
 	function handleChangeInForm(event) {
@@ -71,7 +71,7 @@ export default function Login(props) {
             [e.target.name]: e.target.value.trim(),
         });
 	};
-
+	// Setting state of email 
 	const handleChangeForgotEmail = (e) => {
         setForgotEmail(e.target.value.trim());
 	};
@@ -85,10 +85,11 @@ export default function Login(props) {
 		setForgotEmail("")
 	}
 
+	// Sending request to mail service in backend.
 	const submitForgotPassword = (e) =>{
 		e.preventDefault();
 		axiosInstance
-			.post('https://vicara-storage-drive.herokuapp.com/api/user/sendMail/',{
+			.post('api/user/sendMail/',{
 				email: forgotEmail
 			})
 			.then(response => { 
@@ -103,6 +104,7 @@ export default function Login(props) {
 			setOpenSetting(false)
 	}
 
+	// toaster message indicating job complete. 
 	toast.configure();
 	function toastContainerFunction(errorMessage) {
 		toast.error(errorMessage, {

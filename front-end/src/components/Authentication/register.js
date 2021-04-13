@@ -62,9 +62,9 @@ export default function Register(props) {
             ...formData,
             [e.target.name]: e.target.value.trim(),
         });
-		//validateField(name, value)
 	};
 
+	// toaster message indicating job complete. 	
 	toast.configure();
 	function toastContainerFunction(errorMessage) {
 		toast.error(errorMessage, {

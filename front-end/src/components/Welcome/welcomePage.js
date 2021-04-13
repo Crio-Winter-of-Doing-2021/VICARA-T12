@@ -152,6 +152,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function MiniDrawer(props) {
+  // set loc and use info to validate user. 
   const loc = useLocation();
   const history = useHistory();
   const classes = useStyles();
@@ -168,6 +169,7 @@ export default function MiniDrawer(props) {
     name: '',
     password: null,
   });
+  // set state for each view.
   const initalfileUpdate = Object.freeze({
     allFileUpload: true,
 		recentFileUpload: false,
@@ -181,22 +183,23 @@ export default function MiniDrawer(props) {
   const [fileUpdate, setFileUpdate] = useState(initalfileUpdate);
   const [userSettingUpdate, setUserSettingUpdate] =  useState(initialSettingData);
 
-   useEffect(() => {
-     
-      setNames(loc.state.detail.name);
-      setUserDetails(loc.state.detail.size);
-      setId(loc.state.detail.id);  
-      console.log(loc.state.detail)
-   }, [loc]);
+  // set the response details of user after login for authorization.
+  useEffect(() => {
+    setNames(loc.state.detail.name);
+    setUserDetails(loc.state.detail.size);
+    setId(loc.state.detail.id);  
+    console.log(loc.state.detail)
+  }, [loc]);
 
+  // Function called when side drawer is opened and closed.
   const handleDrawerOpen = () => {
     setOpen(true);
   };
-
   const handleDrawerClose = () => {
     setOpen(false);
   };
 
+  // function called when user button is clicked on welcome page.
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -212,10 +215,11 @@ export default function MiniDrawer(props) {
                 )
   };
 
+  // function called to change state of search bar.
   const searchFunction = (event) =>{
     setSearchField(event.target.value);
   };
-  
+  // Function called to change the view of page depending on the parameters passed. 
   const showFilesFolders = (allFiles, recentFiles, starredFiles, allFolders, recentFolders, starredFolders, sharedFilesAndFolders) =>{ 
     setFileUpdate({
       allFileUpload: allFiles,
@@ -228,26 +232,28 @@ export default function MiniDrawer(props) {
     })
     setSearchField("")
   };
-
-   const vicaraStorageIcon = () =>{
+  // Icon used to reload page or get back to page from within folder.
+  const vicaraStorageIcon = () =>{
     window.location.reload();
-   };
+  };
 
-   const handleCloseSetting = () =>{
+  const handleCloseSetting = () =>{
     setOpenSetting(false)
     setUserSettingUpdate({
       ...userSettingUpdate,
       'name': '',
       'password': '',
     });		
-   }
+  }
    
-   const openUserSettings = () => {
+  const openUserSettings = () => {
     setOpenSetting(true)
     handleMenuClose()
-   };
-
-   toast.configure();
+  };
+  
+  // toaster message indicating job complete. 
+  toast.configure();
+  // Calling toaster function.
 	function toastContainerFunction(errorMessage) {
 		toast.error(errorMessage, {
 		position: "top-center",
@@ -259,6 +265,7 @@ export default function MiniDrawer(props) {
 		progress: undefined,
 		});
     	return (
+          // Defining the container 
           <ToastContainer
             position="top-center"
             autoClose={5000}
@@ -273,14 +280,15 @@ export default function MiniDrawer(props) {
       	);
   	}
 
-    const handleChange = (e) => {
-      setUserSettingUpdate({
-          ...userSettingUpdate,
-          [e.target.name]: e.target.value.trim(),
-      });
-    };
+  const handleChange = (e) => {
+    setUserSettingUpdate({
+        ...userSettingUpdate,
+        [e.target.name]: e.target.value.trim(),
+    });
+  };
 
-   const handleProfileUpdate = (e) => {
+  // Axios request to update the name and password of user.
+  const handleProfileUpdate = (e) => {
     e.preventDefault();
     axiosInstance
     .patch(`api/user/update/${id}` ,{
@@ -301,12 +309,11 @@ export default function MiniDrawer(props) {
         'password': '',
       });		
     });
-      
-   }
+  }
 
   const menuId = 'primary-search-account-menu';
   const renderMenu = (
-    
+    // Defining the drop down list for profile click
     <Menu
       anchorEl={anchorEl}
       anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
@@ -322,10 +329,7 @@ export default function MiniDrawer(props) {
   );
 
   
-
   return (
-
-
     <div className={classes.root}>
       <CssBaseline />
       <AppBar
@@ -377,6 +381,7 @@ export default function MiniDrawer(props) {
               <AccountCircle />
             </IconButton>
             {renderMenu}
+            {/* Dialogue box for updating user detials */}
             <Dialog open={openSetting} onClose={handleCloseSetting} aria-labelledby="form-dialog-title">
               <DialogTitle id="form-dialog-title">
                 <Typography> Update {name}'s Details</Typography>
@@ -435,12 +440,15 @@ export default function MiniDrawer(props) {
         }}
       >
         <div className={classes.toolbar}>
+          {/* Change in left and right motion when clicked  */}
           <IconButton onClick={handleDrawerClose}>
             {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
           </IconButton>
         </div>
         <Divider />
+        {/* Font awesome icons used for indicating change in view by colour */}
         <List>
+          {/* Sending boolean value to function to indicate all files view  */}
           <ListItem button onClick={ () => showFilesFolders(true, false, false, false, false, false)}>
               <ListItemIcon>
                 { 
@@ -454,6 +462,7 @@ export default function MiniDrawer(props) {
               </ListItemIcon>
             <ListItemText> All Files </ ListItemText>
           </ListItem>
+          {/* Sending boolean value to function to indicate Recent files view  */}
           <ListItem button onClick={ () => showFilesFolders(false, true, false, false, false, false)}>
             <ListItemIcon>
               {
@@ -467,6 +476,7 @@ export default function MiniDrawer(props) {
             </ListItemIcon>
             <ListItemText> Recent Files </ListItemText>
           </ListItem>
+          {/* Sending boolean value to function to indicate Starred files view  */}
           <ListItem button onClick={ () => showFilesFolders(false, false, true, false, false, false)}>
             <ListItemIcon>
               {
@@ -483,6 +493,7 @@ export default function MiniDrawer(props) {
         </List>
         <Divider />
         <List>
+          {/* Sending boolean value to function to indicate all folder view  */}
           <ListItem button onClick={ () => showFilesFolders(false, false, false, true, false, false)} >
             <ListItemIcon>
             {
@@ -496,6 +507,7 @@ export default function MiniDrawer(props) {
             </ListItemIcon>
             <ListItemText> All Folders </ ListItemText>
           </ListItem>
+          {/* Sending boolean value to function to indicate recent folders view  */}
           <ListItem button onClick={ () => showFilesFolders(false, false, false, false, true, false)} >
             <ListItemIcon> 	
             {
@@ -509,6 +521,7 @@ export default function MiniDrawer(props) {
             </ListItemIcon>
             <ListItemText> Recent Folders </ListItemText>
           </ListItem>
+          {/* Sending boolean value to function to indicate starred folders view  */}
           <ListItem button onClick={ () => showFilesFolders(false, false, false, false, false, true)} >
             <ListItemIcon> 
             {
@@ -523,45 +536,38 @@ export default function MiniDrawer(props) {
             <ListItemText> Starred Folders</ListItemText>
           </ListItem>
           </List>
-          
           <Divider/>
-            <List>
-              <br/>
-              <br/>
-          <ListItem button onClick={ () => showFilesFolders(false, false, false, false, false, false, true)} >
-           
-
-            <ListItemIcon>
-            {
-              fileUpdate.sharedFile&&
-                
-                <IconButton style={ {color:"orange" } } size="2x">
+          <Divider/>
+          {/* View to see files and folders shared with you  */}
+          <List>
+            <ListItem button onClick={ () => showFilesFolders(false, false, false, false, false, false, true)}>
+              <ListItemIcon>
+                {
+                  fileUpdate.sharedFile&&
+                    <IconButton style={ {color:"orange" } } size="2x">
+                      <FolderSharedIcon/>
+                    </IconButton>
+                } 
+                {
+                  !fileUpdate.sharedFile &&
+                  <IconButton size="medium">
                   <FolderSharedIcon/>
                 </IconButton>
-            } 
-            {
-              !fileUpdate.sharedFile &&
-              <IconButton size="medium">
-              <FolderSharedIcon/>
-            </IconButton>
-            } 
-            </ListItemIcon>
-            <ListItemText> Shared </ ListItemText>
-          </ListItem>
+                } 
+              </ListItemIcon>
+              <ListItemText> Shared </ ListItemText>
+            </ListItem>
       </List>
       </Drawer>
       <main className={classes.content}>
         <div className={classes.toolbar} />
+        {/* Calling dropzone component to enable drag and drop and card features in every view in welcome page */}
         <Route 
-        render={()=>{
-          
-          return <Dropzone size={userDetails} id={id} name={name} searchFiled = {searchFiled} allFileUpload = {fileUpdate.allFileUpload} recentFileUpload = {fileUpdate.recentFileUpload} starredFiles = {fileUpdate.starredFiles}  allFolderUpload = {fileUpdate.allFolderUpload} recentFolderUpload = {fileUpdate.recentFolderUpload} starredFolder={fileUpdate.starredFolder} sharedFilesAndFolders={fileUpdate.sharedFile}/>
-         
-        }}
-
+          render={()=>{
+            return <Dropzone size={userDetails} id={id} name={name} searchFiled = {searchFiled} allFileUpload = {fileUpdate.allFileUpload} recentFileUpload = {fileUpdate.recentFileUpload} starredFiles = {fileUpdate.starredFiles}  allFolderUpload = {fileUpdate.allFolderUpload} recentFolderUpload = {fileUpdate.recentFolderUpload} starredFolder={fileUpdate.starredFolder} sharedFilesAndFolders={fileUpdate.sharedFile}/> 
+          }}
           > 
-          </Route>
-       
+        </Route>
       </main>
     </div>
   );
