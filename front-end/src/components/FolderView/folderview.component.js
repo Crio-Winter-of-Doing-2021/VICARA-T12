@@ -3,6 +3,8 @@ import FileService from "../../services/file.service";
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Button from '@material-ui/core/Button';
+import CancelIcon from '@material-ui/icons/Cancel';
+import { FormLabel, RadioGroup, FormControlLabel, Radio } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton'
 import Container from '@material-ui/core/Container'
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -14,12 +16,14 @@ import StarIcon from '@material-ui/icons/Star';
 import TextFileImage from '../images/textFileImage.png'
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
+import ShareIcon from '@material-ui/icons/Share';
 import CardMedia from '@material-ui/core/CardMedia';
 import CardActions from '@material-ui/core/CardActions';
 import CardHeader from '@material-ui/core/CardHeader';
 import Grid from '@material-ui/core/Grid';
 import StarBorderIcon from '@material-ui/icons/StarBorder';
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
+import VisibilityIcon from '@material-ui/icons/Visibility'
 import DeleteIcon from '@material-ui/icons/Delete';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import LoadCircularProgress from '../Main/circularProgress';
@@ -123,7 +127,12 @@ export default function Folderview(){
     const [anchorEl, setAnchorEl] = useState(null);
     const [isloading, setLoading] = useState(false);
     const [showFav, setShowFav] = useState(false)
-    const [allFilesInFolder, setAllFilesInFolder] =useState([]);
+    const [openFileToView, setOpenFileToView] = useState(false);
+ const [linkToView, setLinkToView] = useState("");
+    const [openShareForm, setOpenShareForm] = useState(false);
+  const [mailshared, setmailshared]= useState("");
+  const [fileToBeShared, setfileToBeShared] = useState("");
+  const [access, setAccess] = useState("View");
     const handleRenameOpen = (typeProperty, id, name) => {
       
       setoldName(name);
@@ -166,6 +175,14 @@ export default function Folderview(){
     const uploadFilesInFolder = (folderID, file)=>{
       return FileService.uploadFilesInFolder( folderID, file, [loc.state.id]);
     }
+
+    const openFile=(fileName)=>{
+      FileService.downloadFile( fileName, loc.state.id).then((link)=>{
+        setOpenFileToView(true);
+        setLinkToView(link["data"])
+        
+      })
+     }
 
     function toastErrorContainerFunction(message) {
       toast.error(message, {
@@ -284,6 +301,63 @@ export default function Folderview(){
             
         })
     }
+    const handleEmailChange = (e)=>{
+      setmailshared(e.target.value);
+   
+    }
+   
+     const handleShareOpen = (type,id) => {
+   
+      
+      
+         setfileToBeShared(id);
+       
+       
+       setOpenShareForm(true)
+     };
+   
+     const handleShareClose = () => {
+      setOpenShareForm(false)
+     };
+   
+     const handleShare=()=>{
+       
+       const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+       if(re.test(mailshared))
+       {
+         FileService.shareFile(access, fileToBeShared, mailshared, loc.state.id).then((returnObject)=>{
+           console.log(returnObject);
+         
+   
+           if(returnObject.status === 200)
+            {
+             toastContainerFunction("User Added Successfully")
+             setmailshared("");
+             setfileToBeShared("");
+             setOpenShareForm(false);
+   
+            }
+            
+   
+         }).catch((error)=>{
+           
+              
+           toastErrorContainerFunction("Couldn't add the user mentioned");
+              setmailshared("");
+              setfileToBeShared("");
+              setOpenShareForm(false);
+              
+            
+         })
+       }
+       
+       else{
+         toastErrorContainerFunction("Oops, this is not a valid email format");
+         setmailshared("");
+         setfileToBeShared("");
+       }
+     }
+
     const downloadFile=(fileName)=>{
         FileService.downloadFile(fileName, loc.state.id).then((link)=>{
           console.log(link["data"]);
@@ -346,6 +420,41 @@ export default function Folderview(){
           </Button>
         </DialogActions>
       </Dialog>
+      <Dialog open={openShareForm} onClose={handleShareClose} aria-labelledby="form-dialog-title">
+        <DialogTitle id="form-dialog-title"></DialogTitle>
+        <DialogContentText style={{'text-align': 'center'}}>
+          Add a person's mail ID
+          </DialogContentText>
+        <DialogContent>
+        <FormLabel component="legend">Access</FormLabel>
+       <RadioGroup aria-label="access" name="access" value={access} onChange={(event)=>{setAccess(event.target.value)}}>
+    <FormControlLabel value="View" title="User can only view your file" control={<Radio />} label="Viewer Access" />
+    <FormControlLabel value="All" control={<Radio />} label="All Access" />
+     </RadioGroup>
+          <TextField
+            autoFocus
+            margin="dense"
+            id="email"
+            type="email"
+            fullWidth
+            label ="Email ID"
+            value = {mailshared}
+            onChange={handleEmailChange}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleShareClose} color="secondary">
+            Cancel
+          </Button>
+         <Button onClick={handleShare} color="primary">
+           Confirm
+         </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog style={{height:"100%", width:"100%"}} open={openFileToView} onClose={()=>{setLinkToView("");setOpenFileToView(false);}}>
+            <DialogActions><CancelIcon onClick={()=>{setLinkToView("");setOpenFileToView(false);}}/></DialogActions>
+            <DialogContent><iframe src={linkToView} allowfullscreen style={{height:"600px", width:"1000px"}}></iframe></DialogContent>
+            </Dialog>
       </div>
             <Header/>
       <Menu
@@ -357,30 +466,37 @@ export default function Folderview(){
         onClick = {handleMenuClose}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={handleMenuClose}>
+       
        
                                     <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFile( fileDataOfMenu["_id"] )}} >
                                       { fileDataOfMenu["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
                                     </IconButton>
-                                    <label>Add to favourites</label>
+                                  
                                
-        </MenuItem>
-        <MenuItem>
+        
+ 
       
                                     <IconButton aria-label="open" onClick={()=>{downloadFile(fileDataOfMenu["_id"])}}>
                                       <OpenInNewIcon/> 
                                     </IconButton>
-                                    Open file
+                             
                                   
-        </MenuItem>
-        <MenuItem onClick={handleMenuClose}>  <div onClick={()=>{handleRenameOpen('file',fileDataOfMenu["_id"], fileDataOfMenu["s3_key"])}}>
-                                    <IconButton aria-label="rename" title="edit name">
+        
+     
+                                    <IconButton onClick={()=>{handleRenameOpen('file',fileDataOfMenu["_id"], fileDataOfMenu["s3_key"])}}aria-label="rename" title="edit name">
                                    <EditIcon/>
                                     </IconButton>
-                                    Rename file
-                                  </div></MenuItem>
+                           
+                           
+                                    <IconButton onClick ={()=>{openFile(fileDataOfMenu["_id"])}}>
+                                   <VisibilityIcon />
+                                    </IconButton>
+                                    
+                                    <IconButton  onClick={()=>handleShareOpen("file",fileDataOfMenu["_id"])}aria-label="share" title="share">
+                                      <ShareIcon/>
+                                    </IconButton> 
                                   
-                                  
+                             
 
       </Menu>
       <Grid container spacing={5}>
@@ -451,7 +567,7 @@ export default function Folderview(){
                       action={
                         <div onClick={()=>removeFile(filedata["_id"])}>
                           <IconButton aria-label="add to favorites" >
-                            <DeleteIcon/>
+                            <DeleteIcon style={{color:"red"}}/>
                           </IconButton>
                         </div>
                       }
@@ -469,22 +585,7 @@ export default function Folderview(){
                       <Typography variant="subtitle1" color="textSecondary" >
                       {filedata["s3_key"].slice(0,10)}
                       </Typography>
-                      <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                        <div onClick={()=>{makefavouriteFile( filedata["_id"] )}}>
-                          <IconButton aria-label="add to favorites" >
-                            { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                          </IconButton>
-                        </div>
-                        <div><IconButton aria-label="share" className={classes.download}>
-                          <OpenInNewIcon onClick={()=>{downloadFile(filedata["_id"])}}/>
-                        </IconButton>
-                        </div>
-                        <div onClick={()=>{handleRenameOpen('file',filedata["_id"], filedata["s3_key"])}}>
-                                    <IconButton aria-label="rename">
-                                   <EditIcon/>
-                                    </IconButton>
-                                  </div>
-                      </CardActions>
+                      
                     </CardContent>
                   </Card>
                 </Grid>
@@ -501,7 +602,7 @@ export default function Folderview(){
                       action={
                         <div onClick={()=>removeFile(filedata["_id"])}>
                           <IconButton aria-label="add to favorites" >
-                            <DeleteIcon/>
+                            <DeleteIcon style={{color:"red"}}/>
                           </IconButton>
                         </div>
                       }
@@ -519,22 +620,7 @@ export default function Folderview(){
                       <Typography variant="subtitle1" color="textSecondary" >
                       {filedata["s3_key"].slice(0,10)}
                       </Typography>
-                      <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
-                        <div onClick={()=>{makefavouriteFile( filedata["_id"] )}}>
-                          <IconButton aria-label="add to favorites" >
-                            { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                          </IconButton>
-                        </div>
-                        <div><IconButton aria-label="share" className={classes.download}>
-                          <OpenInNewIcon onClick={()=>{downloadFile(filedata["_id"])}}/>
-                        </IconButton>
-                        </div>
-                        <div onClick={()=>{handleRenameOpen('file',filedata["_id"], filedata["s3_key"])}}>
-                                    <IconButton aria-label="rename">
-                                   <EditIcon/>
-                                    </IconButton>
-                                  </div>
-                      </CardActions>
+                 
                     </CardContent>
                   </Card>
                 </Grid>

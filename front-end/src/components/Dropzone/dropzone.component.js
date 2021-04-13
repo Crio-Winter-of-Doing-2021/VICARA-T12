@@ -428,9 +428,7 @@ const [sizeOccupied, setSizeOccupied] =  useState(0)
     })
    }
 
-   const closeFile =()=>{
-    setOpenFileToView(false);
-   }
+  
   const makefavouriteFolder= (fileID)=>{
     FileService.updateFavouriteFolders(fileID, userDetails).then(()=>{
       let foundIndex = foldersinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
