@@ -7,7 +7,7 @@ class FileService{
     let formData = new FormData();
     formData.append("file", file);
     formData.append("users", users);
-    return axiosInstance.post("api/upload/", formData, {
+    return axiosInstance.post("api/file/upload", formData, {
         headers: {
             "Content-Type": "multipart/form-data",
             
@@ -22,39 +22,36 @@ class FileService{
     formData.append("file", file);
     formData.append("users", users);
 
-    return axiosInstance.post("api/upload/fileinfolder", formData,{
+    return axiosInstance.post("api/folder/uploadFile", formData,{
       headers: {
         "Content-Type": "multipart/form-data",
         
       }
     })
   }
+
   renameFile(filetobeRenamed, newName, id){
     let fileIDnewNameUserID = [filetobeRenamed, newName, id];
-     return axiosInstance.patch(`api/upload/renameFile/${fileIDnewNameUserID}`,{ },{
+     return axiosInstance.patch(`api/file/rename/${fileIDnewNameUserID}`,{ },{
       headers:{
         "Content-Type": "multipart/form-data",
         
       }
     })
-    
-      
   }
 
   renameFolder(foldertobeRenamed, newName, id){
     let folderIDnewNameUserID = [foldertobeRenamed, newName, id];
-    return axiosInstance.patch(`api/upload/renameFolder/${folderIDnewNameUserID}`,{ },{
+    return axiosInstance.patch(`api/folder/rename/${folderIDnewNameUserID}`,{ },{
       headers:{
-        "Content-Type": "multipart/form-data; charset=utf-8;",
-       
+        "Content-Type": "multipart/form-data; charset=utf-8;", 
       }
   })
 }
 
-
 shareFile(access, fileToBeShared, mailshared, id){
   let accessFileIDmailAddedUserID = [access,fileToBeShared, mailshared, id];
-  return axiosInstance.patch(`api/upload/addUserToFile/${accessFileIDmailAddedUserID}`,{ },{
+  return axiosInstance.patch(`api/file/addUser/${accessFileIDmailAddedUserID}`,{ },{
     headers:{
       "Content-Type": "multipart/form-data; charset=utf-8;",
     }
@@ -62,7 +59,7 @@ shareFile(access, fileToBeShared, mailshared, id){
 }
 removeAccess(fileId, userDetails){
   let fileIDuserID =[fileId, userDetails];
-  return axiosInstance.patch(`api/upload/removeUsersAccess/${fileIDuserID}`,{},{
+  return axiosInstance.patch(`api/file/removeUser/${fileIDuserID}`,{},{
     headers:{
       "Content-Type": "multipart/form-data; charset=utf-8;",
     }
@@ -70,7 +67,7 @@ removeAccess(fileId, userDetails){
 }
 shareFolder(access, folderToBeShared, mailshared, id){
   let accessFolderIDmailAddedUserID = [access,folderToBeShared, mailshared, id];
-  return axiosInstance.patch(`api/upload/addUserToFolder/${accessFolderIDmailAddedUserID}`,{ },{
+  return axiosInstance.patch(`api/folder/addUser/${accessFolderIDmailAddedUserID}`,{ },{
     headers:{
       "Content-Type": "multipart/form-data; charset=utf-8;",
     }
@@ -78,7 +75,7 @@ shareFolder(access, folderToBeShared, mailshared, id){
 }
 
 getSharedFiles(userID){
-  return axiosInstance.get(`api/upload/sharedFiles/${userID}`,{
+  return axiosInstance.get(`api/file/shareView/${userID}`,{
     headers:{
       "Content-Type": "multipart/form-data; charset=utf-8;",
     }
@@ -90,17 +87,16 @@ getSharedFiles(userID){
     formData.append("folderName", folderName);
     formData.append("users",users);
     console.log(formData.get("folderName"));
-    return axiosInstance.post("api/upload/folder", formData,{
+    return axiosInstance.post("api/folder/upload", formData,{
       headers: {
         "Content-Type": "multipart/form-data; charset=utf-8;",
-        
       }
     })   
   }
 
   downloadFile(fileName, userDetails){
     let fileNameUserDetails = [fileName, userDetails]
-    return axiosInstance.get(`api/upload/url/${fileNameUserDetails}`,{
+    return axiosInstance.get(`api/file/getPresignedUrl/${fileNameUserDetails}`,{
       headers:{
         "Content-Type": "multipart/form-data; charset=utf-8;",
       }
@@ -111,7 +107,7 @@ getSharedFiles(userID){
     
     let folderiduserId=[folderid, userId];
     
-    return axiosInstance.get(`api/upload/displayfileswithinfolder/${folderiduserId}`,{
+    return axiosInstance.get(`api/folder/getFiles/${folderiduserId}`,{
       headers:{
         "Content-Type": "multipart/form-data; charset=utf-8;",
       }
@@ -121,7 +117,7 @@ getSharedFiles(userID){
 
   getFolders(id){
     if(id)
-      return axiosInstance.get(`api/upload/folder/${id["id"]}`,{
+      return axiosInstance.get(`api/folder/get/${id["id"]}`,{
         headers:{
           "Content-Type": "multipart/form-data; charset=utf-8;",
         }
@@ -132,7 +128,7 @@ getSharedFiles(userID){
     console.log(id["id"]);
      //alert(jwtToken);
     if(id)
-      return axiosInstance.get(`api/upload/${id["id"]}`,{
+      return axiosInstance.get(`api/file/get/${id["id"]}`,{
         headers:{
           "Content-Type": "multipart/form-data; charset=utf-8;",
         }
@@ -141,7 +137,7 @@ getSharedFiles(userID){
   updateFavouriteFiles(fileID, userID){
     let fileIDUserID = [fileID, userID];
     return axiosInstance
-    .patch(`api/upload/files/${fileIDUserID}`,{ },{
+    .patch(`api/file/favourite/${fileIDUserID}`,{ },{
       headers:{
         "Content-Type": "multipart/form-data; charset=utf-8;",
        
@@ -157,7 +153,7 @@ getSharedFiles(userID){
 
   updateFavouriteFolders(folderID, userID){
     let folderIDuserID = [folderID, userID];
-    return axiosInstance.patch(`api/upload/folder/${folderIDuserID}`,{ },{
+    return axiosInstance.patch(`api/folder/favourite/${folderIDuserID}`,{ },{
       headers:{
         "Content-Type": "multipart/form-data; charset=utf-8;",    
       }
@@ -173,7 +169,7 @@ getSharedFiles(userID){
   removeFileInAFolder(fileID, userID, folderID){
     let fileIDuserIDfolderID=[fileID, userID, folderID].join('&');
     
-    return axiosInstance.delete(`api/upload/fileInFolder/${fileIDuserIDfolderID}`,{
+    return axiosInstance.delete(`api/folder/deletefile/${fileIDuserIDfolderID}`,{
       headers:{
         "Content-Type": "multipart/form-data; charset=utf-8;",
 
@@ -183,7 +179,7 @@ getSharedFiles(userID){
   
   removeFile(id, userID){
     let fileIDuserID = [id, userID];
-    return axiosInstance.delete(`api/upload/${fileIDuserID}`,{
+    return axiosInstance.delete(`api/file/delete/${fileIDuserID}`,{
       headers:{
         "Content-Type": "multipart/form-data; charset=utf-8;",
       }
@@ -193,7 +189,7 @@ getSharedFiles(userID){
   removeFolder(folderID, userID){
     let folderIDuserID = [folderID, userID]
     console.log(folderIDuserID);
-    return axiosInstance.delete(`api/upload/folder/${folderIDuserID}`, {
+    return axiosInstance.delete(`api/folder/delete/${folderIDuserID}`, {
       headers:{
         "Content-Type": "multipart/form-data; charset=utf-8;",
       }

@@ -6,11 +6,11 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-
-let users={};
-
-
 router.post('/', async (req,res) => {
+    
+    // #swagger.tags = ['User']
+    // #swagger.description = 'Endpoint used for user login.'
+
     const {error} = validate(req.body);
     if ( error )
         return res.status(400).send(error.details[0].message);
@@ -28,19 +28,13 @@ router.post('/', async (req,res) => {
     
 
     //send the access token to the client inside a cookie
-    res.header("Access-Control-Allow-Origin", "http://localhost:3001");
-    res.cookie("jwt", token, { httpOnly: true});
+   
+    res.cookie("jwt", token, { sameSite: 'none',  secure: true, httpOnly: true});
     
     res.status(200).send({id:user._id,
         name: user.name,
         email: user.email,
-       })
-      
-      
-  
-  
-        
-    
+       })     
 });
 
 function validate(req){
