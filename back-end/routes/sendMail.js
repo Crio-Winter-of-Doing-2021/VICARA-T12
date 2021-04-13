@@ -2,7 +2,7 @@ var nodemailer = require('nodemailer');
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcrypt');
-
+// Route used for sending mail from default mail account ( Vicara server in gmail ) to the end user.
 router.post('/', async (req,res) => {
     console.log(req.body.email)
     var transporter = nodemailer.createTransport({

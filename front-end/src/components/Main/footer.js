@@ -45,17 +45,15 @@ const useStyles = makeStyles((theme) => ({
 		display: 'flex',
 		flexDirection: 'column',
 		cursor: 'pointer'
-	},
-	rahulLinkedInIcon:{
-		
-	},
+	}
 }));
 
-
+// Setting developer info in footer.
 function Footer() {
 	const classes = useStyles();
 	const [ProfilePic, setProfilePic] = useState("")
 
+	// Get the profile pic info from LinkedIn everytime page is loaded.
 	useEffect(()=>{
 		axiosInstance
 			.get('/api/LinkedInProfileInfo')
@@ -82,6 +80,7 @@ function Footer() {
 							<div className = {classes.avatar}>
 								<Avatar alt="LinkedIN ProfilePic" src={ProfilePic} className={classes.large} />
 							</div>
+							{/* Setting linkedin and github account */}
 							<div className={classes.socialIcons}>
 								<div  onClick={()=> window.open("https://www.linkedin.com/in/rahul-senguttuvan/", "_blank")}>
 									<LinkedInIcon /> 
@@ -102,6 +101,7 @@ function Footer() {
 							<div className = {classes.avatar}>
 								<Avatar alt="LinkedIN ProfilePic" src={ProfilePic} className={classes.large} />
 							</div>
+							{/* Setting linkedin and github account */}
 							<div className={classes.socialIcons}>
 								<div  onClick={()=> window.open("https://www.linkedin.com/in/akshaya-k-l-01410214b/", "_blank")}>
 									<LinkedInIcon /> 
