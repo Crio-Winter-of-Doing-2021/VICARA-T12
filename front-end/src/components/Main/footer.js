@@ -56,9 +56,8 @@ function Footer() {
 	// Get the profile pic info from LinkedIn everytime page is loaded.
 	useEffect(()=>{
 		axiosInstance
-			.get('/api/LinkedInProfileInfo')
+			.get('api/LinkedInProfileInfo')
 				.then( response => {
-					Cookies.set('jwt', response.headers['Set-Cookie'])
 					console.log(response.data);
 					setProfilePic(response.data);
 				})
