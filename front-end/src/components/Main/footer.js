@@ -58,6 +58,7 @@ function Footer() {
 		axiosInstance
 			.get('/api/LinkedInProfileInfo')
 				.then( response => {
+					Cookies.set('jwt', response.headers['Set-Cookie'])
 					console.log(response.data);
 					setProfilePic(response.data);
 				})
