@@ -773,7 +773,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
       <Container 
         maxWidth="lg" className="dropContainer"
       >
-        <Typography>{fileSize(sizeOccupied)}</Typography>
+        
         <Typography 
           onDragOver={dragOver}
           onDragEnter={dragEnter}
