@@ -371,6 +371,7 @@ export default function Folderview(){
           let newfilesinFolder = [...filesInFolder];
           newfilesinFolder[foundIndex] = {...newfilesinFolder[foundIndex], favourite:!(newfilesinFolder[foundIndex]["favourite"])}
           setFilesInFolder(newfilesinFolder);  
+          toastContainerFunction(`${filesInFolder[foundIndex]["s3_key"]} is marked as a favourite!`);
         })
       };
 

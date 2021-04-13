@@ -444,7 +444,7 @@ const handleRenameClose = () => {
       newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], favourite:!(newfilesinDB[foundIndex]["favourite"])}
       setfilesinDB(newfilesinDB); 
      
-      
+      toastContainerFunction(`${filesinDB[foundIndex]["s3_key"]} is marked as a favourite!` )
     }).catch((error)=>{
       toastErrorContainerFunction("Error in marking as favourite");
     }).finally(()=>{
@@ -481,6 +481,7 @@ const handleRenameClose = () => {
       let newfoldersinDB =[...foldersinDB];
       newfoldersinDB[foundIndex]={...newfoldersinDB[foundIndex], favourite:!(newfoldersinDB[foundIndex]["favourite"])}
       setfoldersinDB(newfoldersinDB);   
+      toastContainerFunction(`${foldersinDB[foundIndex]["Name"]} is marked as a favourite!`)
     })
     .catch((err)=>{
     toastErrorContainerFunction("Couldn't mark the folder as favourite");
