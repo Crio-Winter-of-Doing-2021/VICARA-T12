@@ -89,7 +89,7 @@ export default function Login(props) {
 	const submitForgotPassword = (e) =>{
 		e.preventDefault();
 		axiosInstance
-			.post('http://localhost:3000/api/user/sendMail/',{
+			.post('api/user/sendMail/',{
 				email: forgotEmail
 			})
 			.then(response => { 
