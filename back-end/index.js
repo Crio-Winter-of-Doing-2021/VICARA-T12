@@ -1,5 +1,6 @@
 const bodyParser = require('body-parser');
 const express = require('express');
+require("dotenv").config();
 require('./db');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -34,15 +35,19 @@ app.use(cookieParser())
 app.use(helmet());
 app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Headers', '*');
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001');
+    //res.setHeader('Access-Control-Allow-Origin', 'https://vicara-storage-drive.netlify.app');
+    res.setHeader('Access-Control-Allow-Origin',"http://localhost:3001")
     res.setHeader('Access-Control-Allow-Methods', 'PATCH, DELETE, GET, POST, OPTIONS,PUT');
     res.setHeader('Access-Control-Allow-Credentials', true);
     next();
 });
 var corsOptions = {
-    origin: 'http://localhost:3001',
+    //origin: 'https://vicara-storage-drive.netlify.app',
+    origin:'http://localhost:3001',
     credentials : true
    }
+
+
 
 app.options('*', cors(corsOptions));
 //app.use(cors())

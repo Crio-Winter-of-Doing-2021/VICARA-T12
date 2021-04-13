@@ -132,7 +132,7 @@ export default function Login(props) {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		axiosInstance
-			.post('http://localhost:3000/api/user/login/',{
+			.post('api/user/login/',{
 				email: formData.email,
 				password: formData.password,
 			})

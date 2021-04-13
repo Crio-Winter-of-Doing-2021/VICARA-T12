@@ -15,7 +15,7 @@ class FileService{
           // onUploadProgress,
     });    
   }
-
+  
   uploadFilesInFolder(folderID, file, users){
     let formData = new FormData();
     formData.append("folderID", folderID);
