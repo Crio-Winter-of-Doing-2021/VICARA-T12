@@ -42,7 +42,6 @@ import './dropzone.component.css'
 import { Link} from "react-router-dom"
 import CancelIcon from '@material-ui/icons/Cancel';
 import { DataGrid } from '@material-ui/data-grid';
-import AvatarGroup from "@material-ui/lab/AvatarGroup";
 
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
@@ -159,7 +158,6 @@ const [setSharedRows, sharedRows] = useState([]);
 const [openSharedFileMenu, setOpenSharedFileMenu] = useState(null);
 const [sharedFileDataOfMenu, setSharedFileDataOfMenu] = useState({});
 const [sizeOccupied, setSizeOccupied] =  useState(0)
-const [avatarGroup, setAvatarGroup] = useState("")
   const handleRenameOpen = (typeProperty, id, name) => {
     setoldName(name);
     setFileToBeRenamed(id);
@@ -326,8 +324,7 @@ const [avatarGroup, setAvatarGroup] = useState("")
     if(re.test(mailshared)&&typeToBeShared=="file")
     {
       FileService.shareFile(access, fileToBeShared, mailshared, props.id).then((returnObject)=>{
-        setAvatarGroup(returnObject.data.users)
-        console.log(avatarGroup)
+        console.log(returnObject);
         if(returnObject.status === 200)
          {
           toastContainerFunction("User Added Successfully")
@@ -422,7 +419,9 @@ const [avatarGroup, setAvatarGroup] = useState("")
     })
    }
 
-  
+   const closeFile =()=>{
+    setOpenFileToView(false);
+   }
   const makefavouriteFolder= (fileID)=>{
     FileService.updateFavouriteFolders(fileID, userDetails).then(()=>{
       let foundIndex = foldersinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
@@ -555,7 +554,6 @@ const [avatarGroup, setAvatarGroup] = useState("")
     
     FileService.removeFile(fileID, userDetails).then(()=>{
       handleMenuClose();
-    
       setfilesinDB(filesinDB.filter((file)=>file["_id"] !== fileID));
       toastContainerFunction(`removed File!`)
       
@@ -587,7 +585,15 @@ const [avatarGroup, setAvatarGroup] = useState("")
 
       //console.log(fileImageMap.get("pdf"));
   },[props]);
-  
+  useEffect(()=>{ 
+    setUserDetails(props.id);
+    setUserName(props.name);
+     
+    
+    getFiles(props.id);
+
+    //console.log(fileImageMap.get("pdf"));
+},[]);
  
 const handleMenuOpen=(event, filedata)=>
   {setOpenMenu(event.currentTarget);
@@ -748,7 +754,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
       <Container 
         maxWidth="lg" className="dropContainer"
       >
-        
+        <Typography>{fileSize(sizeOccupied)}</Typography>
         <Typography 
           onDragOver={dragOver}
           onDragEnter={dragEnter}
@@ -1019,7 +1025,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                                   <OpenInNewIcon/> 
                                 </IconButton>
                              
-                              <IconButton style={{color:'red'}}>
+                              <IconButton>
                                 <DeleteIcon aria-label="Delete Access" onClick={()=>{deleteAccessToSharedFile(sharedFileDataOfMenu["_id"])}}/>
 
                                
@@ -1045,22 +1051,14 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                             
                             <CardHeader 
                                 avatar={
-                                  <AvatarGroup max={3}>
-                                    {/* {
-                                      avatarGroup.map((idData,i) => {
-                                        return (
-                                          <Avatar aria-label="name" className={classes.avatar}>
-                                            {idData}
-                                          </Avatar>
-                                        );
-                                      })
-                                    } */}
-                                  </AvatarGroup>
+                                  <Avatar aria-label="name" className={classes.avatar}>
+                                    {userName.charAt(0)}
+                                  </Avatar>
                                 }
                                 action={
                                   <div >
                                     <IconButton aria-label="add to favorites" >
-                                      <DeleteIcon style={{color:'red'}} onClick={()=>removeFile(filedata["_id"])}/>
+                                      <DeleteIcon onClick={()=>removeFile(filedata["_id"])}/>
                                     </IconButton>
                                   
                                   </div>
@@ -1114,7 +1112,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                             action={
                               <div onClick={()=>removeFile(filedata["_id"])}> 
                                 <IconButton aria-label="add to favorites" >
-                                  <DeleteIcon style={{color:'red'}} />
+                                  <DeleteIcon />
                                 </IconButton>
                                 
                               </div>
@@ -1162,7 +1160,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                         action={
                           <div onClick={()=>removeFile(filedata["_id"])} >
                             <IconButton aria-label="add to favorites" >
-                              <DeleteIcon style={{color:'red'}}/>
+                              <DeleteIcon/>
                             </IconButton>
                             
                           </div>
@@ -1212,7 +1210,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                           action={
                             <div onClick={()=>removeFolder(folderData["_id"])} >
                               <IconButton aria-label="add to favorites" >
-                                <DeleteIcon style={{color:'red'}}/>
+                                <DeleteIcon />
                               </IconButton>
                             </div>
                           }
@@ -1257,7 +1255,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                           action={
                             <div onClick={()=>removeFolder(folderData["_id"])} >
                               <IconButton aria-label="add to favorites" >
-                                <DeleteIcon style={{color:'red'}}/>
+                                <DeleteIcon/>
                               </IconButton>
                             </div>
                           }
@@ -1303,7 +1301,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                           action={
                             <div  onClick={()=>removeFolder(folderData["_id"])}> 
                               <IconButton aria-label="add to favorites" >
-                                <DeleteIcon style={{color:'red'}}/>
+                                <DeleteIcon/>
                               </IconButton>
                             </div>
                           }
