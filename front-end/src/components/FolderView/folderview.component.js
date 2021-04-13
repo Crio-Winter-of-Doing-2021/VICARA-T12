@@ -1,4 +1,4 @@
-import React,{ useState, useRef, useEffect}from 'react';
+import React,{ useState, useEffect}from 'react';
 import FileService from "../../services/file.service";
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -6,19 +6,14 @@ import Button from '@material-ui/core/Button';
 import CancelIcon from '@material-ui/icons/Cancel';
 import { FormLabel, RadioGroup, FormControlLabel, Radio } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton'
-import Container from '@material-ui/core/Container'
-import CssBaseline from '@material-ui/core/CssBaseline';
-import Avatar from '@material-ui/core/Avatar';
 import MenuItem from '@material-ui/core/MenuItem';
 import Menu from '@material-ui/core/Menu';
-import FolderIcon from '../images/folder.png'
 import StarIcon from '@material-ui/icons/Star';
 import TextFileImage from '../images/textFileImage.png'
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import ShareIcon from '@material-ui/icons/Share';
 import CardMedia from '@material-ui/core/CardMedia';
-import CardActions from '@material-ui/core/CardActions';
 import CardHeader from '@material-ui/core/CardHeader';
 import Grid from '@material-ui/core/Grid';
 import StarBorderIcon from '@material-ui/icons/StarBorder';
@@ -26,7 +21,6 @@ import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import VisibilityIcon from '@material-ui/icons/Visibility'
 import DeleteIcon from '@material-ui/icons/Delete';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
-import LoadCircularProgress from '../Main/circularProgress';
 import fileService from '../../services/file.service';
 import { ToastContainer, toast } from 'react-toastify';
 import { useLocation} from 'react-router-dom';
@@ -37,9 +31,20 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import EditIcon from '@material-ui/icons/Edit';
-
-
 import Header from '../Main/header'
+
+const fileImageMap = new Map();
+fileImageMap.set("pdf","https://is4-ssl.mzstatic.com/image/thumb/Purple124/v4/2b/2b/e1/2b2be10d-870f-c4cd-68b6-f3d5204c22b4/AppIcon-0-0-1x_U007emarketing-0-0-0-7-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/1200x630wa.png");
+fileImageMap.set("xlsx","https://www.slashgear.com/wp-content/uploads/2019/03/excel_main-1280x720.jpg")
+fileImageMap.set("xls","https://www.slashgear.com/wp-content/uploads/2019/03/excel_main-1280x720.jpg")
+fileImageMap.set("txt",TextFileImage)
+fileImageMap.set("doc","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXlVzH8dGd3fPl9dWjM9r3vX6iVZvFJekYU5PRku3wdbqAa8txFBjucY5yBprgiI84CpY&usqp=CAU  ")
+fileImageMap.set("docx","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXlVzH8dGd3fPl9dWjM9r3vX6iVZvFJekYU5PRku3wdbqAa8txFBjucY5yBprgiI84CpY&usqp=CAU  ")
+fileImageMap.set("png","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
+fileImageMap.set("jpg","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
+fileImageMap.set("presso","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
+fileImageMap.set("avi","https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/317b3233-97e7-4abe-b365-6d02b5862313/d277ol1-84f41fa1-3deb-4297-957d-5457456b32bb.png")
+fileImageMap.set("wmv","https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/317b3233-97e7-4abe-b365-6d02b5862313/d277ol1-84f41fa1-3deb-4297-957d-5457456b32bb.png")
 
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
@@ -84,34 +89,12 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 
-toast.configure();
-  function toastContainerFunction(message) {
-    toast.success(message, {
-      position: "bottom-right",
-      autoClose: 5000,
-      hideProgressBar: false,
-      closeOnClick: true,
-      pauseOnHover: true,
-      draggable: true,
-      progress: undefined,
-    });
-      return (
-          <ToastContainer
-            position="bottom-right"
-            autoClose={5000}
-            hideProgressBar={false}
-            newestOnTop={false}
-            closeOnClick
-            rtl={false}
-            pauseOnFocusLoss
-            draggable
-            pauseOnHover
-            />
-      );
-  }
+
 
 export default function Folderview(){
-  const imageFormats =["jpg","jpeg","png","gif","bmp"]; 
+
+
+    const imageFormats =["jpg","jpeg","png","gif","bmp"]; 
     const loc = useLocation();
     const classes = useStyles();
     const [folderID, setFolderID]= useState({});
@@ -128,200 +111,199 @@ export default function Folderview(){
     const [isloading, setLoading] = useState(false);
     const [showFav, setShowFav] = useState(false)
     const [openFileToView, setOpenFileToView] = useState(false);
- const [linkToView, setLinkToView] = useState("");
+    const [linkToView, setLinkToView] = useState("");
     const [openShareForm, setOpenShareForm] = useState(false);
-  const [mailshared, setmailshared]= useState("");
-  const [fileToBeShared, setfileToBeShared] = useState("");
-  const [access, setAccess] = useState("View");
+    const [mailshared, setmailshared]= useState("");
+    const [fileToBeShared, setfileToBeShared] = useState("");
+    const [access, setAccess] = useState("View");
+
+  //useEffect hooks to set user details and get files within the folder
+    useEffect(()=>{
+      setUserID(loc.state.id);
+      setFolderID(loc.state.folderID);
+     
+            },[]);
+
+      useEffect(()=>{
+             getFilesWithinAFolder(loc.state.folderID,loc.state.id)
+          },[loc.state.id])
+
+
+    const fetchData = () =>{
+      setLoading(true);
+    }
+
+    //Function to get files within the folder
+    const getFilesWithinAFolder=(fid, uid)=>{
+      fileService.getFilesWithinAFolder(fid, uid).then((docs)=>{
+                for(let [i, file] of [...docs.data].entries()){
+                     fileService.openFile(file["_id"], uid ).then((link)=>{
+                     file["returnFileLink"] = link["data"];
+            
+                     if(i>=[...docs.data].length-1)
+                        {
+                          setFilesInFolder(docs.data); 
+                        } 
+                    })
+            }
+          
+      })
+  }
+
+    //function to display favourite files/ all files
+    const getFavouriteFileWithinFolder = ()=>{
+       
+         if(!showFav)
+           {
+                setShowFav(true)
+            }
+          else
+      
+                setShowFav(false);
+          }
+  
+ //Opening the rename dialog
     const handleRenameOpen = (typeProperty, id, name) => {
       
       setoldName(name);
       setFileToBeRenamed(id);
       setopenRenameForm(true);
-     setType(typeProperty)
+      setType(typeProperty)
     };
-    const fetchData = () =>{
-      setLoading(true);
-    }
-  
-    
-    const option = [
-      'Choose File',
-      
-    ];
-    const handleClose = () => {
-      setAnchorEl(null);
-    };
+//Closing the rename dialog
     const handleRenameClose = () => {
       setopenRenameForm(false);
       setoldName("");
       setNewName("");
     };
 
-    const getFavouriteFileWithinFolder = ()=>{
-       
-        if(!showFav)
-        {
-         
-         
-          
-          setShowFav(true)
-        }
-        else
-        
-        setShowFav(false);
-    }
-  
-    const uploadFilesInFolder = (folderID, file)=>{
-      return FileService.uploadFilesInFolder( folderID, file, [loc.state.id]);
-    }
+  //Function to set the new name as the value that user types
+    const handleNameChange = (e)=>{setNewName( e.target.value);}
 
+
+//Function to contact the  service to send request to change file's name in DB
+    const handleRename =()=>{
+           
+      if(type === "file"&& newName.length)
+      {
+        FileService.renameFile(filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), loc.state.id)
+        .then((docs)=>{
+          let foundIndex = filesInFolder.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
+          let newfilesInFolder = [...filesInFolder];
+          newfilesInFolder[foundIndex] = {...newfilesInFolder[foundIndex], s3_key: docs["data"]["s3_key"]}
+           setFilesInFolder(newfilesInFolder); 
+              handleRenameClose();
+              setoldName("");
+              setNewName("");
+        })
+      }
+      else if(newName.length === 0)
+      {
+          handleRenameClose();
+          setoldName("");
+          setNewName("");
+      }
+  
+      }
+  
+    //Functions for handling upload button
+    const option = [
+      'Choose File'
+      
+    ];
+    const handleClickListItem = (event) => {
+      setAnchorEl(event.currentTarget);
+    };
+    const handleClose = () => {
+      setAnchorEl(null);
+    };
+    
+  
+  //Function to open file in a new tab
     const openFile=(fileName)=>{
-      FileService.downloadFile( fileName, loc.state.id).then((link)=>{
+      FileService.openFile( fileName, loc.state.id).then((link)=>{
         setOpenFileToView(true);
         setLinkToView(link["data"])
         
       })
      }
 
-    function toastErrorContainerFunction(message) {
-      toast.error(message, {
-        position: "bottom-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-      });
-    }
+     //Functions for displaying toaster messages
+     toast.configure();
+     function toastContainerFunction(message) {
+       toast.success(message, {
+         position: "bottom-right",
+         autoClose: 5000,
+         hideProgressBar: false,
+         closeOnClick: true,
+         pauseOnHover: true,
+         draggable: true,
+         progress: undefined,
+       });
+         return (
+             <ToastContainer
+               position="bottom-right"
+               autoClose={5000}
+               hideProgressBar={false}
+               newestOnTop={false}
+               closeOnClick
+               rtl={false}
+               pauseOnFocusLoss
+               draggable
+               pauseOnHover
+               />
+         );
+     }
+     function toastErrorContainerFunction(message) {
+       toast.error(message, {
+         position: "bottom-right",
+         autoClose: 5000,
+         hideProgressBar: false,
+         closeOnClick: true,
+         pauseOnHover: true,
+         draggable: true,
+         progress: undefined,
+       });
+     }
 
-    const handleRename =()=>{
-      alert(newName);
-      alert(filetobeRenamed);
-      alert(type);
-      
-      if(type === "file"&& newName.length)
-      {FileService.renameFile(filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), loc.state.id).then((docs)=>{
-        let foundIndex = filesInFolder.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
-        let newfilesInFolder = [...filesInFolder];
-        newfilesInFolder[foundIndex] = {...newfilesInFolder[foundIndex], s3_key: docs["data"]["s3_key"]}
-        setFilesInFolder(newfilesInFolder); 
-        handleRenameClose();
-        setoldName("");
-        setNewName("");
-      })
-    }
-    else if(newName.length === 0)
-    {
-      handleRenameClose();
-        setoldName("");
-        setNewName("");
-    }
-  
-    }
     
-    const handleMenuOpen=(event, filedata)=>
-  {setOpenMenu(event.currentTarget);
-    setFileDataOfMenu(filedata);
-  }
+  //Functions to open and close the menu for actions in file 
+  const handleMenuOpen=(event, filedata)=>{setOpenMenu(event.currentTarget);setFileDataOfMenu(filedata); }
 
-  const handleMenuClose=(()=>{
-    
-    setOpenMenu((openMenu)=>{
-      return null
-    });
-   
-  
-    
-  })
+  const handleMenuClose=(()=>{setOpenMenu((openMenu)=>{return null});})
       
     
-      
-  
-    const handleNameChange = (e)=>{
-     
-       setNewName( e.target.value);
-     
-      
-    }
-    const fileImageMap = new Map();
-    fileImageMap.set("pdf","https://is4-ssl.mzstatic.com/image/thumb/Purple124/v4/2b/2b/e1/2b2be10d-870f-c4cd-68b6-f3d5204c22b4/AppIcon-0-0-1x_U007emarketing-0-0-0-7-0-0-sRGB-0-0-0-GLES2_U002c0-512MB-85-220-0-0.png/1200x630wa.png");
-    fileImageMap.set("xlsx","https://www.slashgear.com/wp-content/uploads/2019/03/excel_main-1280x720.jpg")
-    fileImageMap.set("xls","https://www.slashgear.com/wp-content/uploads/2019/03/excel_main-1280x720.jpg")
-    fileImageMap.set("txt",TextFileImage)
-    fileImageMap.set("doc","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXlVzH8dGd3fPl9dWjM9r3vX6iVZvFJekYU5PRku3wdbqAa8txFBjucY5yBprgiI84CpY&usqp=CAU  ")
-    fileImageMap.set("docx","https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXlVzH8dGd3fPl9dWjM9r3vX6iVZvFJekYU5PRku3wdbqAa8txFBjucY5yBprgiI84CpY&usqp=CAU  ")
-    fileImageMap.set("png","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
-    fileImageMap.set("jpg","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
-    fileImageMap.set("presso","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
-    fileImageMap.set("avi","https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/317b3233-97e7-4abe-b365-6d02b5862313/d277ol1-84f41fa1-3deb-4297-957d-5457456b32bb.png")
-    fileImageMap.set("wmv","https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/i/317b3233-97e7-4abe-b365-6d02b5862313/d277ol1-84f41fa1-3deb-4297-957d-5457456b32bb.png")
-
-
+    //Function to upload files in the folder
     const handleFiles=(files)=>{
-      console.log(files);
+      
       fetchData();
-
-
       for(let file of files)
       {
-        fileService.uploadFilesInFolder(folderID, file,[loc.state.id]).then((doc)=>{
+          fileService.uploadFilesInFolder(folderID, file,[loc.state.id]).then((doc)=>{
           window.location.reload(false);
 
-      }).catch((err)=>{
-        toastErrorContainerFunction(`Couldn't upload ${file["name"]}`)
+      })
+      .catch((err)=>{
+            toastErrorContainerFunction(`Couldn't upload ${file["name"]}`)
       })
     }
     }
 
-    useEffect(()=>{
-        setUserID(loc.state.id);
-        setFolderID(loc.state.folderID);
-       
-          
-    },[]);
+   
 
-    useEffect(()=>{
-        getFilesWithinAFolder(loc.state.folderID,loc.state.id)
-    },[loc.state.id])
+    //sharing files
 
-    const getFilesWithinAFolder=(fid, uid)=>{
-        fileService.getFilesWithinAFolder(fid, uid).then((docs)=>{
-          for(let [i, file] of [...docs.data].entries()){
-            fileService.downloadFile(file["_id"], uid ).then((link)=>{
-              file["returnFileLink"] = link["data"];
-              
-           if(i>=[...docs.data].length-1)
-           {
-             setFilesInFolder(docs.data); 
-           } 
-          })
-        }
-            
-        })
-    }
-    const handleEmailChange = (e)=>{
-      setmailshared(e.target.value);
+    //changing email when input is changed
+    const handleEmailChange = (e)=>{setmailshared(e.target.value);}
+
+   //opening share dialog
+     const handleShareOpen = (type,id) => {setfileToBeShared(id);setOpenShareForm(true)};
    
-    }
+     //closing share dialog
+     const handleShareClose = () => {setOpenShareForm(false)};
    
-     const handleShareOpen = (type,id) => {
-   
-      
-      
-         setfileToBeShared(id);
-       
-       
-       setOpenShareForm(true)
-     };
-   
-     const handleShareClose = () => {
-      setOpenShareForm(false)
-     };
-   
-     const handleShare=()=>{
-       
+     //adding access to the file in the DB through the service
+     const handleShare=()=>{     
        const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
        if(re.test(mailshared))
        {
@@ -358,17 +340,17 @@ export default function Folderview(){
        }
      }
 
+
+     //function to open file in new tab
     const downloadFile=(fileName)=>{
-        FileService.downloadFile(fileName, loc.state.id).then((link)=>{
+        FileService.openFile(fileName, loc.state.id).then((link)=>{
           console.log(link["data"]);
            window.open(link["data"],"_blank")
         })
        }
 
-       const handleClickListItem = (event) => {
-        setAnchorEl(event.currentTarget);
-      };
-
+      
+    //function to delete file within a folder
     const removeFile = (fileID)=>{
         FileService.removeFileInAFolder(fileID, userID, folderID).then(()=>{
           handleMenuClose();
@@ -380,8 +362,11 @@ export default function Folderview(){
           toastContainerFunction(`Removed!`)
         })
       }
-      const makefavouriteFile= (fileID)=>{
-        FileService.updateFavouriteFiles(fileID, userID).then(()=>{
+
+//Function to mark the file as favourite
+    const makefavouriteFile= (fileID)=>{
+        FileService.updateFavouriteFiles(fileID, userID)
+        .then(()=>{
           let foundIndex = filesInFolder.findIndex((fileinFolder)=>fileinFolder["_id"] === fileID);
           let newfilesinFolder = [...filesInFolder];
           newfilesinFolder[foundIndex] = {...newfilesinFolder[foundIndex], favourite:!(newfilesinFolder[foundIndex]["favourite"])}
@@ -395,13 +380,13 @@ export default function Folderview(){
         <div>
           
           <div>
-            <Dialog open={openRenameForm} onClose={handleRenameClose} aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title"></DialogTitle>
-        <DialogContentText style={{'text-align': 'center'}}>
-          Change {oldname} to
-          </DialogContentText>
-        <DialogContent>
-          <TextField
+        <Dialog open={openRenameForm} onClose={handleRenameClose} aria-labelledby="form-dialog-title">
+          <DialogTitle id="form-dialog-title"></DialogTitle>
+           <DialogContentText style={{'text-align': 'center'}}>
+            Change {oldname} to
+           </DialogContentText>
+          <DialogContent>
+           <TextField
             autoFocus
             margin="dense"
             id="name"
@@ -420,17 +405,19 @@ export default function Folderview(){
           </Button>
         </DialogActions>
       </Dialog>
+
+
       <Dialog open={openShareForm} onClose={handleShareClose} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title"></DialogTitle>
         <DialogContentText style={{'text-align': 'center'}}>
           Add a person's mail ID
           </DialogContentText>
         <DialogContent>
-        <FormLabel component="legend">Access</FormLabel>
-       <RadioGroup aria-label="access" name="access" value={access} onChange={(event)=>{setAccess(event.target.value)}}>
-    <FormControlLabel value="View" title="User can only view your file" control={<Radio />} label="Viewer Access" />
-    <FormControlLabel value="All" control={<Radio />} label="All Access" />
-     </RadioGroup>
+          <FormLabel component="legend">Access</FormLabel>
+          <RadioGroup aria-label="access" name="access" value={access} onChange={(event)=>{setAccess(event.target.value)}}>
+          <FormControlLabel value="View" title="User can only view your file" control={<Radio />} label="Viewer Access" />
+          <FormControlLabel value="All" control={<Radio />} label="All Access" />
+          </RadioGroup>
           <TextField
             autoFocus
             margin="dense"
@@ -451,12 +438,19 @@ export default function Folderview(){
          </Button>
         </DialogActions>
       </Dialog>
+
+
       <Dialog style={{height:"100%", width:"100%"}} open={openFileToView} onClose={()=>{setLinkToView("");setOpenFileToView(false);}}>
             <DialogActions><CancelIcon onClick={()=>{setLinkToView("");setOpenFileToView(false);}}/></DialogActions>
             <DialogContent><iframe src={linkToView} allowfullscreen style={{height:"600px", width:"1000px"}}></iframe></DialogContent>
-            </Dialog>
+      </Dialog>
+
+
       </div>
-            <Header/>
+
+      <Header/>
+
+
       <Menu
         id="file-menu"
         anchorEl={openMenu}
@@ -466,42 +460,34 @@ export default function Folderview(){
         onClick = {handleMenuClose}
         onClose={handleMenuClose}
       >
-       
-       
-                                    <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFile( fileDataOfMenu["_id"] )}} >
-                                      { fileDataOfMenu["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                                    </IconButton>
-                                  
-                               
+             
+              <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFile( fileDataOfMenu["_id"] )}} >
+                { fileDataOfMenu["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+              </IconButton>
+                  
+              <IconButton aria-label="open" onClick={()=>{downloadFile(fileDataOfMenu["_id"])}}>
+                <OpenInNewIcon/> 
+              </IconButton>
         
- 
+              <IconButton onClick={()=>{handleRenameOpen('file',fileDataOfMenu["_id"], fileDataOfMenu["s3_key"])}}aria-label="rename" title="edit name">
+                 <EditIcon/>
+              </IconButton>
       
-                                    <IconButton aria-label="open" onClick={()=>{downloadFile(fileDataOfMenu["_id"])}}>
-                                      <OpenInNewIcon/> 
-                                    </IconButton>
-                             
-                                  
-        
-     
-                                    <IconButton onClick={()=>{handleRenameOpen('file',fileDataOfMenu["_id"], fileDataOfMenu["s3_key"])}}aria-label="rename" title="edit name">
-                                   <EditIcon/>
-                                    </IconButton>
-                           
-                           
-                                    <IconButton onClick ={()=>{openFile(fileDataOfMenu["_id"])}}>
-                                   <VisibilityIcon />
-                                    </IconButton>
-                                    
-                                    <IconButton  onClick={()=>handleShareOpen("file",fileDataOfMenu["_id"])}aria-label="share" title="share">
-                                      <ShareIcon/>
-                                    </IconButton> 
+              <IconButton onClick ={()=>{openFile(fileDataOfMenu["_id"])}}>
+                 <VisibilityIcon />
+              </IconButton>
+
+              <IconButton  onClick={()=>handleShareOpen("file",fileDataOfMenu["_id"])}aria-label="share" title="share">
+                  <ShareIcon/>
+              </IconButton> 
                                   
                              
 
       </Menu>
+
       <Grid container spacing={5}>
         <Grid item>
-      <Button
+            <Button
               variant="contained"
               className={classes.button}
               onClick={()=>{getFavouriteFileWithinFolder()}} 
@@ -512,7 +498,7 @@ export default function Folderview(){
               </Button>
       </Grid>
         <Grid item>    
-      <Button
+             <Button
               variant="contained"
               className={classes.button}
               onClick={handleClickListItem} 
@@ -531,28 +517,28 @@ export default function Folderview(){
             </Grid>
 
             <Menu
-            id="lock-menu"
-            anchorEl={anchorEl}
-            keepMounted
-            open={Boolean(anchorEl)}
-            onClose={handleClose}
-          >
-            <MenuItem key={option} selected={option === 'Choose File'} onClick={handleClose}>
-              <Button
-                variant="contained"
-                component="label"
-              >
-                Choose File
-                <input
-                  type="file"
-                  className="file-input"
-                  hidden
-                  multiple
-                  onChange={(e) => handleFiles(e.target.files)}
-                />
-              </Button>
+              id="lock-menu"
+              anchorEl={anchorEl}
+              keepMounted
+               open={Boolean(anchorEl)}
+               onClose={handleClose}
+             >
+                <MenuItem key={option} selected={option === 'Choose File'} onClick={handleClose}>
+                    <Button
+                        variant="contained"
+                        component="label"
+                     >
+                      Choose File
+                      <input
+                        type="file"
+                        className="file-input"
+                        hidden
+                        multiple
+                        onChange={(e) => handleFiles(e.target.files)}
+                      />
+                     </Button>
              
-            </MenuItem>        
+                 </MenuItem>        
           </Menu>   
             
         <div container spacing={5} alignitems="center" component="div" style={{ top:'20vh', height: '100vh' }}>   
