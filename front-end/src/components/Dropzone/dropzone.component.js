@@ -130,8 +130,7 @@ export default function Dropzone(props){
     const files= e.dataTransfer.files;
     if(files.length===1)
     handleFiles(files);
-    else
-    console.log(files);
+    
   }
 
 const [foldersinDB, setfoldersinDB]=useState([]);
@@ -456,7 +455,7 @@ const handleRenameClose = () => {
 //gets the url from server and displays it in a new tab
   const openFileInNewTab=(fileName)=>{
    FileService.openFile( fileName, userDetails).then((link)=>{
-      console.log(link["data"]);
+    
       window.open(link["data"],"_blank")
         
    })
@@ -713,7 +712,7 @@ const handleMenuOpen=(event, filedata)=>
        
       })
       .catch((err)=>{
-             console.log(err);
+          
       }).finally(()=>{
 
       });
@@ -731,10 +730,10 @@ const handleMenuOpen=(event, filedata)=>
           setSizeOccupied((sizeOccupied)=>{sizeOccupied+=folder["size"]})
         }
         setfoldersinDB(response.data);  
-        console.log(foldersinDB);
+  
       }).catch((err)=>{
         
-        console.log(err);
+     
       }).finally(()=>{
 
       });

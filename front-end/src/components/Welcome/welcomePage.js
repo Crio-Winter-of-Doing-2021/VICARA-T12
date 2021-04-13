@@ -188,7 +188,7 @@ export default function MiniDrawer(props) {
     setNames(loc.state.detail.name);
     setUserDetails(loc.state.detail.size);
     setId(loc.state.detail.id);  
-    console.log(loc.state.detail)
+    
   }, [loc]);
 
   // Function called when side drawer is opened and closed.
