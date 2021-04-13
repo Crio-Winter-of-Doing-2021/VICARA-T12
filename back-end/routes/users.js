@@ -5,20 +5,24 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 
 
-router.post('/', async (req,res) => {
+router.post('/register', async (req,res) => {
+
+    // #swagger.tags = ['User']
+    // #swagger.description = 'Endpoint used for user registration.'
+
     const {error} = validate(req.body);
     if ( error )
         return res.status(400).send(error.details[0].message);
+    console.log(req.body.name)
+    let user = await User.findOne({ email: req.body.email })
+    if (user) 
+        return res.status(400).send('User already registered.');
 
     const password = req.body.password;
     const confirmPassword = req.body.confirmPassword;
 
     if (password != confirmPassword) 
         return res.status(400).send('Passwords do not match!');
-
-    let user = await User.findOne({ email: req.body.email })
-    if (user) 
-        return res.status(400).send('User already registered.');
 
     user = new User( _.pick(req.body, ['name', 'email', 'password']) );
     const salt = await bcrypt.genSalt(10);
@@ -29,6 +33,11 @@ router.post('/', async (req,res) => {
 });
 
 router.patch('/update/:id', async (req,res) => {
+
+    // #swagger.tags = ['User']
+    // #swagger.description = 'Endpoint used for updating user information.'
+    
+
     console.log(req.body)
     if( req.body.password == ''){
         req.body.password = 'testPasswordForvalidation'

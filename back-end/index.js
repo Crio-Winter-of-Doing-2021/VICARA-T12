@@ -12,9 +12,15 @@ const debug = require('debug')('app:startup');
 const welcomePage = require('./routes/welcomePage');
 const users = require('./routes/users');
 const LinkedInProfileInfo = require('./routes/LinkdeInAuth')
+const sendMail = require('./routes/sendMail')
 const loginPage = require('./routes/loginPage');
 const path = require('path');
 const app = express();
+const swaggerUi = require('swagger-ui-express')
+const swaggerFile = require('./swagger_output.json')
+
+
+app.use('/doc', swaggerUi.serve, swaggerUi.setup(swaggerFile))
 
 const cookieParser = require('cookie-parser')
 const {login, refresh} = require('./routes/authentication');
@@ -28,23 +34,26 @@ app.use(cookieParser())
 app.use(helmet());
 app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Headers', '*');
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3001');
+    res.setHeader('Access-Control-Allow-Origin', 'https://vicara-storage-drive.netlify.app');
     res.setHeader('Access-Control-Allow-Methods', 'PATCH, DELETE, GET, POST, OPTIONS,PUT');
     res.setHeader('Access-Control-Allow-Credentials', true);
     next();
 });
 var corsOptions = {
-    origin: 'http://localhost:3001',
+    origin: 'https://vicara-storage-drive.netlify.app',
     credentials : true
    }
 
 app.options('*', cors(corsOptions));
-app.use('/api/users', users);
-app.use('/api/auth',auth);
-app.use('/api/upload',[authentication.auth],uploadController);
-app.use('/welcome',[authentication.auth],welcomePage);
+//app.use(cors())
+app.use('/api/user', users);
+app.use('/api/user/login',auth);
+app.use('/api/user/sendMail', sendMail);
+app.use('/api',[authentication.auth],uploadController);
+app.use('/welcome',welcomePage);
 app.use('/api/LinkedInProfileInfo', LinkedInProfileInfo);
-app.use(cors())
+
+
 
 
 
@@ -54,10 +63,7 @@ app.set('view engine', 'pug');
 app.set('views','./views');
 
 //Config check for pvt key 
-if(!config.get('jwtPrivateKey')){
-    console.error(' jwtPrivateKey is not defined.')
-    process.exit(1);
-}
+
 
 
 
@@ -73,3 +79,4 @@ app.listen(port, () =>{
     console.log(` Listening on port ${port} `);
 });
 
+module.exports = app;

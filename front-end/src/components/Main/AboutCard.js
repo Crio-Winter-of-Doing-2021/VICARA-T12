@@ -16,6 +16,10 @@ const useStyles = makeStyles({
     boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
     padding: 50,
     flex: '1 1 0',
+    overflowY: 'auto', 
+  },
+  content: {
+    flex: '1 0 auto',
   },
 });
 
@@ -25,10 +29,12 @@ export default function OutlinedCard(props) {
     <Collapse in={props.checked} {...(props.checked ? { timeout: 1000 } : {})}>
         <Card className={classes.root} variant="outlined">
           <CardContent>
-              <Typography variant="body1" gutterBottom>
-                  body2. Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quos blanditiis tenetur
-                  unde suscipit, quam beatae rerum inventore consectetur, neque doloribus, cupiditate numquam
-                  dignissimos laborum fugiat deleniti? Eum quasi quidem quibusdam.
+              <Typography component="h3" variant="h3" className={classes.content}>
+                  About Vicara
+              </Typography>
+              <Typography variant="body1">
+                  Vicara is a cloud storage drive which utilizes AWS S3 bucket to store the files and folders with appropriate access permissions for each user. With the server deployed on Heroku,
+                  Vicara's API's are always up and running with little downtime. A guide to using the storage drive along with the various features is available in the walkthrough session. 
               </Typography>
           </CardContent>
         </Card>

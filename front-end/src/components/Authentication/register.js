@@ -94,7 +94,7 @@ export default function Register(props) {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		axiosInstance
-			.post('api/users/',{
+			.post('api/user/register/',{
 				name: formData.name,
 				email: formData.email,
 				password: formData.password,
