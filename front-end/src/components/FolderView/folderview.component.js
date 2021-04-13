@@ -122,7 +122,8 @@ export default function Folderview(){
     const [fileDataOfMenu, setFileDataOfMenu] = useState({ });
     const [anchorEl, setAnchorEl] = useState(null);
     const [isloading, setLoading] = useState(false);
-    const [foldersinFolder, setfoldersinFolder] = useState([])
+    const [showFav, setShowFav] = useState(false)
+    const [allFilesInFolder, setAllFilesInFolder] =useState([]);
     const handleRenameOpen = (typeProperty, id, name) => {
       
       setoldName(name);
@@ -133,56 +134,11 @@ export default function Folderview(){
     const fetchData = () =>{
       setLoading(true);
     }
-    const handleFolder=(e)=>{
-      
-      
-      var theFiles = e.target.files;
-     
-      
-       for(let file of theFiles)
-       
-         {
-          var relativePath = file.webkitRelativePath; 
-          var folders = relativePath.split("/");
-          folders.pop();
-          let rootFolder = folders[0];  
-          let parentFolder =""    
-          folders.shift();
-          if(folders.length)
-          {
-            parentFolder = folders[folders.length-1];
-          }
-          else
-          {
-            parentFolder = rootFolder
-          }
-         
-    }
-      /*folder = folder[0];
-      fetchData()
-      fileService.uploadFolder(folder, loc.state.id).then((res)=>{
-        console.log(res);
-        for(let i = 0; i < theFiles.length; i++){       
-          uploadFilesInFolder(res["data"]["_id"], theFiles[i]).then((docs)=>{
-            console.log(docs);  
-            if(i===(theFiles.length-1)){
-              
-              setfoldersinFolder((prevArray)=>[...prevArray, docs["data"]]);
-              toastContainerFunction(`Uploading ${folder} was successful`)
-            } 
   
-          })
-        }
-  
-      }).catch((err)=>{toastErrorContainerFunction("The folder couldn't be uploaded")}).finally(()=>{
-        setLoading(false)
-      });
-      */
-    }
     
     const option = [
       'Choose File',
-      'Choose Folder'
+      
     ];
     const handleClose = () => {
       setAnchorEl(null);
@@ -192,6 +148,20 @@ export default function Folderview(){
       setoldName("");
       setNewName("");
     };
+
+    const getFavouriteFileWithinFolder = ()=>{
+       
+        if(!showFav)
+        {
+         
+         
+          
+          setShowFav(true)
+        }
+        else
+        
+        setShowFav(false);
+    }
   
     const uploadFilesInFolder = (folderID, file)=>{
       return FileService.uploadFilesInFolder( folderID, file, [loc.state.id]);
@@ -327,7 +297,12 @@ export default function Folderview(){
 
     const removeFile = (fileID)=>{
         FileService.removeFileInAFolder(fileID, userID, folderID).then(()=>{
+          handleMenuClose();
           setFilesInFolder(filesInFolder.filter((file)=>file["_id"] !== fileID));
+         
+        }).catch((err)=>{
+          
+        }).finally(()=>{
           toastContainerFunction(`Removed!`)
         })
       }
@@ -408,6 +383,19 @@ export default function Folderview(){
                                   
 
       </Menu>
+      <Grid container spacing={5}>
+        <Grid item>
+      <Button
+              variant="contained"
+              className={classes.button}
+              onClick={()=>{getFavouriteFileWithinFolder()}} 
+              startIcon={<StarBorderIcon/>}
+              
+            >
+              {`Show ${!showFav?"favourites":"All"}`}
+              </Button>
+      </Grid>
+        <Grid item>    
       <Button
               variant="contained"
               className={classes.button}
@@ -423,6 +411,8 @@ export default function Folderview(){
                   onChange={(e) => handleFiles(e.target.files)}
                 />
             </Button>
+            </Grid>
+            </Grid>
 
             <Menu
             id="lock-menu"
@@ -445,23 +435,64 @@ export default function Folderview(){
                   onChange={(e) => handleFiles(e.target.files)}
                 />
               </Button>
-              <Button
-                variant="contained"
-                component="label"
-              >
-                Choose Folder
-                < input  directory="" webkitdirectory="" type="file"
-                  hidden
-                  onChange={(e) => handleFolder(e)}
-                />
-              </Button>
+             
             </MenuItem>        
           </Menu>   
             
         <div container spacing={5} alignitems="center" component="div" style={{ top:'20vh', height: '100vh' }}>   
         <Grid container spacing={5} alignitems="center">
           {
-            filesInFolder.map( (filedata) => {
+            showFav && filesInFolder.filter((file)=>file["favourite"]==true).map( (filedata) => {
+              return (
+                <Grid item onClick={(event)=>handleMenuOpen(event, filedata)}key={filedata["_id"]} xs={12} md={2}>
+                  <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={filedata["s3_key"]}> 
+                  <CardHeader 
+                      
+                      action={
+                        <div onClick={()=>removeFile(filedata["_id"])}>
+                          <IconButton aria-label="add to favorites" >
+                            <DeleteIcon/>
+                          </IconButton>
+                        </div>
+                      }
+                    
+                     
+                    />
+                    <CardMedia
+                        className={classes.cardMedia} 
+                        // Checking if image url ends in either a png or jpeg format. If not then, return 404 error image
+                        image ={imageFormats.includes(filedata["type"])?filedata["returnFileLink"]:fileImageMap.get( filedata["s3_key"].split('.').pop() )?fileImageMap.get( filedata["s3_key"].split('.').pop() ) : "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAb1BMVEX////0myXzlQD0miD1pT/++O/zkwD86dTzlgn0nCX72br0nij0mRP85dH2rVf1qEb97t33unj61Kz++/X1ojn+9Or85Mv4vn/60qj2sF/869j5y5v738P4xIv3tmz5z6L5yJX2r131qU762bX3t3AjskLOAAAE00lEQVR4nO2d7XaiMBRFIdGYSmpt0Wm1Sh067/+MM+UjVgG1yxMSmLN/qguzBa7k5sKNIkIIIYQQQgghhBBCCCFumLog9W31HaOECyavn1PfahWJjF0gjRbZ1rdcgSPDwlJlIRyuDg3j2Jhfvv0cG/7bjS++BR0bxrF/xcTg0Upp+8OpAA5UPOnybSFqRxHK3waaWWJKQ7PxPRRnbHR1nO58j8QZm3Ivytz3QNwxKc9FtfQ9EGdsVWGo330PxB1ZsRPlwvc43LErg430PQ53pKWhCuEK3BGjDzXRqlBUYcwUnVD+X6iZ73G4w7vhu1EQzOS5/dLMt+FGoaaB0qikbSbo1zCdGJRgISmemvMkr4ZLiZ7eS9mImT4NdwKfv5BiHY7hB+wUPFFMgjF8PRMUdwbTOi+j94EY/tb1j14JztK7WM9XVdRSp8epJ8NpPZzYTFbluO6/cFyU2zSnO9GP4dbUMUb/ri8cAZfG5Zbk6uRFL4ZzG0TVa50RRhjuRMth6sPw3cYY9RYhDau5oDjJAHswfK4FZTkUnGFUHfnz76/1bpgu6iBqkvJoAho+BGC4rvPQsc6rxMK4DGc2iKrn+rVRGX4qK3hMYI7J8GBjzPeFhBEZZqIWjL/rjMYwzesgqicnycuxGK4f7HpldvrOSAx/2UVndTh7axyGL8cY83n+3igM91bQNHPPYzC0QdSsWmoGhm94TBnq1oqBwRsubRD9mgy2MHTD3fFCraM2aeCGbzbG6K7KpGEb2pRhPRlsYdCGG3uhtuheZR6w4TFleJwMtjBgw8wKflz62IANq8JReaWqbMiGpeDDlbEP3jC5VskydEM5ufoxGt4ODdH8v4bZ6eItsPAsFMPnthITGt4EDdHQcLyGf5RuMipDd9AQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfHQEA0N8dAQDQ3x0BANDfEEY/iSLe5n0/LImVAMMyURiKdQDXeoO5xFo9QqEMODvjDqnyCz800HYviBMjSNesBADNe2avhO1GOghtFOQJ46W9xiG6ZhlD4iaLmxIRhDZ9AQDQ3x0BANDfHQEA0N8dAQDQ3xhGOYOupCEorhOr/z0Wwlk+ZNqYEYpgYzx5fNottADF9geZr9+aYDMTygnugZbK5tjsqX6kOghlGuISeikY1wGophtJctxfo/xfxppqKCMXQGDdHQEA8N0dAQDw3R0BAPDdHQEE+bYVLmPEZsuC2YOemG1Gn4sXi6n/zQHHSboUu6DBeYqi993uchGENY1VezXVwghj1Xfbmkw/ANlk1sPGkyEMMpqL2MbHYaC8Qw2iaIqi9lmo+BC8Uwipaz+2lrFReOoStoiIaGeGiIhoZ4aIiGhnhoiIaGeGiIhoZ4aIiGhnh6N/zKqZ31PXWL9GEYy76+LoqmVR/Sy70YgOSFoejqL4OnqlztryNn+bzg/k7EtCpcFU5W0tqYl626zKafb1yvqo4heS9f90VaNSMz8v0RkAK+zG5vW49f7PmCZW9bBQGy+FfQtrZa9ycYpRJ05/1P6GoN5oYZajH0dvSlxksOmKOen3Cz4KJfwSjaatR66C3IjvZ8Tkn3AlOaf13PqLzXHvGW6edG9BBMxerQtqTYF4ib1X5+KxshhBBCCCGEEEIIIYSQe/gLEeV5y4CZvuUAAAAASUVORK5CYII="}
+                        title="Image title"
+                    />
+                    
+                    <CardContent className={classes.cardContent}>
+                      <Typography variant="subtitle1" color="textSecondary" >
+                      {filedata["s3_key"].slice(0,10)}
+                      </Typography>
+                      <CardActions disableSpacing style={{display:'flex', top:'0px'}}>
+                        <div onClick={()=>{makefavouriteFile( filedata["_id"] )}}>
+                          <IconButton aria-label="add to favorites" >
+                            { filedata["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+                          </IconButton>
+                        </div>
+                        <div><IconButton aria-label="share" className={classes.download}>
+                          <OpenInNewIcon onClick={()=>{downloadFile(filedata["_id"])}}/>
+                        </IconButton>
+                        </div>
+                        <div onClick={()=>{handleRenameOpen('file',filedata["_id"], filedata["s3_key"])}}>
+                                    <IconButton aria-label="rename">
+                                   <EditIcon/>
+                                    </IconButton>
+                                  </div>
+                      </CardActions>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })
+          }
+          {
+            !showFav && filesInFolder.map( (filedata) => {
               return (
                 <Grid item onClick={(event)=>handleMenuOpen(event, filedata)}key={filedata["_id"]} xs={12} md={2}>
                   <Card className={classes.card} style={{backgroundColor:"#fafafa"}} title={filedata["s3_key"]}> 
