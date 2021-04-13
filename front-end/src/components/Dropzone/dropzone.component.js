@@ -773,7 +773,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
       <Container 
         maxWidth="lg" className="dropContainer"
       >
-        
+        <Typography>{fileSize(sizeOccupied)}</Typography>
         <Typography 
           onDragOver={dragOver}
           onDragEnter={dragEnter}
@@ -1039,7 +1039,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                                 action={
                                   <div >
                                     <IconButton aria-label="add to favorites" >
-                                      <DeleteIcon style={{color:'red'}} onClick={()=>removeFile(filedata["_id"])}/>
+                                      <DeleteIcon onClick={()=>removeFile(filedata["_id"])}/>
                                     </IconButton>
                                   
                                   </div>
@@ -1093,7 +1093,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                             action={
                               <div onClick={()=>removeFile(filedata["_id"])}> 
                                 <IconButton aria-label="add to favorites" >
-                                  <DeleteIcon style={{color:'red'}} />
+                                  <DeleteIcon />
                                 </IconButton>
                                 
                               </div>
@@ -1141,7 +1141,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                         action={
                           <div onClick={()=>removeFile(filedata["_id"])} >
                             <IconButton aria-label="add to favorites" >
-                              <DeleteIcon style={{color:'red'}}/>
+                              <DeleteIcon/>
                             </IconButton>
                             
                           </div>
@@ -1191,7 +1191,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                           action={
                             <div onClick={()=>removeFolder(folderData["_id"])} >
                               <IconButton aria-label="add to favorites" >
-                                <DeleteIcon style={{color:'red'}}/>
+                                <DeleteIcon />
                               </IconButton>
                             </div>
                           }
@@ -1236,7 +1236,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                           action={
                             <div onClick={()=>removeFolder(folderData["_id"])} >
                               <IconButton aria-label="add to favorites" >
-                                <DeleteIcon style={{color:'red'}}/>
+                                <DeleteIcon/>
                               </IconButton>
                             </div>
                           }
@@ -1282,7 +1282,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                           action={
                             <div  onClick={()=>removeFolder(folderData["_id"])}> 
                               <IconButton aria-label="add to favorites" >
-                                <DeleteIcon style={{color:'red'}}/>
+                                <DeleteIcon/>
                               </IconButton>
                             </div>
                           }

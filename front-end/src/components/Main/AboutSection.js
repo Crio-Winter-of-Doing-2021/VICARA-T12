@@ -38,21 +38,23 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export default function (){
+    // Window position checked for start of animation 
     const checked = useWindowPosition('loginRegister');
     const classes = useStyles();
     return(
+        // Calling two card componenets an adding animation to them
         <Container maxWidth="xl" component="main"  id="about-section" className={classes.main}>
             <Typography className={classes.title} variant="h5" component="h2">
                 What is Vicara's Storage Drive? 
             </Typography>
             <div className={classes.root}>
-                <Grid xs={12} md={5}>
+                <Grid item xs={12} md={5}>
                     <div className={classes.child}>
                         <OutlinedCard checked={checked} />
                     </div>
                 </Grid>
                 <div className={classes.border}></div>
-                <Grid xs={12} md={5}>
+                <Grid item xs={12} md={5}>
                     <div className={classes.child}>
                         <MediaControlCard checked={checked} />
                     </div>

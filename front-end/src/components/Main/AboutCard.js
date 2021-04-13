@@ -26,6 +26,7 @@ const useStyles = makeStyles({
 export default function OutlinedCard(props) {
   const classes = useStyles();
   return (
+    // Collapse property used for animation 
     <Collapse in={props.checked} {...(props.checked ? { timeout: 1000 } : {})}>
         <Card className={classes.root} variant="outlined">
           <CardContent>
