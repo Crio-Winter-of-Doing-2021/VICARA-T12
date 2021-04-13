@@ -88,7 +88,7 @@ export default function Login(props) {
 	const submitForgotPassword = (e) =>{
 		e.preventDefault();
 		axiosInstance
-			.post('https://vicara-storage-drive.herokuapp.com/api/user/sendMail/',{
+			.post('http://localhost:3000/api/user/sendMail/',{
 				email: forgotEmail
 			})
 			.then(response => { 
@@ -132,7 +132,7 @@ export default function Login(props) {
 	const handleSubmit = (e) => {
 		e.preventDefault();
 		axiosInstance
-			.post('https://vicara-storage-drive.herokuapp.com/api/user/login/',{
+			.post('http://localhost:3000/api/user/login/',{
 				email: formData.email,
 				password: formData.password,
 			})

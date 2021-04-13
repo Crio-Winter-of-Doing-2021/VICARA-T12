@@ -42,6 +42,7 @@ import './dropzone.component.css'
 import { Link} from "react-router-dom"
 import CancelIcon from '@material-ui/icons/Cancel';
 import { DataGrid } from '@material-ui/data-grid';
+import AvatarGroup from "@material-ui/lab/AvatarGroup";
 
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
@@ -158,6 +159,7 @@ const [setSharedRows, sharedRows] = useState([]);
 const [openSharedFileMenu, setOpenSharedFileMenu] = useState(null);
 const [sharedFileDataOfMenu, setSharedFileDataOfMenu] = useState({});
 const [sizeOccupied, setSizeOccupied] =  useState(0)
+const [avatarGroup, setAvatarGroup] = useState("")
   const handleRenameOpen = (typeProperty, id, name) => {
     setoldName(name);
     setFileToBeRenamed(id);
@@ -324,28 +326,20 @@ const [sizeOccupied, setSizeOccupied] =  useState(0)
     if(re.test(mailshared)&&typeToBeShared=="file")
     {
       FileService.shareFile(access, fileToBeShared, mailshared, props.id).then((returnObject)=>{
-        console.log(returnObject);
-      
-
+        setAvatarGroup(returnObject.data.users)
+        console.log(avatarGroup)
         if(returnObject.status === 200)
          {
           toastContainerFunction("User Added Successfully")
           setmailshared("");
           setfileToBeShared("");
           setOpenShareForm(false);
-
          }
-         
-
-      }).catch((error)=>{
-        
-           
-        toastErrorContainerFunction("Couldn't add the user mentioned");
-           setmailshared("");
-           setfileToBeShared("");
-           setOpenShareForm(false);
-           
-         
+      }).catch((error)=>{        
+          toastErrorContainerFunction("Couldn't add the user mentioned");
+          setmailshared("");
+          setfileToBeShared("");
+          setOpenShareForm(false);
       })
     }
     else if(re.test(mailshared)&&typeToBeShared=="folder"){
@@ -1060,9 +1054,17 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                             
                             <CardHeader 
                                 avatar={
-                                  <Avatar aria-label="name" className={classes.avatar}>
-                                    {userName.charAt(0)}
-                                  </Avatar>
+                                  <AvatarGroup max={3}>
+                                    {/* {
+                                      avatarGroup.map((idData,i) => {
+                                        return (
+                                          <Avatar aria-label="name" className={classes.avatar}>
+                                            {idData}
+                                          </Avatar>
+                                        );
+                                      })
+                                    } */}
+                                  </AvatarGroup>
                                 }
                                 action={
                                   <div >

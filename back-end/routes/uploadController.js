@@ -544,7 +544,7 @@ router.patch('/file/addUser/:accessFileIDmailAddedUserID', async(req,res,next)=>
             next(res.status(400).send("The user can't be added by you"))
           }
           else if(!errorInUpdatingUser){
-            next(res.status(200).send(docs));
+                next(res.status(200).send(docs));
           }
           else{
             next(res.status(500).send(errorInUpdatingUser))
