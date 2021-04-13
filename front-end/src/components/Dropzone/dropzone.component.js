@@ -698,8 +698,8 @@ const handleMenuOpen=(event, filedata)=>
     if(id)
     {
       FileService.getSharedFiles(id).then((response)=>{
-        
-        for(let [i,file] of [...response.data].entries())
+        if(response.length)
+        {for(let [i,file] of [...response.data].entries())
            {
                   file["size"] = fileSize(file["size"])
                   if(i==[...response.data].length-1)
@@ -707,6 +707,8 @@ const handleMenuOpen=(event, filedata)=>
                       setSharedFilesinDB(response.data);
                      }
              }
+            }
+
       
        
        
@@ -923,7 +925,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
          onClose={handleFolderMenuClose}
        >
        
-       
+         
           <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFolder( folderDataOfMenu["_id"] )}} >
             { folderDataOfMenu["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
           </IconButton>
@@ -1020,7 +1022,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
           <div className="file-display-container">
             {
               props.allFileUpload &&
-               <div container spacing={5} alignitems="center">   
+               <div spacing={5} alignitems="center">   
                   <Grid container spacing={5} alignitems="center">
                     {
                       filesinDB.filter( (filedata) => filedata.s3_key.includes(props.searchFiled)).slice(0).reverse().map((filedata, i) => {
@@ -1076,7 +1078,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
             }
             { 
               props.recentFileUpload && 
-                <div container spacing={5} alignItems="center">   
+                <div spacing={5} alignItems="center">   
                   <Grid container spacing={5} alignItems="center">
                     {filesinDB.filter( (filedata) => filedata.s3_key.includes(props.searchFiled)).sort(function(a,b){
                      return a["updatedAt"]>b["updatedAt"]                   
@@ -1126,7 +1128,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
             }
             {
               props.starredFiles &&  
-              <div container spacing={5} alignItems="center">   
+              <div spacing={5} alignItems="center">   
               <Grid container spacing={5} alignItems="center">
                 {filesinDB.filter( (filedata) =>  filedata["favourite"] && filedata.s3_key.includes(props.searchFiled)).map((filedata, i) => {
                   return (
@@ -1176,7 +1178,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
             }
             {
                props.allFolderUpload &&  
-              <div container spacing={5} alignItems="center">   
+              <div spacing={5} alignItems="center">   
                 <Grid container spacing={5} alignItems="center">
                 {foldersinDB.filter( (folderData) => folderData.Name.includes(props.searchFiled)).slice(0).reverse().map((folderData, i) => {
                   return (
@@ -1221,7 +1223,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
             }
             {
                props.recentFolderUpload &&  
-              <div container spacing={5} alignitems="center">   
+              <div spacing={5} alignitems="center">   
                 <Grid container spacing={5} alignitems="center">
                 {foldersinDB.filter( (folderData) => folderData.Name.includes(props.searchFiled)).slice(0,10).reverse().map((folderData, i) => {
                   return (
@@ -1267,7 +1269,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
             }
             {
                props.starredFolder &&  
-              <div container spacing={5} alignItems="center">   
+              <div  spacing={5} alignItems="center">   
                 <Grid container spacing={5} alignItems="center">
                 {foldersinDB.filter( (folderData) =>  folderData["favourite"] && folderData.Name.includes(props.searchFiled)).map((folderData, i) => {
                   return (

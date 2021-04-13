@@ -308,7 +308,7 @@ export default function Folderview(){
        if(re.test(mailshared))
        {
          FileService.shareFile(access, fileToBeShared, mailshared, loc.state.id).then((returnObject)=>{
-           console.log(returnObject);
+         
          
    
            if(returnObject.status === 200)
@@ -344,7 +344,7 @@ export default function Folderview(){
      //function to open file in new tab
     const downloadFile=(fileName)=>{
         FileService.openFile(fileName, loc.state.id).then((link)=>{
-          console.log(link["data"]);
+         
            window.open(link["data"],"_blank")
         })
        }
