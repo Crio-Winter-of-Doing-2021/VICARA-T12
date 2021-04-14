@@ -1032,10 +1032,6 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                               </IconButton>
 
       </Menu>
-
-
-
-
           <div className="file-display-container">
             {
               props.allFileUpload &&
