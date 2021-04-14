@@ -1,14 +1,14 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import OutlinedCard from './AboutCard';
-import OutlinedCardMobile from './AboutCardMobile';
 import useWindowPosition from './useWindowPosition';
 import MediaControlCard from './VideoCard';
-import MediaControlCardMobile from './VideoCardMobile';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
-import {BrowserView, MobileView} from 'react-device-detect';
+import { isMobile } from "react-device-detect";
+import OutlinedCardMobile from './AboutCardMobile';
+import MediaControlCardMobile from './VideoCardMobile';
 
 const useStyles = makeStyles((theme) => ({
     main:{
@@ -46,46 +46,36 @@ export default function (){
     const classes = useStyles();
     return(
         // Calling two card componenets an adding animation to them
-        <div>
-            <BrowserView>
-                <Container maxWidth="xl" component="main"  id="about-section" className={classes.main}>
-                    <Typography className={classes.title} variant="h5" component="h2">
-                        What is Vicara's Storage Drive? 
-                    </Typography>
-                    <div className={classes.root}>
-                        <Grid item xs={12} md={5}>
-                            <div className={classes.child}>
-                                <OutlinedCard checked={checked} />
-                            </div>
-                        </Grid>
-                        <div className={classes.border}></div>
-                        <Grid item xs={12} md={5}>
-                            <div className={classes.child}>
-                                <MediaControlCard checked={checked} />
-                            </div>
-                        </Grid>
-                    </div>  
-                </Container>
-            </BrowserView>
-            <MobileView>
-                <Container maxWidth="xl" component="main"  id="about-section" className={classes.main}>
-                    <Typography className={classes.title} variant="h5" component="h2">
-                        What is Vicara's Storage Drive? 
-                    </Typography>
-                    <div className={classes.root}>
-                        <Grid item xs={12} md={5}>
-                            <div className={classes.child}>
-                                <OutlinedCardMobile checked={checked} />
-                            </div>
-                        </Grid>
-                        <Grid item xs={12} md={5}>
-                            <div className={classes.child}>
-                                <MediaControlCardMobile checked={checked} />
-                            </div>
-                        </Grid>
-                    </div>  
-                </Container>
-            </MobileView>
-        </div>
+        <Container maxWidth="xl" component="main"  id="about-section" className={classes.main}>
+            <Typography className={classes.title} variant="h5" component="h2">
+                What is Vicara's Storage Drive? 
+            </Typography>
+            {
+                isMobile?
+                <div className={classes.root}>
+                    { console.log("there")}
+                    <Grid item xs={12} md={5}>
+                        <OutlinedCardMobile/>
+                    </Grid>
+                    <Grid item xs={12} md={5}>
+                        <MediaControlCardMobile />
+                    </Grid>
+                </div>
+                :
+                <div className={classes.root}>
+                    <Grid item xs={12} md={5}>
+                        <div className={classes.child}>
+                            <OutlinedCard checked={checked} />
+                        </div>
+                    </Grid>
+                    <div className={classes.border}></div>
+                    <Grid item xs={12} md={5}>
+                        <div className={classes.child}>
+                            <MediaControlCard checked={checked} />
+                        </div>
+                    </Grid>
+                </div>  
+            }  
+        </Container>
     )
 }
