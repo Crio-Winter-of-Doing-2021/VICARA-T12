@@ -21,6 +21,12 @@ const useStyles = makeStyles((theme) => ({
        justifyContent: 'center',
        flex: '1 1 0',
     },
+    rootMobile:{
+        height: '100vh',
+        display:  'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
     border: {
         height: '50%',
         width: 1,
@@ -52,7 +58,7 @@ export default function (){
             </Typography>
             {
                 isMobile?
-                <div className={classes.root}>
+                <div className={classes.rootMobile}>
                     <MediaControlCardMobile />
                 </div>
                 :

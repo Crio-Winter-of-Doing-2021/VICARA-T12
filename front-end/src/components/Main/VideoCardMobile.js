@@ -9,10 +9,10 @@ import VideoCard from '../images/Crio_demo.mp4';
 
 const useStyles = makeStyles((theme) => ({
 root: {
-    minWidth: '25vw',
-    maxWidth:'50vw',
-    minHeight: '25vh',
-    maxHeight: '50vh',
+    minWidth: 'auto',
+    maxWidth:'auto',
+    minHeight: 'auto',
+    maxHeight: 'auto',
     border: 0,
     borderRadius: 3,
     boxShadow: '0 3px 5px 2px rgba(255, 105, 135, .3)',
