@@ -55,9 +55,6 @@ export default function (){
                 <div className={classes.root}>
                     { console.log("there")}
                     <Grid item xs={12} md={5}>
-                        <OutlinedCardMobile/>
-                    </Grid>
-                    <Grid item xs={12} md={5}>
                         <MediaControlCardMobile />
                     </Grid>
                 </div>
