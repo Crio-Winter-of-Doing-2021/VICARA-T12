@@ -689,6 +689,7 @@ router.get('/file/shareView/:id', async(req,res,next)=>{
                } 
            }).then(()=>{
             if(i==(files.length-1)){
+              console.log(filesToBeSent)
               res.status(200).send(filesToBeSent);
             }
            })  
