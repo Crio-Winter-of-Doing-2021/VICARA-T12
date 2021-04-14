@@ -53,10 +53,7 @@ export default function (){
             {
                 isMobile?
                 <div className={classes.root}>
-                    { console.log("there")}
-                    <Grid item xs={12} md={5}>
-                        <MediaControlCardMobile />
-                    </Grid>
+                    <MediaControlCardMobile />
                 </div>
                 :
                 <div className={classes.root}>
