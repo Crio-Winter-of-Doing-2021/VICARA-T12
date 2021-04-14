@@ -698,8 +698,8 @@ const handleMenuOpen=(event, filedata)=>
     if(id)
     {
       FileService.getSharedFiles(id).then((response)=>{
-        if(response.length)
-        {for(let [i,file] of [...response.data].entries())
+      
+        for(let [i,file] of [...response.data].entries())
            {
                   file["size"] = fileSize(file["size"])
                   if(i==[...response.data].length-1)
@@ -707,7 +707,7 @@ const handleMenuOpen=(event, filedata)=>
                       setSharedFilesinDB(response.data);
                      }
              }
-            }
+            
 
       
        
