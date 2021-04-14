@@ -27,6 +27,7 @@ import fileService from '../../services/file.service';
 import { ToastContainer, toast } from 'react-toastify';
 import { createMuiTheme } from '@material-ui/core/styles';
 import green from '@material-ui/core/colors/green';
+import InfoIcon from '@material-ui/icons/Info';
 import ShareIcon from '@material-ui/icons/Share';
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
@@ -159,7 +160,9 @@ const [typeToBeShared, setTypeToBeShared] = useState("");
 const [folderToBeShared, setFolderToBeShared] = useState("");
 const [openSharedFileMenu, setOpenSharedFileMenu] = useState(null);
 const [sharedFileDataOfMenu, setSharedFileDataOfMenu] = useState({});
-const [sizeOccupied, setSizeOccupied] =  useState(0)
+const [detailOpen, setDetailOpen] = useState(false);
+const [sizeOccupied, setSizeOccupied] =  useState(0);
+const [accessHolders, setAccessHolders] = useState([]);
 
 const imageFormats =["jpg","jpeg","png","gif","bmp"];
 //Columns for DataGrid View For Shared Files
@@ -471,6 +474,22 @@ const handleRenameClose = () => {
       
     })
    }
+
+   //Function to display details of file
+
+   const handleDetailOpen =(type,file)=>{
+
+     setDetailOpen(true);
+     let accessHolders = [...file["viewers"],...file["users"]];
+     let uniqueAccessHolders = [...new Set(accessHolders)];
+     FileService.getAccessHolders(uniqueAccessHolders,userDetails).then((response)=>{
+       setAccessHolders(response["data"]);
+     })
+
+   }
+
+  
+   
   
 
   //Marking a folder as favourite in the DB
@@ -883,6 +902,12 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
             <DialogContent><iframe src={linkToView} allowfullscreen style={{height:"600px", width:"1000px"}}></iframe></DialogContent>
       </Dialog>
 
+      <Dialog open={detailOpen} onClose={()=>{setDetailOpen(false)}}>
+        < DialogContent>
+          {fileDataOfMenu["viewers"]}
+        </DialogContent>
+      </Dialog>
+
 
       <Dialog open={openShareForm} onClose={handleShareClose} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title"></DialogTitle>
@@ -977,6 +1002,10 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
             
             <IconButton aria-label="share" onClick={()=>{openFileInNewTab(fileDataOfMenu["_id"])}}>
             <OpenInNewIcon/> 
+            </IconButton>
+
+            <IconButton aria-label="details" onClick={()=>handleDetailOpen("file", fileDataOfMenu)}>
+              <InfoIcon/>
             </IconButton>
             
       </Menu>

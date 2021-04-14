@@ -15,6 +15,17 @@ class FileService{
           // onUploadProgress,
     });    
   }
+
+  //Function for getting the names of users
+  getAccessHolders(uniqueAccessHolders,userDetails){
+    let accessHoldersUserID = [uniqueAccessHolders, userDetails];
+    return axiosInstance.get(`api/file/accessHolders/${accessHoldersUserID}`,{
+      headers:{
+        "Content-Type": "multipart/form-data; charset=utf-8;",
+      }
+    })
+  
+  }
   
   uploadFilesInFolder(folderID, file, users){
     let formData = new FormData();

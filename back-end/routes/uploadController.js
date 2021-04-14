@@ -569,7 +569,16 @@ router.get('/file/getPresignedUrl/:fileNameUserID', async(req,res, next)=>{
 
 
 
-
+router.get('/file/accessHolders/:accessHoldersUserID', async(req,res,next)=>{
+let accessHoldersUserID = req.params.accessHoldersUserID.split(',')
+let userID = accessHoldersUserID.pop();
+let accessHolders = accessHoldersUserID;
+console.log("1111111")
+console.log(userID)
+console.log("2222222")
+console.log(accessHolders)
+next(res.status(200).send("ok"));
+});
 
 // API to rename the files. 
 router.patch('/file/rename/:fileIDnewNameUserID', async(req,res, next)=>{
