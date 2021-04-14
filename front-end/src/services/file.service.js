@@ -82,11 +82,10 @@ getSharedFiles(userID){
   })
 }
   uploadFolder(folderName, users){
-    console.log(users);
+ 
     let formData = new FormData();
     formData.append("folderName", folderName);
     formData.append("users",users);
-    console.log(formData.get("folderName"));
     return axiosInstance.post("api/folder/upload", formData,{
       headers: {
         "Content-Type": "multipart/form-data; charset=utf-8;",
@@ -94,9 +93,18 @@ getSharedFiles(userID){
     })   
   }
 
-  downloadFile(fileName, userDetails){
+  openFile(fileName, userDetails){
     let fileNameUserDetails = [fileName, userDetails]
     return axiosInstance.get(`api/file/getPresignedUrl/${fileNameUserDetails}`,{
+      headers:{
+        "Content-Type": "multipart/form-data; charset=utf-8;",
+      }
+    })
+  }
+
+  downloadFile(fileName, userDetails){
+    let fileNameUserDetails = [fileName, userDetails]
+    return axiosInstance.get(`api/file/download/${fileNameUserDetails}`,{
       headers:{
         "Content-Type": "multipart/form-data; charset=utf-8;",
       }
@@ -125,8 +133,8 @@ getSharedFiles(userID){
       
   }
   getFiles(id) {
-    console.log(id["id"]);
-     //alert(jwtToken);
+  
+    
     if(id)
       return axiosInstance.get(`api/file/get/${id["id"]}`,{
         headers:{
@@ -144,10 +152,10 @@ getSharedFiles(userID){
       }
     })
     .then(response => { 
-      console.log(response)
+  
    })
     .catch(error => {
-      console.log(error);
+
     });
   }
 
@@ -159,10 +167,10 @@ getSharedFiles(userID){
       }
     })
     .then(response => { 
-      console.log(response)
+  
    })
     .catch(error => {
-      console.log(error);
+
     });
   }
 
@@ -188,7 +196,7 @@ getSharedFiles(userID){
 
   removeFolder(folderID, userID){
     let folderIDuserID = [folderID, userID]
-    console.log(folderIDuserID);
+  
     return axiosInstance.delete(`api/folder/delete/${folderIDuserID}`, {
       headers:{
         "Content-Type": "multipart/form-data; charset=utf-8;",

@@ -43,6 +43,8 @@ import { Link} from "react-router-dom"
 import CancelIcon from '@material-ui/icons/Cancel';
 import { DataGrid } from '@material-ui/data-grid';
 
+
+
 const useStyles = makeStyles((theme) => ({
 	cardMedia: {
 		paddingTop: '50%', // 16:9,
@@ -112,6 +114,8 @@ export default function Dropzone(props){
   fileImageMap.set("presso","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
   fileImageMap.set("mp4", "https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
   fileImageMap.set("jpeg","https://www.freeiconspng.com/uploads/multimedia-photo-icon-31.png")
+  
+  //functions to enable drag and drop
   const dragOver=(e)=>{
     e.preventDefault();
   }
@@ -126,179 +130,216 @@ export default function Dropzone(props){
     const files= e.dataTransfer.files;
     if(files.length===1)
     handleFiles(files);
-    else
-    console.log(files);
+    
   }
 
-  const [foldersinDB, setfoldersinDB]=useState([]);
-  const [filesinDB, setfilesinDB]=useState([]);
-  const [sharedFilesinDB, setSharedFilesinDB]=useState([]);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [userDetails, setUserDetails] = useState({});
-  const [userName, setUserName] = useState({});
-  const [isloading, setLoading] = useState(false);
-  const [openRenameForm, setopenRenameForm] = useState(false);
-  const [newName, setNewName] = useState("");
-  const [oldname,setoldName] = useState("");
-  const [filetobeRenamed, setFileToBeRenamed]=useState("");
-  const [type, setType] = useState("")
-  const [openShareForm, setOpenShareForm] = useState(false);
-  const [mailshared, setmailshared]= useState("");
-  const [fileToBeShared, setfileToBeShared] = useState("");
-  const [access, setAccess] = useState("View");
- const [openMenu, setOpenMenu] =  useState(null);
- const [fileDataOfMenu, setFileDataOfMenu] = useState({ });
- const [openFolderMenu, setOpenFolderMenu] = useState(null);
- const [folderDataOfMenu, setFolderDataOfMenu] = useState({ });
+const [foldersinDB, setfoldersinDB]=useState([]);
+const [filesinDB, setfilesinDB]=useState([]);
+const [sharedFilesinDB, setSharedFilesinDB]=useState([]);
+const [anchorEl, setAnchorEl] = useState(null);
+const [userDetails, setUserDetails] = useState({});
+const [userName, setUserName] = useState({});
+const [isloading, setLoading] = useState(false);
+const [openRenameForm, setopenRenameForm] = useState(false);
+const [newName, setNewName] = useState("");
+const [oldname,setoldName] = useState("");
+const [filetobeRenamed, setFileToBeRenamed]=useState("");
+const [type, setType] = useState("")
+const [openShareForm, setOpenShareForm] = useState(false);
+const [mailshared, setmailshared]= useState("");
+const [fileToBeShared, setfileToBeShared] = useState("");
+const [access, setAccess] = useState("View");
+const [openMenu, setOpenMenu] =  useState(null);
+const [fileDataOfMenu, setFileDataOfMenu] = useState({ });
+const [openFolderMenu, setOpenFolderMenu] = useState(null);
+const [folderDataOfMenu, setFolderDataOfMenu] = useState({ });
 const [openFileToView, setOpenFileToView] = useState(false);
- const [linkToView, setLinkToView] = useState("");
+const [linkToView, setLinkToView] = useState("");
 const [typeToBeShared, setTypeToBeShared] = useState("");
 const [folderToBeShared, setFolderToBeShared] = useState("");
-const [setSharedRows, sharedRows] = useState([]);
 const [openSharedFileMenu, setOpenSharedFileMenu] = useState(null);
 const [sharedFileDataOfMenu, setSharedFileDataOfMenu] = useState({});
 const [sizeOccupied, setSizeOccupied] =  useState(0)
-  const handleRenameOpen = (typeProperty, id, name) => {
-    setoldName(name);
-    setFileToBeRenamed(id);
-    setopenRenameForm(true);
-   setType(typeProperty)
+
+const imageFormats =["jpg","jpeg","png","gif","bmp"];
+//Columns for DataGrid View For Shared Files
+const columns = [
+    
+  { field: 's3_key',
+  headerName: 'Name',
+   width: 200 },
+ 
+  {
+    field: 'creator',
+    headerName: 'Owner',
+    width: 200,
+  },
+  {
+    field: 'createdAt',
+    headerName: 'Created At',
+    width: 200
+  },
+  {
+    field:'size',
+    headerName: 'File Size',
+  },
+  
+  {
+    field:'type'
+    
+  }
+  
+]
+
+//useEffect hook to set user details and ID
+
+useEffect(()=>{
+  getFiles(props.id);
+  getSharedFiles(props.id);
+  getFolders(props.id);  
+},[props.id])
+
+useEffect(()=>{ 
+  setUserDetails(props.id);
+  setUserName(props.name);
+  },[props]);
+
+  //Options for uploading file/folder menu within button
+  const option = [
+    'Choose File',
+    'Choose Folder'
+  ];
+  const handleClickListItem = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+};  
+
+//Function To handle the opening of Dialog during rename
+const handleRenameOpen = (typeProperty, id, name) => {
+ setoldName(name);
+ setFileToBeRenamed(id);
+ setopenRenameForm(true);
+ setType(typeProperty)
   };
 
-  const handleRenameClose = () => {
-    setopenRenameForm(false);
-    setoldName("");
-    setNewName("");
+//Function to handle closing the dialog after the file is renamed
+const handleRenameClose = () => {
+ setopenRenameForm(false);
+ setoldName("");
+ setNewName("");
   };
 
-  const columns = [
-    
-    { field: 's3_key', headerName: 'Name', width: 200 },
-   
-    {
-      field: 'creator',
-      headerName: 'Owner',
-     
-      width: 200,
-    },
-    {
-      field: 'createdAt',
-      headerName: 'Created At',
-      width: 200
-      
-   
-    },
-    {
-      field:'size',
-      headerName: 'File Size',
 
-    },
-    
-    {
-      field:'type'
-      
-    }
-    
-  ]
-
+ //Function to handle renaming for files, folders, shared files and contacting the server for the rename
   const handleRename =()=>{
   
-    
-    if(type === "file"&&newName.length&&newName.length<=20)
-    {FileService.renameFile(filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), props.id).then((docs)=>{
-      if(docs!=null)
-      {
-      let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
-      let newfilesinDB = [...filesinDB];
-      newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], s3_key: docs["data"]["s3_key"]}
-      setfilesinDB(newfilesinDB); 
-      }
+    //If a file is renamed
+   if(type === "file"&&newName.length&&newName.length<=20)
+    {
+      FileService.renameFile(filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), props.id)
+      .then((docs)=>{
+                   if(docs!=null)
+                       {
+                          let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
+                          let newfilesinDB = [...filesinDB];
+                          newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], s3_key: docs["data"]["s3_key"]}
+                          setfilesinDB(newfilesinDB); 
+                        }
       
     }).catch((err)=>{
     
-      toastErrorContainerFunction(err.toString().split(':')[1]);
+                   toastErrorContainerFunction(err.toString().split(':')[1]);
 
     }).finally(()=>{
-      handleRenameClose();
-      setoldName("");
-      setNewName("");
+                     handleRenameClose();
+                     setoldName("");
+                     setNewName("");
     })
 
   }
-
+//Renaming a shared file
   else if(type === "sharedFile"&&newName.length&&newName.length<=20)
-    {FileService.renameFile(filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), props.id).then((docs)=>{
-      if(docs!=null)
-      {
-      let foundIndex = sharedFilesinDB.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
-      let newfilesinDB = [...sharedFilesinDB];
-      newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], s3_key: docs["data"]["s3_key"]}
-      setSharedFilesinDB(newfilesinDB); 
-      }
+    {
+      FileService.renameFile(filetobeRenamed, newName.concat('.').concat((oldname.split('.').pop())?oldname.split('.').pop():''), props.id)
+      .then((docs)=>{
+                      if(docs!=null)
+                         {
+                           let foundIndex = sharedFilesinDB.findIndex((fileinDB)=>fileinDB["_id"] === filetobeRenamed);
+                           let newfilesinDB = [...sharedFilesinDB];
+                           newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], s3_key: docs["data"]["s3_key"]}
+                           setSharedFilesinDB(newfilesinDB); 
+                          }
       
-    }).catch((err)=>{
+      }).catch((err)=>{
     
-      toastErrorContainerFunction(err.toString().split(':')[1]);
+                       toastErrorContainerFunction(err.toString().split(':')[1]);
 
-    }).finally(()=>{
-      handleRenameClose();
-      setoldName("");
-      setNewName("");
-    })
+      }).finally(()=>{
+                        handleRenameClose();
+                        setoldName("");
+                        setNewName("");
+       })
 
   }
 
 
-  
-   else if(type === "folder"&&newName.length&&newName.length<=20){
-      FileService.renameFolder(filetobeRenamed, newName, props.id).then((docs)=>{
-        let foundIndex = foldersinDB.findIndex((folderinDB)=>folderinDB["_id"] === filetobeRenamed);
-        let newfoldersinDB = [...foldersinDB];
-        newfoldersinDB[foundIndex] = {...newfoldersinDB[foundIndex], Name: docs["data"]["Name"]}
-        setfoldersinDB(newfoldersinDB);
-        handleRenameClose();
-        setoldName("");
-        setNewName("");
-    }).catch((err)=>{
-      toastErrorContainerFunction(err)
-  }).finally(()=>{
-    handleRenameClose();
-    setoldName("");
-    setNewName("");
-  })
+  //Renaming folder
+   else if(type === "folder"&&newName.length&&newName.length<=20)
+   {
+      FileService.renameFolder(filetobeRenamed, newName, props.id)
+       .then((docs)=>{
+                       let foundIndex = foldersinDB.findIndex((folderinDB)=>folderinDB["_id"] === filetobeRenamed);
+                       let newfoldersinDB = [...foldersinDB];
+                       newfoldersinDB[foundIndex] = {...newfoldersinDB[foundIndex], Name: docs["data"]["Name"]}
+                       setfoldersinDB(newfoldersinDB);
+                       handleRenameClose();
+                       setoldName("");
+                       setNewName("");
+       }).catch((err)=>{
+                       toastErrorContainerFunction(err)
+       }).finally(()=>{
+                      handleRenameClose();
+                      setoldName("");
+                      setNewName("");
+         })
   }
 
   else if(newName.length === 0)
     {
-      handleRenameClose();
-        setoldName("");
-        setNewName("");
+                        handleRenameClose();
+                        setoldName("");
+                        setNewName("");
     }
 
   else if(newName.length>20)
   {
-    toastErrorContainerFunction("File name cannot be more than 20 characters");
-    handleRenameClose();
-    setoldName("");
-    setNewName("");
+                     toastErrorContainerFunction("File name cannot be more than 20 characters");
+                     handleRenameClose();
+                     setoldName("");
+                     setNewName("");
   }
   
     
    
     }
 
+    //A function to trigger the changed value of name of file when user is typing
   const handleNameChange = (e)=>{
    
-     setNewName( e.target.value);
+                     setNewName( e.target.value);
    
   }
-  //share
+
+
+/* Sharing file */
 
  const handleEmailChange = (e)=>{
-   setmailshared(e.target.value);
-
+      setmailshared(e.target.value);
  }
 
+ //function to handle opening of Dialog during share
   const handleShareOpen = (type,id) => {
 
     if(type=="file")
@@ -314,73 +355,87 @@ const [sizeOccupied, setSizeOccupied] =  useState(0)
     setOpenShareForm(true)
   };
 
+
+  //Function to handle closing the Share Dialog
   const handleShareClose = () => {
    setOpenShareForm(false)
   };
 
+  //Function to send change request to file service for changing access in the backend database
   const handleShare=()=>{
-    
-    const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    if(re.test(mailshared)&&typeToBeShared=="file")
-    {
-      FileService.shareFile(access, fileToBeShared, mailshared, props.id).then((returnObject)=>{
-        console.log(returnObject);
-        if(returnObject.status === 200)
-         {
-          toastContainerFunction("User Added Successfully")
-          setmailshared("");
-          setfileToBeShared("");
-          setOpenShareForm(false);
-         }
-      }).catch((error)=>{        
-          toastErrorContainerFunction("Couldn't add the user mentioned");
-          setmailshared("");
-          setfileToBeShared("");
-          setOpenShareForm(false);
-      })
-    }
-    else if(re.test(mailshared)&&typeToBeShared=="folder"){
-      FileService.shareFolder(access, folderToBeShared, mailshared, props.id).then((returnObject)=>{
-        console.log(returnObject);
+     //regex expression to check the email ID's format
+      const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+       
       
+      if(re.test(mailshared)&&typeToBeShared=="file")
+          {
+             FileService.shareFile(access, fileToBeShared, mailshared, props.id)
+             .then((returnObject)=>{
+                        
+      
+               //sending a toaster message when the user was added
+                if(returnObject.status === 200)
+                      {
+                         toastContainerFunction("User Added Successfully")
+                         setmailshared("");
+                         setfileToBeShared("");
+                         setOpenShareForm(false);
 
-        if(returnObject.status === 200)
-         {
-          toastContainerFunction("User Added Successfully")
-          setmailshared("");
-          setFolderToBeShared("");
-          setOpenShareForm(false);
-
-         }
+                      }
          
 
-      }).catch((error)=>{
+               })
+               .catch((error)=>{
+        
+           //handling error if the user couldn't be given access
+                   toastErrorContainerFunction("Couldn't add the user mentioned");
+                   setmailshared("");
+                  setfileToBeShared("");
+                  setOpenShareForm(false);
+           
+         
+        })
+        }
+         //Handling folder share
+         else if(re.test(mailshared)&&typeToBeShared=="folder")
+         {
+              FileService.shareFolder(access, folderToBeShared, mailshared, props.id)
+              .then((returnObject)=>{
+               
+                
+                          if(returnObject.status === 200)
+                            {
+                            toastContainerFunction("User Added Successfully")
+                            setmailshared("");
+                            setFolderToBeShared("");
+                            setOpenShareForm(false);
+
+                            }
+                            
+
+                 })
+                            .catch((error)=>{
         
            
-        toastErrorContainerFunction("Couldn't add the user mentioned");
-           setmailshared("");
-           setFolderToBeShared("");
-           setOpenShareForm(false);
+                              toastErrorContainerFunction("Couldn't add the user mentioned");
+                              setmailshared("");
+                              setFolderToBeShared("");
+                              setOpenShareForm(false);
            
          
-      })
+                 })
     }
     else{
-      toastErrorContainerFunction("Oops, this is not a valid email format");
-      setmailshared("");
-      setfileToBeShared("");
+      //Error toaster if the email format is not valid
+                      toastErrorContainerFunction("Oops, this is not a valid email format");
+                      setmailshared("");
+                      setfileToBeShared("");
     }
   }
 
 
-  const option = [
-    'Choose File',
-    'Choose Folder'
-  ];
-  const handleClickListItem = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
-
+ 
+//Making a file as favourite
   const makefavouriteFile= (fileID)=>{
     FileService.updateFavouriteFiles(fileID, userDetails).then(()=>{
       let foundIndex = filesinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
@@ -388,7 +443,7 @@ const [sizeOccupied, setSizeOccupied] =  useState(0)
       newfilesinDB[foundIndex] = {...newfilesinDB[foundIndex], favourite:!(newfilesinDB[foundIndex]["favourite"])}
       setfilesinDB(newfilesinDB); 
      
-      
+      toastContainerFunction(`${filesinDB[foundIndex]["s3_key"]} is marked as a favourite!` )
     }).catch((error)=>{
       toastErrorContainerFunction("Error in marking as favourite");
     }).finally(()=>{
@@ -397,37 +452,35 @@ const [sizeOccupied, setSizeOccupied] =  useState(0)
   };
   
   
-
-  const downloadFile=(fileName)=>{
-   FileService.downloadFile( fileName, userDetails).then((link)=>{
-     console.log(link["data"]);
+//gets the url from server and displays it in a new tab
+  const openFileInNewTab=(fileName)=>{
+   FileService.openFile( fileName, userDetails).then((link)=>{
+    
       window.open(link["data"],"_blank")
         
    })
   }
+
+
+   
+ //Opens the file url in an iframe
   const openFile=(fileName)=>{
-    FileService.downloadFile( fileName, userDetails).then((link)=>{
+    FileService.openFile( fileName, userDetails).then((link)=>{
       setOpenFileToView(true);
       setLinkToView(link["data"])
       
     })
    }
-   const returnFileLink=(fileName)=>{
-    FileService.downloadFile( fileName, props.id ).then((link)=>{
-      return(link["data"])
-      
-    })
-   }
+  
 
-   const closeFile =()=>{
-    setOpenFileToView(false);
-   }
+  //Marking a folder as favourite in the DB
   const makefavouriteFolder= (fileID)=>{
     FileService.updateFavouriteFolders(fileID, userDetails).then(()=>{
       let foundIndex = foldersinDB.findIndex((fileinDB)=>fileinDB["_id"] === fileID);
       let newfoldersinDB =[...foldersinDB];
       newfoldersinDB[foundIndex]={...newfoldersinDB[foundIndex], favourite:!(newfoldersinDB[foundIndex]["favourite"])}
       setfoldersinDB(newfoldersinDB);   
+      toastContainerFunction(`${foldersinDB[foundIndex]["Name"]} is marked as a favourite!`)
     })
     .catch((err)=>{
     toastErrorContainerFunction("Couldn't mark the folder as favourite");
@@ -436,17 +489,71 @@ const [sizeOccupied, setSizeOccupied] =  useState(0)
   })
 }
 
+  //When the file is uploaded or dragged and dropped, 
+  /*this function calls the uploadFile function to send it to the server*/
 
   const handleFiles = (files) => {  
-    for(let i = 0; i < files.length; i++){       
-        uploadFiles(files[i]);
-    }    
+          for(let i = 0; i < files.length; i++){       
+                uploadFiles(files[i]);
+           }    
   }
-  const handleClose = () => {
-    setAnchorEl(null);
+  
+  const uploadFiles = (file) => {
+    
+    fetchData()
+    FileService.upload(file, [userDetails])
+   .then(
+    (docs)=>{
+      toastContainerFunction(`Uploading ${file.name} was successful`)
+      FileService.openFile(docs["data"]["_id"], props.id ).then((link)=>{
+        docs["data"]["returnFileLink"] = link["data"];
+        setSizeOccupied((sizeOccupied)=>sizeOccupied+parseInt(file["size"]))
+          setfilesinDB(prevArray=>[...prevArray,docs["data"]]);
+     
+        })
+     
+       }).catch((err)=>{
+                 toastErrorContainerFunction("Couldn't upload the file to the drive")
+       }).finally(()=>{
+                  setLoading(false);
+    })
   };
+//Function to upload files within folder
+  const uploadFilesInFolder = (folderID, file)=>{
+          return FileService.uploadFilesInFolder( folderID, file, [userDetails]);
+  }
+  
+  //Function to upload the parent folder and then upload the files within it
+  const handleFolder=(e)=>{
+    var theFiles = e.target.files;
+    var relativePath = theFiles[0].webkitRelativePath;
+    var folder = relativePath.split("/");
+    folder = folder[0];
+    fetchData()
+    fileService.uploadFolder(folder, [userDetails]).then((res)=>{
+      
+      for(let i = 0; i < theFiles.length; i++){       
+          uploadFilesInFolder(res["data"]["_id"], theFiles[i]).then((docs)=>{
+          setSizeOccupied((sizeOccupied)=>sizeOccupied+parseInt(theFiles[i]["size"]))
+           
+          if(i===(theFiles.length-1)){
+           
+              setfoldersinDB((prevArray)=>[...prevArray, docs["data"]]);
+              toastContainerFunction(`Uploading ${folder} was successful`)
+          } 
+
+        })
+      }
+
+    })
+    .catch((err)=>{toastErrorContainerFunction("The folder couldn't be uploaded")})
+    .finally(()=>{
+      setLoading(false)
+    });
+  }  
 
   toast.configure();
+  //toast function to display toaster messages-success
   function toastContainerFunction(message) {
     toast.success(message, {
       position: "bottom-right",
@@ -471,7 +578,7 @@ const [sizeOccupied, setSizeOccupied] =  useState(0)
             />
       );
   }
-
+   //toast function to display toaster messages-error
   function toastErrorContainerFunction(message) {
     toast.error(message, {
       position: "bottom-right",
@@ -497,104 +604,42 @@ const [sizeOccupied, setSizeOccupied] =  useState(0)
       );
   }
 
-  const uploadFiles = (file) => {
-    
-    fetchData()
-    FileService.upload(file, [userDetails])
-   .then(
-    (docs)=>{
-      toastContainerFunction(`Uploading ${file.name} was successful`)
-      FileService.downloadFile(docs["data"]["_id"], props.id ).then((link)=>{
-        docs["data"]["returnFileLink"] = link["data"];
-        setSizeOccupied((sizeOccupied)=>sizeOccupied+parseInt(file["size"]))
-          setfilesinDB(prevArray=>[...prevArray,docs["data"]]);
-     
-        })
-     
-    }).catch((err)=>{
-      toastErrorContainerFunction("Couldn't upload the file to the drive")
-    }).finally(()=>{
-      setLoading(false);
-    })
-  };
-
-  const uploadFilesInFolder = (folderID, file)=>{
-    return FileService.uploadFilesInFolder( folderID, file, [userDetails]);
-  }
   
-  const handleFolder=(e)=>{
-    var theFiles = e.target.files;
-    var relativePath = theFiles[0].webkitRelativePath;
-    var folder = relativePath.split("/");
-    folder = folder[0];
-    fetchData()
-    fileService.uploadFolder(folder, [userDetails]).then((res)=>{
-      console.log(res);
-      for(let i = 0; i < theFiles.length; i++){       
-        uploadFilesInFolder(res["data"]["_id"], theFiles[i]).then((docs)=>{
-          setSizeOccupied((sizeOccupied)=>sizeOccupied+parseInt(theFiles[i]["size"]))
-          console.log(docs);  
-          if(i===(theFiles.length-1)){
-           
-            setfoldersinDB((prevArray)=>[...prevArray, docs["data"]]);
-            toastContainerFunction(`Uploading ${folder} was successful`)
-          } 
-
-        })
-      }
-
-    }).catch((err)=>{toastErrorContainerFunction("The folder couldn't be uploaded")}).finally(()=>{
-      setLoading(false)
-    });
-  }
-  
-
+//Removes file 
   const removeFile = (fileID)=>{
     
     
-    FileService.removeFile(fileID, userDetails).then(()=>{
-      handleMenuClose();
-      setfilesinDB(filesinDB.filter((file)=>file["_id"] !== fileID));
-      toastContainerFunction(`removed File!`)
-      
-    }).catch((err)=>{toastErrorContainerFunction("The file couldn't be removed")}).finally(()=>{
-     
-    })
-  }
+              FileService.removeFile(fileID, userDetails).then(()=>{
+                        handleMenuClose();
+                      
+                        setfilesinDB(filesinDB.filter((file)=>file["_id"] !== fileID));
+                        toastContainerFunction(`removed File!`)
+                        
+                       }).catch((err)=>
+                      {
+                        toastErrorContainerFunction("The file couldn't be removed")}
+                      ).finally(()=>{
+                        
+                        })
+            }
 
+//Removes folder
   const removeFolder = (folderID)=>{
-    handleFolderMenuClose();
-    FileService.removeFolder(folderID,userDetails).then(()=>{
-      setfoldersinDB(foldersinDB.filter((folder)=>folder["_id"] !== folderID));
-      toastContainerFunction(`removed Folder!`);
-    }).catch((err)=>{toastErrorContainerFunction("The folder couldn't be removed")}).finally(()=>{
+                   handleFolderMenuClose();
+                   FileService.removeFolder(folderID,userDetails).then(()=>{
+                            setfoldersinDB(foldersinDB.filter((folder)=>folder["_id"] !== folderID));
+                            toastContainerFunction(`removed Folder!`);
+                          })
+                          .catch((err)=>{toastErrorContainerFunction("The folder couldn't be removed")})
+                          .finally(()=>{
      
-    })
+                           })
   }
 
-  const handleViewClose=()=>{
-    
-  }
-  
-  useEffect(()=>{ 
-      setUserDetails(props.id);
-      setUserName(props.name);
-    
-      
-
-
-      //console.log(fileImageMap.get("pdf"));
-  },[props]);
-  useEffect(()=>{ 
-    setUserDetails(props.id);
-    setUserName(props.name);
-     
-    
-    getFiles(props.id);
-
-    //console.log(fileImageMap.get("pdf"));
-},[]);
  
+  
+  
+//Functions to open menus
 const handleMenuOpen=(event, filedata)=>
   {setOpenMenu(event.currentTarget);
     setFileDataOfMenu(filedata);
@@ -610,6 +655,15 @@ const handleMenuOpen=(event, filedata)=>
     setFolderDataOfMenu(folderData)
   }
   
+  //functions to handle closing of menus
+
+  const handleMenuClose=(()=>{setOpenMenu((openMenu)=>{return null });})
+  const handleShareMenuClose=(()=>{setOpenSharedFileMenu((openMenu)=>{return null});})
+  
+  const handleFolderMenuClose=(()=>{setOpenFolderMenu((openFolderMenu)=>{return null});})
+
+
+  //Function for getting the files from the service and then updating it's value for the views
   const getFiles=(id)=>{
     if(id)
     {
@@ -617,61 +671,57 @@ const handleMenuOpen=(event, filedata)=>
         
         for(let [i,file] of [...response.data].entries())
         {
-          FileService.downloadFile(file["_id"], props.id ).then((link)=>{
+          FileService.openFile(file["_id"], props.id ).then((link)=>{
           file["returnFileLink"] = link["data"];
            setSizeOccupied((sizeOccupied)=>sizeOccupied+parseInt(file["size"]))
-          console.log("This is the file")
-          console.log(response.data)
-       if(i>=[...response.data].length-1)
-       {
-         setfilesinDB(response.data); 
-       } 
-          })
+         
+              if(i>=[...response.data].length-1)
+                   {
+                       setfilesinDB(response.data); 
+                    } 
+             })
 
             
-        }
+             }
 
-        console.log(filesinDB);
+       
       }).catch((err)=>{
-        console.log(err);
+        
       }).finally(()=>{
 
       });
     }
   }
-let rows =[]
+ //Function for getting the Shared files from the service and then updating it's value for the views
   const getSharedFiles=(id)=>{
-    console.log(id);
+   
     if(id)
     {
       FileService.getSharedFiles(id).then((response)=>{
-        
-        console.log("shared files")
-        console.log(response.data)
-       
-
-        for(let [i,file] of [...response.data].entries()){
-          file["size"] = fileSize(file["size"])
-          if(i==[...response.data].length-1)
+        if(response.length)
+        {for(let [i,file] of [...response.data].entries())
            {
-             setSharedFilesinDB(response.data);
-           }
-        }
+                  file["size"] = fileSize(file["size"])
+                  if(i==[...response.data].length-1)
+                     {
+                      setSharedFilesinDB(response.data);
+                     }
+             }
+            }
+
       
        
-        console.log(sharedFilesinDB);
-      }).catch((err)=>{
-        console.log(err);
+       
+      })
+      .catch((err)=>{
+          
       }).finally(()=>{
 
       });
     }
   }
 
-  const fetchData = () =>{
-    setLoading(true);
-  }
-  
+   //Function for getting the folders from the service and then updating it's value for the views
   const getFolders=(id)=>{
     if(id)
     {
@@ -682,52 +732,23 @@ let rows =[]
           setSizeOccupied((sizeOccupied)=>{sizeOccupied+=folder["size"]})
         }
         setfoldersinDB(response.data);  
-        console.log(foldersinDB);
+  
       }).catch((err)=>{
         
-        console.log(err);
+     
       }).finally(()=>{
 
       });
     }
   }
 
-  useEffect(()=>{
-    getFiles(props.id);
-    getSharedFiles(props.id);
-    getFolders(props.id);  
-  },[props.id])
-
-
-const handleMenuClose=(()=>{
-    
-  setOpenMenu((openMenu)=>{
-    return null
-  });
- 
-
+  const fetchData = () =>{
+    setLoading(true);
+  }
   
-})
 
-const handleShareMenuClose=(()=>{
-    
-  setOpenSharedFileMenu((openMenu)=>{
-    return null
-  });
- 
 
-  
-})
 
-const handleFolderMenuClose=(()=>{
-  setOpenFolderMenu((openFolderMenu)=>{
-    return null
-  });
-
-  
-})
-
-const imageFormats =["jpg","jpeg","png","gif","bmp"];
 
 const deleteAccessToSharedFile=(fileId)=>{
 FileService.removeAccess(fileId, userDetails).then((docs)=>{
@@ -739,7 +760,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
 
 }
 
-
+//function to calculate the size of the file
   const fileSize = (size) => {
       if (size === 0) return '0 Bytes';
       const k = 1024;
@@ -754,7 +775,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
       <Container 
         maxWidth="lg" className="dropContainer"
       >
-        <Typography>{fileSize(sizeOccupied)}</Typography>
+        
         <Typography 
           onDragOver={dragOver}
           onDragEnter={dragEnter}
@@ -818,73 +839,62 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
             onClose={handleClose}
           >
             <MenuItem key={option} selected={option === 'Choose File'} onClick={handleClose}>
-              <Button
-                variant="contained"
-                component="label"
-              >
+              <Button variant="contained"component="label">
                 Choose File
-                <input
-                  type="file"
-                  className="file-input"
-                  hidden
-                  multiple
-                  onChange={(e) => handleFiles(e.target.files)}
-                />
+                <input type="file" className="file-input" hidden multiple onChange={(e) => handleFiles(e.target.files)}/>
               </Button>
-              <Button
-                variant="contained"
-                component="label"
-              >
+              <Button variant="contained"component="label">
                 Choose Folder
-                < input  directory="" webkitdirectory="" type="file"
-                  hidden
-                  onChange={(e) => handleFolder(e)}
-                />
+                <input  directory="" webkitdirectory="" type="file"hidden  onChange={(e) => handleFolder(e)} />
               </Button>
             </MenuItem>        
-          </Menu>   
-          <Dialog open={openRenameForm} onClose={handleRenameClose} aria-labelledby="form-dialog-title">
-        <DialogTitle id="form-dialog-title"></DialogTitle>
-        <DialogContentText style={{'text-align': 'center'}}>
-          Change {oldname} to
-          </DialogContentText>
-        <DialogContent>
-          <TextField
+          </Menu>  
 
-            autoFocus
-            margin="dense"
-            id="name"
-            type="name"
-            fullWidth
-            value = {newName}
-            onChange={handleNameChange}
-            label = "New name"
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleRenameClose} color="primary">
-            Cancel
+
+          <Dialog open={openRenameForm} onClose={handleRenameClose} aria-labelledby="form-dialog-title">
+             <DialogTitle id="form-dialog-title"></DialogTitle>
+                <DialogContentText style={{'text-align': 'center'}}>
+                   Change {oldname} to
+                </DialogContentText>
+             <DialogContent>
+              <TextField
+                autoFocus
+                margin="dense"
+                id="name"
+                type="name"
+                fullWidth
+                value = {newName}
+                onChange={handleNameChange}
+                label = "New name"
+              />
+           </DialogContent>
+          <DialogActions>
+           <Button onClick={handleRenameClose} color="primary">
+             Cancel
+           </Button>
+           <Button onClick={()=>{handleRename()}} color="secondary">
+             Confirm
           </Button>
-          <Button onClick={()=>{handleRename()}} color="secondary">
-            Confirm
-          </Button>
-        </DialogActions>
-      </Dialog>
+         </DialogActions>
+        </Dialog>
+
       <Dialog style={{height:"100%", width:"100%"}} open={openFileToView} onClose={()=>{setLinkToView("");setOpenFileToView(false);}}>
             <DialogActions><CancelIcon onClick={()=>{setLinkToView("");setOpenFileToView(false);}}/></DialogActions>
             <DialogContent><iframe src={linkToView} allowfullscreen style={{height:"600px", width:"1000px"}}></iframe></DialogContent>
-            </Dialog>
+      </Dialog>
+
+
       <Dialog open={openShareForm} onClose={handleShareClose} aria-labelledby="form-dialog-title">
         <DialogTitle id="form-dialog-title"></DialogTitle>
-        <DialogContentText style={{'text-align': 'center'}}>
-          Add a person's mail ID
+         <DialogContentText style={{'text-align': 'center'}}>
+           Add a person's mail ID
           </DialogContentText>
-        <DialogContent>
-        <FormLabel component="legend">Access</FormLabel>
-       <RadioGroup aria-label="access" name="access" value={access} onChange={(event)=>{setAccess(event.target.value)}}>
-    <FormControlLabel value="View" title="User can only view your file" control={<Radio />} label="Viewer Access" />
-    <FormControlLabel value="All" control={<Radio />} label="All Access" />
-     </RadioGroup>
+         <DialogContent>
+           <FormLabel component="legend">Access</FormLabel>
+           <RadioGroup aria-label="access" name="access" value={access} onChange={(event)=>{setAccess(event.target.value)}}>
+           <FormControlLabel value="View" title="User can only view your file" control={<Radio />} label="Viewer Access" />
+           <FormControlLabel value="All" control={<Radio />} label="All Access" />
+           </RadioGroup>
           <TextField
             autoFocus
             margin="dense"
@@ -904,132 +914,105 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
            Confirm
          </Button>
         </DialogActions>
+
+
       </Dialog>
-      <Menu
-        id="folder-menu"
-        anchorEl={openFolderMenu}
-        
-        open={Boolean(openFolderMenu)}
+       <Menu
+         id="folder-menu"
+         anchorEl={openFolderMenu}
+         open={Boolean(openFolderMenu)}
+         onClick = {handleFolderMenuClose}
+         onClose={handleFolderMenuClose}
+       >
        
-        onClick = {handleFolderMenuClose}
-        onClose={handleFolderMenuClose}
-      >
-       
-       
-                                    <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFolder( folderDataOfMenu["_id"] )}} >
-                                      { folderDataOfMenu["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                                    </IconButton>
-                                  
-                               
-    
+         
+          <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFolder( folderDataOfMenu["_id"] )}} >
+            { folderDataOfMenu["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+          </IconButton>
+        
+          <IconButton  onClick={()=>{handleRenameOpen('folder',folderDataOfMenu["_id"], folderDataOfMenu["Name"])}}aria-label="rename" title="edit name">
+          <EditIcon/>
+          </IconButton>
+        
+          <IconButton onClick={()=>handleShareOpen("folder",folderDataOfMenu["_id"])}aria-label="share" title="share">
+            <ShareIcon/>
+          </IconButton>
         
         
-                                    <IconButton  onClick={()=>{handleRenameOpen('folder',folderDataOfMenu["_id"], folderDataOfMenu["Name"])}}aria-label="rename" title="edit name">
-                                   <EditIcon/>
-                                    </IconButton>
-                                 
-                                  
-                                  
-                                    <IconButton onClick={()=>handleShareOpen("folder",folderDataOfMenu["_id"])}aria-label="share" title="share">
-                                      <ShareIcon/>
-                                    </IconButton>
-                                 
-                                  
-                                    <Link to={{pathname: "/folderview",
-                          state: { folderID: folderDataOfMenu["_id"], id:userDetails}}}  >
-                              <IconButton >
-                                   <VisibilityIcon />
-                                    </IconButton>
-                                   
-                            </Link>
+          <Link to={{pathname: "/folderview",state: { folderID: folderDataOfMenu["_id"], id:userDetails}}}  >
+          < IconButton >
+           <VisibilityIcon />
+          </IconButton>
+          </Link>
                           
 
                                   
 
-      </Menu>
+        </Menu>
       
-      <Menu
+        <Menu
         id="file-menu"
         anchorEl={openMenu}
-        
         open={Boolean(openMenu)}
-       
         onClick = {handleMenuClose}
         onClose={handleMenuClose}
-      >
+         >
        
        
-                                    <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFile( fileDataOfMenu["_id"] )}} >
-                                      { fileDataOfMenu["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
-                                    </IconButton>
-                                 
-                               
-      
-        
-        
-                                    <IconButton onClick={()=>{handleRenameOpen('file',fileDataOfMenu["_id"], fileDataOfMenu["s3_key"])}}aria-label="rename" title="edit name">
-                                   <EditIcon/>
-                                    </IconButton>
-                                  
-                                  
-                                    <IconButton  onClick={()=>handleShareOpen("file",fileDataOfMenu["_id"])}aria-label="share" title="share">
-                                      <ShareIcon/>
-                                    </IconButton> 
-                              
-                                 
-                                 
-                                    <IconButton onClick ={()=>{openFile(fileDataOfMenu["_id"])}}>
-                                   <VisibilityIcon />
-                                    </IconButton>
-                                   
-                                    <IconButton aria-label="share" onClick={()=>{downloadFile(fileDataOfMenu["_id"])}}>
-                                  <OpenInNewIcon/> 
-                                </IconButton>
-                             
-                              
-
+            <IconButton aria-label="add to favorites" onClick={()=>{makefavouriteFile( fileDataOfMenu["_id"] )}} >
+              { fileDataOfMenu["favourite"] ?<StarIcon style={ {color:"orange" }} />:<StarBorderIcon />}
+            </IconButton>
+          
+            <IconButton onClick={()=>{handleRenameOpen('file',fileDataOfMenu["_id"], fileDataOfMenu["s3_key"])}}aria-label="rename" title="edit name">
+            <EditIcon/>
+            </IconButton>
+                    
+            <IconButton  onClick={()=>handleShareOpen("file",fileDataOfMenu["_id"])}aria-label="share" title="share">
+              <ShareIcon/>
+            </IconButton> 
+                         
+            <IconButton onClick ={()=>{openFile(fileDataOfMenu["_id"])}}>
+            <VisibilityIcon />
+            </IconButton>
+            
+            <IconButton aria-label="share" onClick={()=>{openFileInNewTab(fileDataOfMenu["_id"])}}>
+            <OpenInNewIcon/> 
+            </IconButton>
+            
       </Menu>
       <Menu
         id="shared-file-menu"
         anchorEl={openSharedFileMenu}
-        
         open={Boolean(openSharedFileMenu)}
-       
         onClick = {handleShareMenuClose}
         onClose={handleShareMenuClose}
       >
        
-       
-                                
-                                 
-                               
-      
         
+              <IconButton onClick={()=>{handleRenameOpen('sharedFile',sharedFileDataOfMenu["_id"], sharedFileDataOfMenu["s3_key"])}}aria-label="rename" title="edit name">
+              <EditIcon/>
+              </IconButton>
+            
+            
+              <IconButton  onClick={()=>handleShareOpen("file",sharedFileDataOfMenu["_id"])}aria-label="share" title="share">
+                <ShareIcon/>
+              </IconButton> 
         
-                                    <IconButton onClick={()=>{handleRenameOpen('sharedFile',sharedFileDataOfMenu["_id"], sharedFileDataOfMenu["s3_key"])}}aria-label="rename" title="edit name">
-                                   <EditIcon/>
-                                    </IconButton>
-                                  
-                                  
-                                    <IconButton  onClick={()=>handleShareOpen("file",sharedFileDataOfMenu["_id"])}aria-label="share" title="share">
-                                      <ShareIcon/>
-                                    </IconButton> 
-                              
-                                 
-                                 
-                                    <IconButton onClick ={()=>{openFile(sharedFileDataOfMenu["_id"])}}>
-                                   <VisibilityIcon />
-                                    </IconButton>
-                                   
-                                    <IconButton aria-label="share" onClick={()=>{downloadFile(sharedFileDataOfMenu["_id"])}}>
-                                  <OpenInNewIcon/> 
-                                </IconButton>
-                             
-                              <IconButton>
-                                <DeleteIcon aria-label="Delete Access" onClick={()=>{deleteAccessToSharedFile(sharedFileDataOfMenu["_id"])}}/>
-
-                               
-                              </IconButton>
+            
+            
+              <IconButton onClick ={()=>{openFile(sharedFileDataOfMenu["_id"])}}>
+              <VisibilityIcon />
+              </IconButton>
+              
+              <IconButton aria-label="share" onClick={()=>{openFileInNewTab(sharedFileDataOfMenu["_id"])}}>
+              <OpenInNewIcon/> 
+              </IconButton>
+        
+              <IconButton style={{color:'red'}} onClick={()=>{deleteAccessToSharedFile(sharedFileDataOfMenu["_id"])}}>
+                  <DeleteIcon aria-label="Delete Access" />
+                  </IconButton>
+          
+        
 
       </Menu>
 
@@ -1039,7 +1022,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
           <div className="file-display-container">
             {
               props.allFileUpload &&
-               <div container spacing={5} alignitems="center">   
+               <div spacing={5} alignitems="center">   
                   <Grid container spacing={5} alignitems="center">
                     {
                       filesinDB.filter( (filedata) => filedata.s3_key.includes(props.searchFiled)).slice(0).reverse().map((filedata, i) => {
@@ -1064,7 +1047,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
                                   </div>
                                  
                                 }
-                                title={filedata["createdAt"].slice(0,10)}
+                                 title={filedata["createdAt"].slice(0,10)}
                                
                                 
                               />
@@ -1095,7 +1078,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
             }
             { 
               props.recentFileUpload && 
-                <div container spacing={5} alignItems="center">   
+                <div spacing={5} alignItems="center">   
                   <Grid container spacing={5} alignItems="center">
                     {filesinDB.filter( (filedata) => filedata.s3_key.includes(props.searchFiled)).sort(function(a,b){
                      return a["updatedAt"]>b["updatedAt"]                   
@@ -1145,7 +1128,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
             }
             {
               props.starredFiles &&  
-              <div container spacing={5} alignItems="center">   
+              <div spacing={5} alignItems="center">   
               <Grid container spacing={5} alignItems="center">
                 {filesinDB.filter( (filedata) =>  filedata["favourite"] && filedata.s3_key.includes(props.searchFiled)).map((filedata, i) => {
                   return (
@@ -1195,7 +1178,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
             }
             {
                props.allFolderUpload &&  
-              <div container spacing={5} alignItems="center">   
+              <div spacing={5} alignItems="center">   
                 <Grid container spacing={5} alignItems="center">
                 {foldersinDB.filter( (folderData) => folderData.Name.includes(props.searchFiled)).slice(0).reverse().map((folderData, i) => {
                   return (
@@ -1240,7 +1223,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
             }
             {
                props.recentFolderUpload &&  
-              <div container spacing={5} alignitems="center">   
+              <div spacing={5} alignitems="center">   
                 <Grid container spacing={5} alignitems="center">
                 {foldersinDB.filter( (folderData) => folderData.Name.includes(props.searchFiled)).slice(0,10).reverse().map((folderData, i) => {
                   return (
@@ -1286,7 +1269,7 @@ FileService.removeAccess(fileId, userDetails).then((docs)=>{
             }
             {
                props.starredFolder &&  
-              <div container spacing={5} alignItems="center">   
+              <div  spacing={5} alignItems="center">   
                 <Grid container spacing={5} alignItems="center">
                 {foldersinDB.filter( (folderData) =>  folderData["favourite"] && folderData.Name.includes(props.searchFiled)).map((folderData, i) => {
                   return (
