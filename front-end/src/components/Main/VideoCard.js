@@ -5,7 +5,7 @@ import CardContent from '@material-ui/core/CardContent';
 import CardMedia from '@material-ui/core/CardMedia';
 import Typography from '@material-ui/core/Typography';
 import { Collapse } from '@material-ui/core';
-import VideoCard from '../images/videoExample.mp4';
+import VideoCard from '../images/Crio_demo.mp4';
 
 const useStyles = makeStyles((theme) => ({
 root: {
