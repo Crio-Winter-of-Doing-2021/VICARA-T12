@@ -8,6 +8,7 @@ const multer = require("multer");
 var AWS = require("aws-sdk");
 const ObjectId = require('mongoose').Types.ObjectId;
 const Path = require('path');
+var https = require('https');
 const fs = require('fs')
 const { promisify } = require('util')
 
@@ -446,14 +447,85 @@ router.get('/file/get/:id', async(req,res,next)=>{
   );
 });
 
+var download = function(url, dest, cb) {
+  var file = fs.createWriteStream(dest);
+  var request = https.get(url, function(response) {
+    response.pipe(file);
+    file.on('finish', function() {
+      file.close(cb); 
+       // close() is async, call cb after close completes.
+    });
+  }).on('error', function(err) { // Handle errors
+    fs.unlink(dest); // Delete the file async. (But we don't check the result)
+    if (cb) cb(err.message);
+  });
+};
+
+router.get('/file/download/:fileNameUserID', async(req,res, next)=>{
+  // #swagger.tags = ['File']
+  // #swagger.description = 'Endpoint used for downloading files from AWS bucket ( using presigned url ).'
+  fileName = req.params.fileNameUserID.split(',')[0].toString();
+  userID = req.params.fileNameUserID.split(',')[1].toString();
+  
+  if(fileName.length>0)
+   {
+     FILE.findOne({"_id":ObjectId(fileName),
+    $or:[ 
+      {'users':ObjectId(userID)},
+     
+    ]},
+    async(errorInFindingFile, doc)=>{
+      if(errorInFindingFile){
+        await next(res.status(500).send("You can't view the file"));
+      }
+      else if(doc==null){
+        await next(res.status(403).send("You can't view the file"))
+      }
+      // Get a presigned url from AWS to view the files. 
+      else{
+        const params = {
+          Bucket: 'files-vicara-drive',
+          Key: doc["_id"].toString(),
+          Expires: 60 * 5
+        };
+        try{
+          const url = await new Promise(async (resolve, reject) => {
+            await s3bucket.getSignedUrl('getObject', params, async(err, url) => {
+              await err ? reject(err) : resolve(url);
+              download(url,Path.join(__dirname, '/uploads/', (doc["_id"].toString()).concat('.').concat(doc["s3_key"].split('.').pop()).toString()),(file)=>{
+               
+                res.setHeader('Content-disposition', 'attachment');
+                res.download(Path.join(__dirname, '/uploads/', (doc["_id"].toString()).concat('.').concat(doc["s3_key"].split('.').pop()).toString()), doc["s3_key"],(()=>{
+                 unlinkAsync(Path.join(__dirname, '/uploads/',(doc["_id"].toString()).concat('.').concat(doc["s3_key"].split('.').pop()).toString()));
+                }))
+              })
+            });
+          });
+          
+       
+            
+           
+
+          
+        }catch (err) {
+          if (err) {
+            await next(res.status(500).send(err));
+          }
+        }
+      }
+    })
+  }
+  else{
+    res.status(500).send("no file");
+  }
+});
 // API to view the files from the AWS bucket.
 router.get('/file/getPresignedUrl/:fileNameUserID', async(req,res, next)=>{
   // #swagger.tags = ['File']
   // #swagger.description = 'Endpoint used for viewing files from AWS bucket ( presigned url ).'
   fileName = req.params.fileNameUserID.split(',')[0].toString();
   userID = req.params.fileNameUserID.split(',')[1].toString();
-  console.log(fileName);
-  console.log(userID);
+  
   if(fileName.length>0)
    {
      FILE.findOne({"_id":ObjectId(fileName),
@@ -494,6 +566,9 @@ router.get('/file/getPresignedUrl/:fileNameUserID', async(req,res, next)=>{
     res.status(500).send("no file");
   }
 });
+
+
+
 
 
 // API to rename the files. 

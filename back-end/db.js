@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 mongoose.set('useCreateIndex', true);
 mongoose.set('useFindAndModify', false);
 
-mongoose.connect(("mongodb://localhost/Vicara"||process.env.dbUri), { useNewUrlParser: true, useUnifiedTopology: true})
+mongoose.connect( (process.env.dbUri||"mongodb://localhost/Vicara"), { useNewUrlParser: true, useUnifiedTopology: true})
     .then(() => console.log('Connected to Mongodb!') )
     .catch(err => console.error('Could not connect to Mongodb!', err));
 
