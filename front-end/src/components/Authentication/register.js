@@ -193,14 +193,13 @@ export default function Register(props) {
 										onMouseDown={handleMouseDownPassword}
 										edge="end"
 									  >
-										{hidePassword ? <Visibility /> : <VisibilityOff />}
+										{hidePassword ?<VisibilityOff />: <Visibility />}
 									  </IconButton>
 									</InputAdornment>
 								  }
 							/>
 						</Grid>
                         <Grid item xs={12}>
-							<InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
 							<OutlinedInput
 								variant="outlined"
 								required
@@ -220,7 +219,7 @@ export default function Register(props) {
 										onMouseDown={handleMouseDownPassword}
 										edge="end"
 									  >
-										{hidePassword ? <Visibility /> : <VisibilityOff />}
+										{hidePassword ?<VisibilityOff />: <Visibility />}
 									  </IconButton>
 									</InputAdornment>
 								  }
