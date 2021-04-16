@@ -17,6 +17,8 @@ import IconButton from '@material-ui/core/IconButton';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import OutlinedInput from '@material-ui/core/OutlinedInput';
+import InputLabel from '@material-ui/core/InputLabel';
 
 const useStyles = makeStyles((theme) => ({
 	paper: {
@@ -172,7 +174,7 @@ export default function Register(props) {
 							/>
 						</Grid>
 						<Grid item xs={12}>
-							<TextField
+							<OutlinedInput
 								variant="outlined"
 								required
 								fullWidth
@@ -198,7 +200,8 @@ export default function Register(props) {
 							/>
 						</Grid>
                         <Grid item xs={12}>
-							<TextField
+							<InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
+							<OutlinedInput
 								variant="outlined"
 								required
 								fullWidth
