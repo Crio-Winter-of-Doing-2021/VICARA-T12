@@ -74,13 +74,13 @@ function App() {
                 </CSSTransition>
                 {
                   isMobile?
+                  <div></div>
+                  : 
                   <Scroll to="about-section" smooth={true}>
                     <IconButton>
                       <ExpandMoreIcon className={classes.down} />
                     </IconButton>
                   </Scroll>
-                  : 
-                  <div></div>
                 } 
               </div>
               <div  id = "AboutSection" >

@@ -7,7 +7,6 @@ import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import { isMobile } from "react-device-detect";
-import OutlinedCardMobile from './AboutCardMobile';
 import MediaControlCardMobile from './VideoCardMobile';
 
 const useStyles = makeStyles((theme) => ({

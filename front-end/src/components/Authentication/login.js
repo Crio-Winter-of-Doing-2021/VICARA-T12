@@ -212,13 +212,9 @@ export default function Login(props) {
 				<Typography component="h6" variant="h6">
 					Don't have an account? 
 					<Divider orientation="vertical" flexItem />
-					<Button 
-					variant="contained"
-					color="primary"
-					className={classes.submit}
-					onClick={handleChangeInForm}>
+					<div onClick={handleChangeInForm}> 
 						Sign Up
-					</Button>
+					</div>
 				</Typography>
 				<div onClick={handleForgotPassword}>
 					<Typography component="h6" variant="h6" color="textSecondary" style={{cursor: 'pointer'}}>
