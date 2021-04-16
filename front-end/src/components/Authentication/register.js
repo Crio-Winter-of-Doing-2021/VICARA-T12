@@ -207,13 +207,12 @@ export default function Register(props) {
 							/>
 						</Grid>
                         <Grid item xs={12}>
-							<div className={clsx(classes.margin, classes.textField)} variant="outlined" > 
+							<FormControl className={clsx(classes.margin, classes.textField)} variant="outlined">
 								<InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
 								<OutlinedInput
 									required
 									fullWidth
 									id="confirmPassword"
-									label="confirm Password"
 									type= { hidePassword ? "password" : "text" }
 									name="confirmPassword"
 									autoComplete="confirm Password"
@@ -232,7 +231,7 @@ export default function Register(props) {
 										</InputAdornment>
 									}
 								/>
-							</div>
+							</FormControl>
 						</Grid>
 					</Grid>
 					<Button
