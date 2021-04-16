@@ -59,21 +59,23 @@ export default function (){
                     <MediaControlCardMobile />
                 </div>
                 :
-                <Typography className={classes.title} variant="h5" component="h2">
-                    What is Vicara's Storage Drive? 
-                </Typography>
-                <div className={classes.root}>
-                    <Grid item xs={12} md={5}>
-                        <div className={classes.child}>
-                            <OutlinedCard checked={checked} />
-                        </div>
-                    </Grid>
-                    <div className={classes.border}></div>
-                    <Grid item xs={12} md={5}>
-                        <div className={classes.child}>
-                            <MediaControlCard checked={checked} />
-                        </div>
-                    </Grid>
+                <div>
+                    <Typography className={classes.title} variant="h5" component="h2">
+                        What is Vicara's Storage Drive? 
+                    </Typography>
+                    <div className={classes.root}>
+                        <Grid item xs={12} md={5}>
+                            <div className={classes.child}>
+                                <OutlinedCard checked={checked} />
+                            </div>
+                        </Grid>
+                        <div className={classes.border}></div>
+                        <Grid item xs={12} md={5}>
+                            <div className={classes.child}>
+                                <MediaControlCard checked={checked} />
+                            </div>
+                        </Grid>
+                    </div>
                 </div>  
             }  
         </Container>
