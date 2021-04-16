@@ -45,6 +45,12 @@ const useStyles = makeStyles((theme) => ({
 		margin: theme.spacing(3, 0, 2),
 		background: 'linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(236,46,4,1) 100%, rgba(6,223,240,1) 100%)',
 	},
+	margin: {
+		margin: theme.spacing(1),
+	},
+	textField: {
+	width: '25ch',
+	},
 }));
 
 export default function Register(props) {
@@ -200,30 +206,32 @@ export default function Register(props) {
 							/>
 						</Grid>
                         <Grid item xs={12}>
-							<OutlinedInput
-								variant="outlined"
-								required
-								fullWidth
-								id="confirmPassword"
-								label="confirm Password"
-								type= { hidePassword ? "password" : "text" }
-								name="confirmPassword"
-								autoComplete="confirm Password"
-								value={formData.confirmPassword}
-								onChange={handleChange}
-								endAdornment={
-									<InputAdornment position="end">
-									  <IconButton
-										aria-label="toggle password visibility"
-										onClick={handleClickShowPassword}
-										onMouseDown={handleMouseDownPassword}
-										edge="end"
-									  >
-										{hidePassword ?<VisibilityOff />: <Visibility />}
-									  </IconButton>
-									</InputAdornment>
-								  }
-							/>
+							<div className={clsx(classes.margin, classes.textField)} variant="outlined" > 
+								<InputLabel htmlFor="outlined-adornment-password">Password</InputLabel>
+								<OutlinedInput
+									required
+									fullWidth
+									id="confirmPassword"
+									label="confirm Password"
+									type= { hidePassword ? "password" : "text" }
+									name="confirmPassword"
+									autoComplete="confirm Password"
+									value={formData.confirmPassword}
+									onChange={handleChange}
+									endAdornment={
+										<InputAdornment position="end">
+										<IconButton
+											aria-label="toggle password visibility"
+											onClick={handleClickShowPassword}
+											onMouseDown={handleMouseDownPassword}
+											edge="end"
+										>
+											{hidePassword ?<VisibilityOff />: <Visibility />}
+										</IconButton>
+										</InputAdornment>
+									}
+								/>
+							</div>
 						</Grid>
 					</Grid>
 					<Button
