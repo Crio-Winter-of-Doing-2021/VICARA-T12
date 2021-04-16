@@ -53,15 +53,15 @@ export default function (){
     return(
         // Calling two card componenets an adding animation to them
         <Container maxWidth="xl" component="main"  id="about-section" className={classes.main}>
-            <Typography className={classes.title} variant="h5" component="h2">
-                What is Vicara's Storage Drive? 
-            </Typography>
             {
                 isMobile?
                 <div className={classes.rootMobile}>
                     <MediaControlCardMobile />
                 </div>
                 :
+                <Typography className={classes.title} variant="h5" component="h2">
+                    What is Vicara's Storage Drive? 
+                </Typography>
                 <div className={classes.root}>
                     <Grid item xs={12} md={5}>
                         <div className={classes.child}>

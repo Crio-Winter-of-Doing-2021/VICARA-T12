@@ -15,6 +15,7 @@ import AboutSection from './components/Main/AboutSection';
 import { Link as Scroll } from 'react-scroll'
 import Swagger from './components/Main/Swagger';
 import Footer from './components/Main/footer';
+import { isMobile } from "react-device-detect";
 
 const useStyles = makeStyles((theme) => ({
   root:{
@@ -71,11 +72,16 @@ function App() {
                 >
                   <Register activeMenu = {activeMenu} onChange={handleChangeInForm} />
                 </CSSTransition>
-                <Scroll to="about-section" smooth={true}>
-                  <IconButton>
-                    <ExpandMoreIcon className={classes.down} />
-                  </IconButton>
-                </Scroll>
+                {
+                  isMobile?
+                  <Scroll to="about-section" smooth={true}>
+                    <IconButton>
+                      <ExpandMoreIcon className={classes.down} />
+                    </IconButton>
+                  </Scroll>
+                  : 
+                  <div></div>
+                } 
               </div>
               <div  id = "AboutSection" >
                 <AboutSection />
