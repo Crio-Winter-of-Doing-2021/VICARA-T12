@@ -211,8 +211,7 @@ export default function Login(props) {
 				</form>
 				<Typography component="h6" variant="h6">
 					Don't have an account? 
-					<Divider orientation="vertical" flexItem />
-					<div onClick={handleChangeInForm}> 
+					<div onClick={handleChangeInForm} style={{cursor: 'pointer'}} > 
 						Sign Up
 					</div>
 				</Typography>

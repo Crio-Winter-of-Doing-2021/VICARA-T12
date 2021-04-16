@@ -199,15 +199,9 @@ export default function Register(props) {
 				</form>
                 <Typography component="h6" variant="h6">
 					Already have an account? 
-					<Divider orientation="vertical" flexItem />
-					<Button 
-					variant="contained"
-					color="primary"
-					mx = "auto"
-					className={classes.submit}
-					onClick={handleChangeInForm}>
+					<div onClick={handleChangeInForm} style={{cursor: 'pointer'}}>
 						Sign In
-					</Button>
+					</div>
 				</Typography>
 			</Box>
 		</Container>
