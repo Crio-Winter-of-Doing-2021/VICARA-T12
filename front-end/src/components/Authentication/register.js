@@ -175,11 +175,12 @@ export default function Register(props) {
 								autoComplete="password"
 								value={formData.password}
 								onChange={handleChange}	
-							>
-								<IconButton color="primary" aria-label="visibility" component="span">
-									<VisibilityIcon />
-								</IconButton>
-							</TextField>
+								InputProps={ 
+									<IconButton color="primary" aria-label="visibility" component="span">
+										<VisibilityIcon />
+									</IconButton>
+								}
+							/>
 						</Grid>
                         <Grid item xs={12}>
 							<TextField
