@@ -11,7 +11,6 @@ import Avatar from '@material-ui/core/Avatar';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import Divider from '@material-ui/core/Divider';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Cookies from 'js-cookie';
@@ -19,6 +18,13 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import FormControl from '@material-ui/core/FormControl';
+import InputAdornment from '@material-ui/core/InputAdornment';
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
+import OutlinedInput from '@material-ui/core/OutlinedInput';
+import InputLabel from '@material-ui/core/InputLabel';
+import IconButton from '@material-ui/core/IconButton';
 
 const useStyles = makeStyles((theme) => ({
 	paper: {
@@ -46,13 +52,17 @@ const useStyles = makeStyles((theme) => ({
 	submit: {
 		margin: theme.spacing(3, 0, 2),
 		background: 'linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(236,46,4,1) 100%, rgba(6,223,240,1) 100%)',
-	}
+	},
+	textField: {
+		width: '38ch',
+	},
 }));
 
 export default function Login(props) {
 	const history = useHistory();
 	// Setting state hook for dialogue box actions.
 	const [openSetting, setOpenSetting] = useState(false);
+	const [ hidePassword, setShowHidePassword ] = useState(true);
 	const [forgotEmail, setForgotEmail] = useState("");
 	function handleChangeInForm(event) {
 		props.onChange("register");
@@ -83,6 +93,14 @@ export default function Login(props) {
 	const handleCloseSetting = () =>{
 		setOpenSetting(false)
 		setForgotEmail("")
+	}
+
+	const handleClickShowPassword = () => {
+		setShowHidePassword(!hidePassword)
+	}
+
+	const handleMouseDownPassword = (event) => {
+		event.preventDefault();
 	}
 
 	// Sending request to mail service in backend.
@@ -184,18 +202,33 @@ export default function Login(props) {
 							/>
 						</Grid>
 						<Grid item xs={12}>
-							<TextField
+						<FormControl className={classes.textField} variant="outlined">
+							<InputLabel htmlFor="outlined-adornment-password">Password *</InputLabel>
+							<OutlinedInput
 								variant="outlined"
 								required
 								fullWidth
 								id="password"
-								type="password"
-								label="password"
+								type= { hidePassword ? "password" : "text" }
 								name="password"
 								autoComplete="password"
 								value={formData.password}
 								onChange={handleChange}
+								endAdornment={
+									<InputAdornment position="end">
+										<IconButton
+											aria-label="toggle password visibility"
+											onClick={handleClickShowPassword}
+											onMouseDown={handleMouseDownPassword}
+											edge="end"
+										>
+											{hidePassword ?<VisibilityOff />: <Visibility />}
+										</IconButton>
+									</InputAdornment>
+								}
+								labelWidth={80}
 							/>
+						</FormControl>
 						</Grid>
 					</Grid>
 					<Button
