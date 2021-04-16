@@ -59,7 +59,6 @@ export default function Register(props) {
 	});
 	const [formData, updateFormData] = useState(initialFormData);
 	const [ hidePassword, setShowHidePassword ] = useState(true);
-	const [ hideConfirmPassword, setShowHideConfirmPassword ] = useState(true);
 	// Saving data typed into the state 
 	const handleChange = (e) => {
         updateFormData({
@@ -119,6 +118,14 @@ export default function Register(props) {
 				});		
 			});
 	};
+	
+	const handleClickShowPassword = () => {
+		setShowHidePassword(!hidePassword)
+	}
+
+	const handleMouseDownPassword = (event) => {
+		event.preventDefault();
+	}
 
 	const classes = useStyles();
 
@@ -175,11 +182,18 @@ export default function Register(props) {
 								autoComplete="password"
 								value={formData.password}
 								onChange={handleChange}	
-								InputProps={ 
-									<IconButton color="primary" aria-label="visibility" component="span">
-										<VisibilityIcon />
-									</IconButton>
-								}
+								endAdornment={
+									<InputAdornment position="end">
+									  <IconButton
+										aria-label="toggle password visibility"
+										onClick={handleClickShowPassword}
+										onMouseDown={handleMouseDownPassword}
+										edge="end"
+									  >
+										{hidePassword ? <Visibility /> : <VisibilityOff />}
+									  </IconButton>
+									</InputAdornment>
+								  }
 							/>
 						</Grid>
                         <Grid item xs={12}>
@@ -189,11 +203,23 @@ export default function Register(props) {
 								fullWidth
 								id="confirmPassword"
 								label="confirm Password"
-								type= { hideConfirmPassword ? "password" : "text" }
+								type= { hidePassword ? "password" : "text" }
 								name="confirmPassword"
 								autoComplete="confirm Password"
 								value={formData.confirmPassword}
 								onChange={handleChange}
+								endAdornment={
+									<InputAdornment position="end">
+									  <IconButton
+										aria-label="toggle password visibility"
+										onClick={handleClickShowPassword}
+										onMouseDown={handleMouseDownPassword}
+										edge="end"
+									  >
+										{hidePassword ? <Visibility /> : <VisibilityOff />}
+									  </IconButton>
+									</InputAdornment>
+								  }
 							/>
 						</Grid>
 					</Grid>
