@@ -6,6 +6,7 @@ import CardContent from '@material-ui/core/CardContent';
 import Typography from '@material-ui/core/Typography';
 import { Collapse } from '@material-ui/core';
 import Button from '@material-ui/core/Button';
+import { isMobile } from "react-device-detect";
 
 const useStyles = makeStyles((theme) => ({
     root:{
@@ -44,7 +45,8 @@ export default function (){
 
     return(
         <div className={classes.root}>
-            {
+            { 
+            isMobile?
                 <Collapse in={checked} {...(checked ? { timeout: 1000 } : {})}>
                     <Card className={classes.Cardborder} variant="outlined">
                         <CardContent>
@@ -70,31 +72,30 @@ export default function (){
                         </CardContent>
                     </Card>
                 </Collapse>
-            }
-            {
+            :
                 <Card className={classes.Cardborder} variant="outlined">
-                    <CardContent>
-                        <Typography className={classes.title} variant="h5" component="h2">
-                            Swagger for Custom Frontend Integration
-                        </Typography>
-                        <Typography variant="body1" gutterBottom>
-                            Easily integrate our backend API's to your preferred front-end of choice. Below, we have, in our Swagger documentation, the backend API's and their functionality.
-                        </Typography>
-                        <Button
-                            type="submit"
-                            fullWidth
-                            variant="contained"
-                            color="primary"
-                            className={classes.submit}
-                            onClick={handleSubmit}
-                        >
-                            Swagger
-                        </Button>
-                        <Typography variant="body1" gutterBottom>
-                            If you're interested in using our API's for your front-end of choice, then please request for your domain to be added in our servers allowed hosts. We will reply to your mail in 24 hours.
-                        </Typography>
-                    </CardContent>
-                </Card>
+                        <CardContent>
+                            <Typography className={classes.title} variant="h5" component="h2">
+                                Swagger for Custom Frontend Integration
+                            </Typography>
+                            <Typography variant="body1" gutterBottom>
+                                Easily integrate our backend API's to your preferred front-end of choice. Below, we have, in our Swagger documentation, the backend API's and their functionality.
+                            </Typography>
+                            <Button
+                                type="submit"
+                                fullWidth
+                                variant="contained"
+                                color="primary"
+                                className={classes.submit}
+                                onClick={handleSubmit}
+                            >
+                                Swagger
+                            </Button>
+                            <Typography variant="body1" gutterBottom>
+                                If you're interested in using our API's for your front-end of choice, then please request for your domain to be added in our servers allowed hosts. We will reply to your mail in 24 hours.
+                            </Typography>
+                        </CardContent>
+                    </Card>
             }
         </div>      
     )
