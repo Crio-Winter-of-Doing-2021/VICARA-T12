@@ -210,9 +210,8 @@ export default function Login(props) {
 					</Button>
 				</form>
 				<Typography component="h6" variant="h6">
-					Don't have an account? 
 					<div onClick={handleChangeInForm} style={{cursor: 'pointer'}} > 
-						Sign Up
+						Don't have an account? Sign Up						
 					</div>
 				</Typography>
 				<div onClick={handleForgotPassword}>

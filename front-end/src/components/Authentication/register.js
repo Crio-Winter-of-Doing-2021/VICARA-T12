@@ -198,9 +198,8 @@ export default function Register(props) {
 					</Button>
 				</form>
                 <Typography component="h6" variant="h6">
-					Already have an account? 
 					<div onClick={handleChangeInForm} style={{cursor: 'pointer'}}>
-						Sign In
+						Already have an account? Sign In					
 					</div>
 				</Typography>
 			</Box>
