@@ -177,7 +177,7 @@ export default function Register(props) {
 								onChange={handleChange}	
 							>
 								<IconButton color="primary" aria-label="visibility" component="span">
-									VisibilityIcon
+									<VisibilityIcon />
 								</IconButton>
 							</TextField>
 						</Grid>
