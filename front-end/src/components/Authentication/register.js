@@ -14,6 +14,8 @@ import { Box } from '@material-ui/core';
 import Divider from '@material-ui/core/Divider';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import IconButton from '@material-ui/core/IconButton';
+import VisibilityIcon from '@material-ui/icons/Visibility';
 
 const useStyles = makeStyles((theme) => ({
 	paper: {
@@ -56,6 +58,8 @@ export default function Register(props) {
 		snackState: '',
 	});
 	const [formData, updateFormData] = useState(initialFormData);
+	const [ hidePassword, setShowHidePassword ] = useState(true);
+	const [ hideConfirmPassword, setShowHideConfirmPassword ] = useState(true);
 	// Saving data typed into the state 
 	const handleChange = (e) => {
         updateFormData({
@@ -166,11 +170,16 @@ export default function Register(props) {
 								fullWidth
 								id="password"
 								label="password"
+								type= { hidePassword ? "password" : "text" }
 								name="password"
 								autoComplete="password"
 								value={formData.password}
-								onChange={handleChange}
-							/>
+								onChange={handleChange}	
+							>
+								<IconButton color="primary" aria-label="visibility" component="span">
+									VisibilityIcon
+								</IconButton>
+							</TextField>
 						</Grid>
                         <Grid item xs={12}>
 							<TextField
@@ -179,6 +188,7 @@ export default function Register(props) {
 								fullWidth
 								id="confirmPassword"
 								label="confirm Password"
+								type= { hideConfirmPassword ? "password" : "text" }
 								name="confirmPassword"
 								autoComplete="confirm Password"
 								value={formData.confirmPassword}
@@ -199,7 +209,7 @@ export default function Register(props) {
 				</form>
                 <Typography component="h6" variant="h6">
 					<div onClick={handleChangeInForm} style={{cursor: 'pointer'}}>
-						Already have an account? Sign In					
+						Have an account? Sign In					
 					</div>
 				</Typography>
 			</Box>
