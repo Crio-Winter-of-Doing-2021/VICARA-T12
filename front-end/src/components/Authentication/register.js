@@ -48,7 +48,7 @@ const useStyles = makeStyles((theme) => ({
 		background: 'linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(236,46,4,1) 100%, rgba(6,223,240,1) 100%)',
 	},
 	textField: {
-	width: '38ch',
+		width: '38ch',
 	},
 }));
 
@@ -151,32 +151,36 @@ export default function Register(props) {
 				<form className={classes.form} noValidate>
 					<Grid container spacing={2}>
 						<Grid item xs={12}>
-							<TextField
-									color='white'
+							<FormControl className={classes.textField} variant="outlined">
+								<InputLabel htmlFor="outlined-adornment-password">Name *</InputLabel>
+								<OutlinedInput
 									variant="outlined"
 									required
 									fullWidth
 									id="name"
-									label="name"
 									name="name"
 									autoComplete="name"
 									value={formData.name}
 									onChange={handleChange}
+									labelWidth={80}
 								/>
+							</FormControl>
 						</Grid>
 						<Grid item xs={12}>
-							<TextField
-								color='white'
-								variant="outlined"
-								required
-								fullWidth
-								id="email"
-								label="email"
-								name="email"
-								autoComplete="email"
-								value={formData.email}
-								onChange={handleChange}
-							/>
+							<FormControl className={classes.textField} variant="outlined">
+								<InputLabel htmlFor="outlined-adornment-password">Email *</InputLabel>
+								<OutlinedInput
+									variant="outlined"
+									required
+									fullWidth
+									id="email"
+									name="email"
+									autoComplete="email"
+									value={formData.email}
+									onChange={handleChange}
+									labelWidth={80}
+								/>
+							</FormControl>
 						</Grid>
 						<Grid item xs={12}>
 							<FormControl className={classes.textField} variant="outlined">

@@ -189,17 +189,20 @@ export default function Login(props) {
 				<form className={classes.form} noValidate>
 					<Grid container spacing={2}>
 						<Grid item xs={12}>
-							<TextField
-								variant="outlined"
-								required
-								fullWidth
-								id="email"
-								label="email"
-								name="email"
-								autoComplete="email"
-								value={formData.email}
-								onChange={handleChange}
-							/>
+							<FormControl className={classes.textField} variant="outlined">
+								<InputLabel htmlFor="outlined-adornment-password">Email *</InputLabel>
+								<OutlinedInput
+									variant="outlined"
+									required
+									fullWidth
+									id="email"
+									name="email"
+									autoComplete="email"
+									value={formData.email}
+									onChange={handleChange}
+									labelWidth={80}
+								/>
+							</FormControl>
 						</Grid>
 						<Grid item xs={12}>
 						<FormControl className={classes.textField} variant="outlined">
