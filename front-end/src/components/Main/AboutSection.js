@@ -1,12 +1,12 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 import OutlinedCard from './AboutCard';
 import useWindowPosition from './useWindowPosition';
 import MediaControlCard from './VideoCard';
 import Container from '@material-ui/core/Container';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
-import { isMobile } from "react-device-detect";
+import useMediaQuery from '@material-ui/core/useMediaQuery';
 import MediaControlCardMobile from './VideoCardMobile';
 
 const useStyles = makeStyles((theme) => ({
@@ -49,6 +49,8 @@ export default function (){
     // Window position checked for start of animation 
     const checked = useWindowPosition('loginRegister');
     const classes = useStyles();
+    const isMobile = useMediaQuery( theme.breakpoints.down("sm"));
+    
     return(
         // Calling two card componenets an adding animation to them
         <Container maxWidth="xl" component="main"  id="about-section" className={classes.main}>
