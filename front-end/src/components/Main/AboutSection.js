@@ -47,7 +47,8 @@ const useStyles = makeStyles((theme) => ({
 
 export default function (){
     // Window position checked for start of animation 
-    const checked = useWindowPosition('loginRegister');
+    const checked = useWindowPosition('loginRegister')
+    const theme = useTheme();;
     const classes = useStyles();
     const isMobile = useMediaQuery( theme.breakpoints.down("sm"));
     
